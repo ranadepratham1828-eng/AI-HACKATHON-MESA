@@ -56,7 +56,7 @@ export const avatar = (key, size = 5, label = '') => {
 
 export const arrowLogo = (size = 4) => sprite(
   ['...y...', '..yyy..', '.yyyyy.', 'yyyyyyy', '...y...', '...y...', '...y...'],
-  { y: '#ffcb47' }, size, 'Disha',
+  { y: '#ffcb47' }, size, 'Dishaa',
 );
 
 export const chest = (open = false, size = 5) => sprite(

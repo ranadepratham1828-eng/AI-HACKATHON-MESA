@@ -1,5 +1,5 @@
 // Dishaa web app: plain JavaScript, no build step. Talks to the backend at /api.
-// The product is professional; only Disha Quest (the game) is pixel art.
+// The product is professional; only Dishaa Quest (the game) is pixel art.
 import { star, trophy, gridSprite, gem } from './sprites.js';
 
 /* ================= Helpers ================= */
@@ -100,7 +100,7 @@ async function render() {
 function renderTopbar() {
   const r = route().name;
   const links = !S.user ? [] : {
-    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Disha Quest'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'My plan']],
+    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Assessment'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'My plan']],
     parent: [['parent', "My child's report"]],
     school: [['school', 'Class dashboard']],
   }[S.user.role] || [];
@@ -126,7 +126,7 @@ function loginView() {
         <p class="lead" style="color:#cfc6ea">Dishaa helps Class 10 and 12 students choose their stream, degree and college with confidence, based on what they can actually do, not just marks.</p>
       </div>
       <div class="stack">
-        <div class="point"><span class="ico">${ICONS.game}</span><div><h4>A 10-minute aptitude game</h4><p class="small">Eight skills measured through play: logic, numbers, words, shapes, memory, critical thinking, creativity and people skills.</p></div></div>
+        <div class="point"><span class="ico">${ICONS.game}</span><div><h4>A 10-minute aptitude assessment</h4><p class="small">Eight abilities measured through interactive challenges: logic, numbers, language, spatial reasoning, memory, critical thinking, creativity and people skills.</p></div></div>
         <div class="point"><span class="ico">${ICONS.compass}</span><div><h4>Careers matched to your strengths</h4><p class="small">The stream, degrees, entrance exams and colleges for each career, in one place.</p></div></div>
         <div class="point"><span class="ico">${ICONS.people}</span><div><h4>Built for families and schools</h4><p class="small">A parent view in English, ಕನ್ನಡ or हिन्दी, and a dashboard for school counsellors.</p></div></div>
       </div>
@@ -159,7 +159,7 @@ function loginView() {
         </form>`}
       <div class="or">or explore a demo</div>
       <div class="demo-grid">
-        <button class="btn gold" data-act="demo" data-as="student">Play as a new student</button>
+        <button class="btn gold" data-act="demo" data-as="student">Start as a new student</button>
         <button class="btn outline" data-act="demo" data-as="student-finished">See a finished report</button>
         <button class="btn outline" data-act="demo" data-as="parent">Parent view</button>
         <button class="btn outline" data-act="demo" data-as="school">Counsellor dashboard</button>
@@ -202,10 +202,10 @@ function homeView() {
   const next = !p.questionnaireDone ? 'about' : !p.questDone ? 'quest' : 'report';
   const steps = [
     ['about', 1, 'About you', 'Your class, subjects, marks, interests and budget.', p.questionnaireDone, p.questionnaireDone ? 'Completed' : 'About 3 minutes', p.questionnaireDone ? 100 : 0],
-    ['quest', 2, 'Disha Quest', 'A 10-minute game that measures 8 abilities.', p.questDone, p.questDone ? 'Completed' : p.questAnswered ? `${p.questAnswered} of ${p.questTotal} puzzles done` : 'About 10 minutes', pct(p.questAnswered, p.questTotal)],
+    ['quest', 2, 'Aptitude assessment', 'An interactive 10-minute assessment of 8 abilities.', p.questDone, p.questDone ? 'Completed' : p.questAnswered ? `${p.questAnswered} of ${p.questTotal} questions done` : 'About 10 minutes', pct(p.questAnswered, p.questTotal)],
     ['report', 3, 'Careers and your plan', 'Your strengths, career matches, a chat with your coach and a full career plan.', Boolean(st.plan), st.plan ? 'Plan ready' : p.reportReady ? 'Report ready' : 'Unlocks after the quest', st.plan ? 100 : p.reportReady ? 60 : 0],
   ];
-  const cta = next === 'about' ? 'Tell us about you' : next === 'quest' ? (p.questAnswered ? 'Continue Disha Quest' : 'Start Disha Quest') : 'View my report';
+  const cta = next === 'about' ? 'Tell us about you' : next === 'quest' ? (p.questAnswered ? 'Continue the assessment' : 'Start the assessment') : 'View my report';
   return `<div class="stack-lg">
     <section class="spread">
       <div class="stack-sm"><p class="eyebrow">Class ${esc(st.profile.cls || '10')}${st.profile.city ? ` · ${esc(st.profile.city)}` : ''}</p><h1>Hi ${esc(st.profile.name || 'there')}, let's find your direction.</h1>
@@ -225,7 +225,7 @@ function homeView() {
   </div>`;
 }
 
-/* ================= Disha Quest (pixel game) ================= */
+/* ================= Dishaa Quest (pixel game) ================= */
 function questState() {
   const zones = S.content.assessment.zones;
   const answers = new Set(Object.keys(S.student.assessment?.answers || {}));
@@ -251,7 +251,7 @@ function questView() {
     <span class="xp">★ ${q.xp} XP</span>
   </div>`;
   return `<div class="game-wrap"><div class="game">${hud}${questScreen(q, zones)}</div>
-    <p class="game-note">There's no pass or fail. Answer honestly and at your own pace: Dishaa uses accuracy and time to understand your strengths.</p></div>`;
+    <p class="game-note">There are no right or wrong people here. Answer honestly and at your own pace: Dishaa uses accuracy and response time to understand your strengths.</p></div>`;
 }
 
 function questScreen(q, zones) {
@@ -436,7 +436,7 @@ function aboutView() {
       <label>If you could do any job in the world, what would it be?<textarea id="q-dream" data-q="dream" placeholder="Dream big">${esc(d.dream)}</textarea></label>
       ${select('goal', 'Your main goal right now', qc.goals)}
     </div>`,
-    () => `<div class="stack"><p class="muted">Rate yourself honestly. Your report compares this with what the game measures.</p>
+    () => `<div class="stack"><p class="muted">Rate yourself honestly. Your report compares this with what the assessment measures.</p>
       ${qc.statedQuestions.map((sq) => `<div class="spread" style="padding:10px 0;border-bottom:1px solid var(--line)"><span style="flex:1;min-width:220px">${esc(sq.question)}</span>
         <div class="scale" role="group" aria-label="${esc(sq.question)}">${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="${d.stated[sq.ability] === n ? 'on' : ''}" data-act="rate" data-ability="${sq.ability}" data-n="${n}" aria-label="${n} of 5">${n}</button>`).join('')}</div></div>`).join('')}
       <p class="small muted">1 = ${esc(qc.scale.minLabel)} · 5 = ${esc(qc.scale.maxLabel)}</p></div>`,
@@ -459,7 +459,7 @@ function aboutView() {
       <div class="progress"><i style="width:${pct(step + 1, ABOUT_STEPS.length)}%"></i></div></div>
     ${steps[step]()}
     <div class="spread"><button class="btn outline" data-act="q-back" ${step === 0 ? 'disabled' : ''}>Back</button>
-      ${step < ABOUT_STEPS.length - 1 ? '<button class="btn" data-act="q-next">Continue</button>' : `<button class="btn" data-act="q-save">${S.student.progress.questDone ? 'Save and see my report' : 'Save and start Disha Quest'}</button>`}</div>
+      ${step < ABOUT_STEPS.length - 1 ? '<button class="btn" data-act="q-next">Continue</button>' : `<button class="btn" data-act="q-save">${S.student.progress.questDone ? 'Save and see my report' : 'Save and start the assessment'}</button>`}</div>
   </section>`;
 }
 
@@ -476,8 +476,8 @@ function abilityRows(abilities, { evidence = false } = {}) {
 
 async function reportView() {
   if (!S.student.progress.questAnswered) {
-    return `<div class="card stack" style="max-width:680px;margin:0 auto"><p class="eyebrow">Your report</p><h2>Play Disha Quest to unlock your report</h2>
-      <p class="muted">It takes about 10 minutes. Your report shows your strengths, areas to grow and the careers that fit you.</p><div><button class="btn" data-go="quest">Start Disha Quest →</button></div></div>`;
+    return `<div class="card stack" style="max-width:680px;margin:0 auto"><p class="eyebrow">Your report</p><h2>Complete the aptitude assessment to unlock your report</h2>
+      <p class="muted">It takes about 10 minutes. Your report shows your strengths, areas to grow and the careers that fit you.</p><div><button class="btn" data-go="quest">Start the assessment →</button></div></div>`;
   }
   const r = await api(`/students/${S.student.id}/report`);
   const n = r.narrative;
@@ -488,19 +488,19 @@ async function reportView() {
   const byId = Object.fromEntries(r.quest.abilities.map((a) => [a.id, a]));
 
   return `<div class="stack-lg">
-    ${!r.quest.complete ? `<div class="card gold spread"><p><b>Your report is partial.</b> You've done ${r.quest.answered} of ${r.quest.total} puzzles.</p><button class="btn small" data-go="quest">Finish Disha Quest</button></div>` : ''}
+    ${!r.quest.complete ? `<div class="card gold spread"><p><b>Your report is partial.</b> You've done ${r.quest.answered} of ${r.quest.total} questions.</p><button class="btn small" data-go="quest">Finish the assessment</button></div>` : ''}
     ${!r.questionnaireDone ? `<div class="card soft spread"><p>Add your subjects and interests to get sharper career matches.</p><button class="btn small" data-go="about">Tell us about you</button></div>` : ''}
 
     <section class="card navy stack">
       <p class="eyebrow" style="color:var(--gold-500)">Dishaa report · ${esc(S.student.profile.name)} · Class ${esc(S.student.profile.cls || '10')}</p>
       <h1 style="color:#fff">${esc(n.headline)}</h1>
-      <div class="row small"><span class="muted">${r.quest.stats.accuracy}% accuracy · about ${r.quest.stats.avgSeconds}s per puzzle · ${r.quest.answered} puzzles</span>
+      <div class="row small"><span class="muted">${r.quest.stats.accuracy}% accuracy · about ${r.quest.stats.avgSeconds}s per question · ${r.quest.answered} questions answered</span>
         <span class="tag ${r.narrativeSource === 'ai' ? 'gold' : 'grey'}">${r.narrativeSource === 'ai' ? 'Written by AI from your results' : 'Standard summary'}</span></div>
     </section>
 
     <section class="grid-2">
-      <div class="card stack"><div class="stack-sm"><p class="eyebrow">Ability profile</p><h2>What the game measured</h2></div>${abilityRows(r.quest.abilities)}
-        <p class="small muted">Scores are out of 100, from accuracy and speed across the puzzles in each zone.</p></div>
+      <div class="card stack"><div class="stack-sm"><p class="eyebrow">Ability profile</p><h2>What the assessment measured</h2></div>${abilityRows(r.quest.abilities)}
+        <p class="small muted">Scores are out of 100, from accuracy and speed across the questions for each ability.</p></div>
       <div class="stack">
         <div class="card stack"><p class="eyebrow">Your top strengths</p>
           ${n.strengths.map((s) => `<div class="stack-sm"><h3>${esc(s.name)}</h3><p class="small">${esc(s.evidence)}</p>${s.whyItMatters ? `<p class="small muted">${esc(s.whyItMatters)}</p>` : ''}</div>`).join('<div class="divider"></div>')}</div>
@@ -514,7 +514,7 @@ async function reportView() {
       <div class="stack-sm">${r.statedVsMeasured.rows.filter((x) => x.measured != null).map((x) => `<div class="svm-row"><span class="small">${esc(x.label)}</span>
         <div class="svm-track">${x.stated != null ? `<span class="dot said" style="left:${((x.stated - 1) / 4) * 100}%" title="You said ${x.stated}"></span>` : ''}<span class="dot did" style="left:${((x.measured - 1) / 4) * 100}%" title="Measured ${x.measured}"></span></div>
         <span class="small num ${x.gap > 0 ? '' : 'muted'}">${x.gap == null ? '' : `${x.gap > 0 ? '+' : ''}${x.gap}`}</span></div>`).join('')}</div>
-      <div class="legend"><span><i style="background:#b9b3c9"></i>You said</span><span><i style="background:var(--purple-600)"></i>The game measured</span></div></section>` : ''}
+      <div class="legend"><span><i style="background:#b9b3c9"></i>You said</span><span><i style="background:var(--purple-600)"></i>The assessment measured</span></div></section>` : ''}
 
     <section class="stack" id="careers">
       <div class="spread"><div class="stack-sm"><p class="eyebrow">Career matches</p><h2>Careers that fit you</h2></div>
@@ -605,7 +605,7 @@ function scholarshipCard(x) {
 let coachCache = null;
 async function coachView() {
   if (!S.student.progress.questAnswered) {
-    return `<div class="card stack" style="max-width:680px;margin:0 auto"><h2>Play Disha Quest first</h2><p class="muted">Your coach uses your results to guide you.</p><div><button class="btn" data-go="quest">Start Disha Quest →</button></div></div>`;
+    return `<div class="card stack" style="max-width:680px;margin:0 auto"><h2>Complete the aptitude assessment first</h2><p class="muted">Your coach uses your results to guide you.</p><div><button class="btn" data-go="quest">Start the assessment →</button></div></div>`;
   }
   coachCache = await api(`/students/${S.student.id}/coach`);
   return coachHTML();
@@ -737,7 +737,7 @@ async function schoolView() {
     <section class="stack-sm"><p class="eyebrow">Counsellor dashboard</p><h1>${esc(d.className)}</h1><p class="lead">Who to talk to first, and what your class is strongest at.</p></section>
     <section class="grid-3">
       <div class="card stat"><span class="muted small">Students</span><b class="num">${d.totalStudents}</b><span class="small muted">${d.sampleStudents} sample students for the demo</span></div>
-      <div class="card stat"><span class="muted small">Finished Disha Quest</span><b class="num">${d.completion.percent}%</b><span class="small muted">${d.completion.done} of ${d.totalStudents}</span></div>
+      <div class="card stat"><span class="muted small">Completed the assessment</span><b class="num">${d.completion.percent}%</b><span class="small muted">${d.completion.done} of ${d.totalStudents}</span></div>
       <div class="card stat"><span class="muted small">Need a conversation</span><b class="num">${d.needsConversation.length}</b><span class="small muted">Ranked by urgency below</span></div>
     </section>
     <section class="grid-2">

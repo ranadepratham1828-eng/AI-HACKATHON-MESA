@@ -1,4 +1,4 @@
-// One small adapter over the AI providers Disha can use.
+// One small adapter over the AI providers Dishaa can use.
 // generate() returns parsed JSON (or text) and throws AIError on any failure,
 // so callers can fall back to scripted answers and the demo never breaks.
 

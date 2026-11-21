@@ -1,4 +1,4 @@
-// Disha API. See docs/API.md for every endpoint with examples.
+// Dishaa API. See docs/API.md for every endpoint with examples.
 import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
@@ -191,7 +191,7 @@ export function createApp(store) {
       user.studentId = student.id;
     } else if (role === 'parent') {
       const child = store.findStudentByFamilyCode(req.body?.familyCode);
-      if (!child) throw new HttpError(400, "Family code not found. Ask your child for the code on their Disha home screen.");
+      if (!child) throw new HttpError(400, "Family code not found. Ask your child for the code on their Dishaa home screen.");
       user.linkedStudentId = child.id;
     } else {
       user.classId = (text(req.body?.classId, 10) || '10B').toUpperCase();
@@ -377,7 +377,7 @@ export function createApp(store) {
 
   app.post('/api/students/:id/plan', wrap(async (req, res) => {
     const s = getStudent(req, { edit: true });
-    if (!s.assessment?.answers || !Object.keys(s.assessment.answers).length) throw new HttpError(409, 'Play Disha Quest first');
+    if (!s.assessment?.answers || !Object.keys(s.assessment.answers).length) throw new HttpError(409, 'Complete the aptitude assessment first');
     if (req.body?.goal) {
       const g = content.careers.find((c) => c.id === req.body.goal);
       if (!g) throw new HttpError(400, 'Unknown career');
@@ -394,7 +394,7 @@ export function createApp(store) {
     res.json(s.plan);
   }));
 
-  // ---- Disha Quest: the aptitude game every new student plays first (P0) ----
+  // ---- Dishaa Quest: the aptitude game every new student plays first (P0) ----
   app.post('/api/students/:id/assessment/answers', wrap(async (req, res) => {
     const s = getStudent(req, { edit: true });
     const item = assessmentItemById(String(req.body?.itemId || ''));

@@ -1,4 +1,4 @@
-// Counsellor dashboard for one class: Disha Quest completion, ability mix,
+// Counsellor dashboard for one class: Dishaa Quest completion, ability mix,
 // and a ranked "needs a conversation" list. Sample students are clearly marked.
 import { content } from '../content.js';
 import { computeResults } from './report.js';
@@ -68,9 +68,9 @@ function realStudentRow(student) {
 
 function reasonsFor(s) {
   const reasons = [];
-  if (!s.questDone) reasons.push("Hasn't finished Disha Quest");
+  if (!s.questDone) reasons.push("Hasn't completed the assessment");
   if (s.parentMismatch) reasons.push(`Parents hope for ${s.parentExpect}; results point to ${s.topCareer}`);
-  if (s.questDone && s.accuracy != null && s.accuracy < 45) reasons.push('Found the quest hard overall: check in on study support');
+  if (s.questDone && s.accuracy != null && s.accuracy < 45) reasons.push('Found the assessment hard overall: check in on study support');
   if (s.questDone && !s.interestsGiven) reasons.push("Hasn't shared interests yet");
   return reasons;
 }
@@ -106,7 +106,7 @@ export function classDashboard(classId, realStudents) {
     needsConversation,
     weeklyActions: [
       mismatch.length && `Meet the parents of ${mismatch.slice(0, 3).map((s) => s.name).join(', ')}${mismatch.length > 3 ? ` and ${mismatch.length - 3} more` : ''}: their hopes differ from the results.`,
-      notStarted.length && `Give ${notStarted.length} students a 15-minute slot in class to finish Disha Quest.`,
+      notStarted.length && `Give ${notStarted.length} students a 15-minute slot in class to complete the aptitude assessment.`,
       top?.students && `Run a careers session for the ${top.students} students strongest in ${top.label.toLowerCase()}.`,
     ].filter(Boolean),
     students: rows,

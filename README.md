@@ -1,8 +1,8 @@
-# Disha: try a career before you choose it
+# Dishaa: try a career before you choose it
 
 Our project for the **Weekend at Mesa AI Hackathon** (Theme 02: Education & Careers).
 
-Disha lets Class 10 and Class 12 students **try real careers through short missions** with an AI "senior", then shows what they're genuinely good at based on what they **did**, not what they **said**. It then gives the full path (stream → degree and exams → colleges → first jobs) and connects them with students and alumni from that exact college.
+Dishaa lets Class 10 and Class 12 students **try real careers through short missions** with an AI "senior", then shows what they're genuinely good at based on what they **did**, not what they **said**. It then gives the full path (stream → degree and exams → colleges → first jobs) and connects them with students and alumni from that exact college.
 
 Product summary: [`docs/PRODUCT.md`](docs/PRODUCT.md) · Notes for Claude Code: [`CLAUDE.md`](CLAUDE.md)
 
@@ -46,7 +46,7 @@ The repo is ready for Vercel and works with Root Directory set to either the rep
 2. Paste it into `backend/.env` as `GEMINI_API_KEY=...`
 3. Run `npm run check-ai`. If it says the model isn't found, run `npm run models` and copy a name into `GEMINI_MODEL`.
 
-The free tier has low daily limits: test a few times, don't loop. If the limit is hit during the demo, Disha falls back to scripted answers instead of breaking. Free-tier data may be used by Google, so demo with the Ananya profile, not real students.
+The free tier has low daily limits: test a few times, don't loop. If the limit is hit during the demo, Dishaa falls back to scripted answers instead of breaking. Free-tier data may be used by Google, so demo with the Ananya profile, not real students.
 
 ## What's built (P0)
 

@@ -29,7 +29,7 @@ export const ANANYA_PROFILE = {
   stated: { logical: 3, numerical: 1, verbal: 4, spatial: 3, memory: 4, critical: 2, creative: 4, social: 4 },
 };
 
-// Ananya's Disha Quest answers: strong creative, people and spatial; numbers better than she thinks.
+// Ananya's Dishaa Quest answers: strong creative, people and spatial; numbers better than she thinks.
 const QUEST_ANSWERS = {
   l1: { answer: 1, ms: 21000 }, l2: { answer: 1, ms: 34000 }, l3: { answer: 3, ms: 38000 },
   n1: { answer: 1, ms: 15000 }, n2: { answer: 0, ms: 26000 }, n3: { answer: 2, ms: 41000 },

@@ -1,6 +1,6 @@
-# Disha: context for Claude Code
+# Dishaa: context for Claude Code
 
-Disha is our MESA AI Hackathon project (Theme 02: Education & Careers). It helps Class 10 students choose a stream and Class 12 students choose a degree and college by letting them **try careers through missions**, then comparing what they *said* (questionnaire) with what they *did* (behaviour in missions).
+Dishaa is our MESA AI Hackathon project (Theme 02: Education & Careers). It helps Class 10 students choose a stream and Class 12 students choose a degree and college by letting them **try careers through missions**, then comparing what they *said* (questionnaire) with what they *did* (behaviour in missions).
 
 Product docs: `docs/PRODUCT.md` (what we're building), `docs/API.md` (backend contract), `docs/DESIGN_BRIEF.md` (UI brief for Claude Design), `docs/AI_SETUP.md` (free AI key).
 

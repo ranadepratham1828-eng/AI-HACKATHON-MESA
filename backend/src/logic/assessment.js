@@ -1,4 +1,4 @@
-// Disha Quest scoring and career matching. Pure functions: no AI, so every
+// Dishaa Quest scoring and career matching. Pure functions: no AI, so every
 // number on the report can be explained from what the student actually did.
 
 const round1 = (v) => Math.round(v * 10) / 10;
@@ -33,7 +33,7 @@ function evidenceFor(zone, items, answers) {
   const first = done[0];
   if (first.type === 'uses') {
     const n = new Set(String(answers[first.id].answer || '').split('\n').map((s) => s.trim().toLowerCase()).filter(Boolean)).size;
-    return `Came up with ${n} different idea${n === 1 ? '' : 's'} in ${first.seconds} seconds in ${zone.name}`;
+    return `Came up with ${n} different idea${n === 1 ? '' : 's'} in ${first.seconds} seconds in the ${zone.evidenceNoun}`;
   }
   if (first.type === 'memory') {
     const total = done.reduce((a, it) => a + it.cells.length, 0);
@@ -41,15 +41,15 @@ function evidenceFor(zone, items, answers) {
       const target = new Set(it.cells.map(([r, c]) => `${r},${c}`));
       return a + (answers[it.id].answer || []).filter((p) => target.has(`${p[0]},${p[1]}`)).length;
     }, 0);
-    return `Recalled ${recalled} of ${total} squares in ${zone.name}`;
+    return `Recalled ${recalled} of ${total} items in the ${zone.evidenceNoun}`;
   }
   const correct = done.filter((it) => Number(answers[it.id].answer) === it.answer).length;
   const secs = done.map((it) => Number(answers[it.id].ms) || 0).filter(Boolean);
   const avg = secs.length ? Math.round(secs.reduce((a, b) => a + b, 0) / secs.length / 1000) : null;
-  return `Solved ${correct} of ${done.length} in ${zone.name}${avg ? `, about ${avg}s each` : ''}`;
+  return `Answered ${correct} of ${done.length} ${zone.evidenceNoun} correctly${avg ? `, about ${avg}s each` : ''}`;
 }
 
-/** Everything about the student's Disha Quest: per-ability scores, zones, stats. */
+/** Everything about the student's Dishaa Quest: per-ability scores, zones, stats. */
 export function scoreAssessment(student, content) {
   const answers = student.assessment?.answers || {};
   const { abilities: abilityDefs, zones } = content.assessment;

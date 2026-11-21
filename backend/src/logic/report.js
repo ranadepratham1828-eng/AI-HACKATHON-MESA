@@ -57,7 +57,7 @@ export function scriptedNarrative(student, c) {
   return {
     headline: c.quest.strengths.length
       ? `${name}'s strongest areas are ${c.quest.strengths.slice(0, 2).map((id) => labelOf(id).toLowerCase()).join(' and ')}${top ? `, a great fit for careers like ${top.name}` : ''}.`
-      : 'Finish Disha Quest to see your strengths.',
+      : 'Complete the aptitude assessment to see your strengths.',
     strengths: c.quest.strengths.map((id) => ({
       name: byId[id].label,
       evidence: byId[id].evidence || '',
@@ -65,11 +65,11 @@ export function scriptedNarrative(student, c) {
     })),
     growth: c.quest.growth.map((id) => ({ name: byId[id].label, tip: byId[id].growthTip })),
     surprise: c.statedVsMeasured.biggestSurprise
-      ? `You rated your ${c.statedVsMeasured.biggestSurprise.label.toLowerCase()} ${c.statedVsMeasured.biggestSurprise.stated}/5, but the game measured ${c.statedVsMeasured.biggestSurprise.measured}/5.`
+      ? `You rated your ${c.statedVsMeasured.biggestSurprise.label.toLowerCase()} ${c.statedVsMeasured.biggestSurprise.stated}/5, but the assessment measured ${c.statedVsMeasured.biggestSurprise.measured}/5.`
       : '',
     next7Days: [
       top ? `Read about a day in the life of a ${top.name}, and note what excites you` : 'Talk to someone whose job you find interesting',
-      c.quest.growth[0] ? byId[c.quest.growth[0]].growthTip : 'Pick one puzzle a day to keep your mind sharp',
+      c.quest.growth[0] ? byId[c.quest.growth[0]].growthTip : 'Spend 15 minutes a day on reasoning practice',
       'Share this report with your parents and discuss your top 3 careers',
     ],
   };
@@ -112,8 +112,8 @@ export function scriptedParentReport(student, c) {
   const expectMatch = expect && careerNames.find((n) => n.toLowerCase().includes(expect.toLowerCase()));
   return {
     summary: c.quest.answered
-      ? `${name} completed Disha Quest, a 10-minute aptitude game. ${name}'s strongest areas are ${strengths.join(', ')}. The best-matching careers are ${careerNames.slice(0, 3).join(', ')}.`
-      : `${name} hasn't played Disha Quest yet.`,
+      ? `${name} completed Dishaa's 10-minute aptitude assessment. ${name}'s strongest areas are ${strengths.join(', ')}. The best-matching careers are ${careerNames.slice(0, 3).join(', ')}.`
+      : `${name} hasn't completed the aptitude assessment yet.`,
     match: expectMatch
       ? `${expect} appears in ${name}'s top career matches, which supports your hope.`
       : `${name}'s ${strengths[0] || 'strengths'} are valuable in many careers, including the one you hope for.`,
@@ -121,7 +121,7 @@ export function scriptedParentReport(student, c) {
       ? `${expect} isn't in ${name}'s top matches right now; careers like ${careerNames[0] || 'others'} fit their results more closely. It's worth exploring together.`
       : `${name}'s results and your expectations point in a similar direction.`,
     starters: [
-      'Which part of the game did you enjoy most, and why?',
+      'Which part of the assessment did you enjoy most, and why?',
       'Which of your top careers surprised you?',
       'What would a perfect day at work look like for you?',
     ],

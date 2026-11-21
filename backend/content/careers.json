@@ -1,5 +1,5 @@
 {
-  "_note": "Career catalogue for recommendations. 'abilities' are weights (1-3) for the Disha Quest abilities; 'interests' match the questionnaire. Pathways are general guidance; check details with a counsellor and official exam sites. 'missionId' links to a career simulation and its colleges.",
+  "_note": "Career catalogue for recommendations. 'abilities' are weights (1-3) for the Dishaa Quest abilities; 'interests' match the questionnaire. Pathways are general guidance; check details with a counsellor and official exam sites. 'missionId' links to a career simulation and its colleges.",
   "interests": [
     { "id": "tech", "label": "Computers and technology" },
     { "id": "building", "label": "Building and fixing things" },

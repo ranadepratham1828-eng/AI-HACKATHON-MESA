@@ -17,7 +17,7 @@ const assessment = read('assessment.json');
 const { careers, interests } = read('careers.json');
 const { scholarships } = read('scholarships.json');
 
-// Flat list of Disha Quest items, each tagged with its zone and ability.
+// Flat list of Dishaa Quest items, each tagged with its zone and ability.
 const assessmentItems = assessment.zones.flatMap((z) => z.items.map((it) => ({ ...it, zoneId: z.id, ability: z.ability })));
 
 questionnaire.interests = interests;
@@ -45,7 +45,7 @@ export function publicGame(g) {
   return rest;
 }
 
-/** Disha Quest as sent to the app: no answers or explanations. */
+/** Dishaa Quest as sent to the app: no answers or explanations. */
 export function publicAssessment() {
   return {
     abilities: assessment.abilities.map(({ growthTip, ...a }) => a),

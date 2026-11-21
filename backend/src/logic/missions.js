@@ -63,7 +63,7 @@ export async function curiosityAnswer({ mission, question, history }) {
     prompt: curiosityPrompt({ mission, question, history }),
     validate: (o) => (str(o?.answer, 900) ? { answer: str(o.answer, 900) } : null),
     fallback: () => ({
-      answer: `Great question! ${mission.senior.name} will answer this properly once Disha's AI is connected. For now: every ${mission.career.toLowerCase()} I know started by being curious, just like you.`,
+      answer: `Great question! ${mission.senior.name} will answer this properly once Dishaa's AI is connected. For now: every ${mission.career.toLowerCase()} I know started by being curious, just like you.`,
     }),
   });
 }

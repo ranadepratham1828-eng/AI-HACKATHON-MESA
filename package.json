@@ -2,7 +2,7 @@
   "name": "disha",
   "version": "0.1.0",
   "private": true,
-  "description": "Disha: try a career before you choose it. Root package for Vercel; local development lives in backend/.",
+  "description": "Dishaa: try a career before you choose it. Root package for Vercel; local development lives in backend/.",
   "type": "module",
   "engines": {
     "node": ">=20"

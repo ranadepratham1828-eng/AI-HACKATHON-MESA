@@ -1,6 +1,6 @@
-# Disha: product summary
+# Dishaa: product summary
 
-**One line:** Disha lets Class 10 and Class 12 students try real careers through short missions, shows what they're genuinely good at based on what they *did* (not what they *said*), and connects them to real people who've walked that path.
+**One line:** Dishaa lets Class 10 and Class 12 students try real careers through short missions, shows what they're genuinely good at based on what they *did* (not what they *said*), and connects them to real people who've walked that path.
 
 ## Users
 - **Students, Class 10:** choosing Science, Commerce or Arts.
@@ -31,4 +31,4 @@ Schools (per student per year, plus dashboard) · Parents (premium reports, deep
 ## Behaviour signals behind the scores
 Time spent, bonus taken, number of curious questions, enjoyment (1-5), answer quality (1-5, from the AI). See `backend/src/logic/scoring.js`.
 
-Full feature list with P0/P1/P2 priorities: the "Disha Priority Feature List" doc.
+Full feature list with P0/P1/P2 priorities: the "Dishaa Priority Feature List" doc.

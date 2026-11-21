@@ -2,7 +2,7 @@
   "name": "disha-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "Backend API for Disha: career missions, Interest Fingerprint, reports, parent and school views.",
+  "description": "Backend API for Dishaa: career missions, Interest Fingerprint, reports, parent and school views.",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

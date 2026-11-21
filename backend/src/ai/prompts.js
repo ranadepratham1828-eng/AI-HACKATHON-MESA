@@ -1,9 +1,9 @@
-// Every prompt Disha sends to the AI lives here, so they're easy to read and tune.
+// Every prompt Dishaa sends to the AI lives here, so they're easy to read and tune.
 // Each prompt asks for JSON with a fixed shape; services check the fields.
 
-const VOICE = `You are part of Disha, a career exploration app for Indian students in Class 9 to 12 (age 14 to 17).
+const VOICE = `You are part of Dishaa, a career exploration app for Indian students in Class 9 to 12 (age 14 to 17).
 Be warm, specific and honest, like a good mentor. Use simple English a 15-year-old understands.
-Never tell a student they can't do something or aren't suited to a career: Disha is an explorer, not a judge.`;
+Never tell a student they can't do something or aren't suited to a career: Dishaa is an explorer, not a judge.`;
 
 const LANGS = {
   en: 'English',
@@ -86,11 +86,11 @@ export function reportPrompt({ student, computed }) {
   const p = student.profile || {};
   return `${VOICE}
 
-Write the report for ${p.name || 'the student'}, Class ${p.cls || '10'}, ${p.city || 'India'}, after they played Disha Quest, a 10-minute aptitude game.
+Write the report for ${p.name || 'the student'}, Class ${p.cls || '10'}, ${p.city || 'India'}, after they completed Dishaa's 10-minute aptitude assessment. Call it "the assessment", never a game.
 
-MEASURED ABILITIES (from the game):
+MEASURED ABILITIES (from the assessment):
 ${abilityLines(computed)}
-Overall: ${computed.quest.stats.accuracy}% accuracy, about ${computed.quest.stats.avgSeconds}s per puzzle.
+Overall: ${computed.quest.stats.accuracy}% accuracy, about ${computed.quest.stats.avgSeconds}s per question.
 STRENGTHS (top 3): ${computed.quest.strengths.join(', ')}. GROWTH AREAS: ${computed.quest.growth.join(', ') || 'none below 70'}.
 SELF-RATING vs MEASURED (1-5): ${JSON.stringify(computed.statedVsMeasured.rows.map((r) => [r.label, r.stated, r.measured]))}
 INTERESTS: ${(p.interests || []).join(', ') || 'not given'}. Likes: ${(p.likes || []).join(', ') || 'not given'}. Dislikes: ${(p.dislikes || []).join(', ') || 'not given'}.
@@ -100,7 +100,7 @@ Rules: every strength must cite the evidence above. Growth areas are framed as s
 
 Reply with only JSON:
 {"headline": "one encouraging sentence summarising their profile",
- "strengths": [{"name": "ability name", "evidence": "what they did in the game", "whyItMatters": "one sentence on where this helps"}],
+ "strengths": [{"name": "ability name", "evidence": "what they did in the assessment", "whyItMatters": "one sentence on where this helps"}],
  "growth": [{"name": "ability name", "tip": "one practical way to build it"}],
  "surprise": "one sentence on the biggest gap between self-rating and measured, or \\"\\"",
  "next7Days": ["action 1", "action 2", "action 3"]}
@@ -113,7 +113,7 @@ export function parentReportPrompt({ student, computed, lang }) {
 
 Write a short note for the PARENT of ${p.name || 'a student'} (Class ${p.cls || '10'}), in ${LANGS[lang] || LANGS.en}.
 The parent expects their child to become: "${p.parentExpect || 'not given'}". Their reason: "${p.parentReason || 'not given'}".
-The child played Disha Quest, a 10-minute aptitude game. Measured abilities:
+The child completed Dishaa's 10-minute aptitude assessment (call it "the assessment", never a game). Measured abilities:
 ${abilityLines(computed)}
 Top career matches: ${computed.careers.map((c) => `${c.name} (${c.fit}%)`).join(', ')}
 

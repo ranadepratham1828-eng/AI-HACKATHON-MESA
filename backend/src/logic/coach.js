@@ -25,7 +25,7 @@ function profileFacts(student, results) {
     `Marks: ${marks || 'not given'}.`,
     `College budget: ${BUDGET[p.budget] || 'not given'}. Open to an education loan: ${p.openToLoan ? 'yes' : 'not said'}. Will study: ${RELOCATE[p.relocate] || 'not said'}.`,
     `Family hopes for: ${p.parentExpect || 'not given'}${p.parentReason ? ` (because ${p.parentReason})` : ''}.`,
-    `Disha Quest abilities (0-100): ${results.quest.abilities.filter((a) => a.score != null).map((a) => `${a.label} ${a.score}`).join(', ')}.`,
+    `Aptitude assessment scores (0-100): ${results.quest.abilities.filter((a) => a.score != null).map((a) => `${a.label} ${a.score}`).join(', ')}.`,
     `Strengths: ${results.quest.strengths.map(labelOf).join(', ')}. Growth areas: ${results.quest.growth.map(labelOf).join(', ') || 'none'}.`,
     `Top career matches: ${results.careers.map((c) => `${c.name} (${c.fit}%)`).join(', ')}.`,
   ].join('\n');
@@ -45,8 +45,8 @@ export function coachState(student) {
     student.coach.messages.push({
       role: 'assistant',
       content: r.quest.answered
-        ? `Hi ${name}! I'm your Dishaa Coach. I've looked at your Disha Quest results: your strongest areas are ${r.quest.strengths.map((id) => labelOf(id).toLowerCase()).join(', ')}. Your top career matches are ${tops.join(', ')}. Which of these feels closest to what you want, or is there another goal on your mind?`
-        : `Hi ${name}! I'm your Dishaa Coach. Play Disha Quest first so I can see your strengths, then we'll find your goal together.`,
+        ? `Hi ${name}! I'm your Dishaa Coach. I've looked at your aptitude assessment results: your strongest areas are ${r.quest.strengths.map((id) => labelOf(id).toLowerCase()).join(', ')}. Your top career matches are ${tops.join(', ')}. Which of these feels closest to what you want, or is there another goal on your mind?`
+        : `Hi ${name}! I'm your Dishaa Coach. Complete the aptitude assessment first so I can see your strengths, then we'll find your goal together.`,
       at: new Date().toISOString(),
     });
   }
@@ -135,7 +135,7 @@ function scriptedPlan(student, f) {
   timeline.push({ when: 'College', title: g.degrees[0], actions: ['Do internships from the second year', 'Build skills and a portfolio', 'Apply for scholarships every year'] });
   timeline.push({ when: 'After college', title: 'First job', actions: f.pathway?.afterDegree?.firstJobs || [`Start as a junior ${g.name.toLowerCase()}`] });
   return {
-    summary: `A step-by-step plan to become a ${g.name}, based on your Disha Quest strengths and your answers.`,
+    summary: `A step-by-step plan to become a ${g.name}, based on your aptitude assessment and your answers.`,
     whyThisFits: `${g.summary} It matches your strengths in ${f.results.quest.strengths.map((id) => labelOf(id).toLowerCase()).join(', ')}.`,
     timeline,
     examPrep: g.exams.map((e) => ({ exam: e, when: 'Usually in Class 12; check the official site for dates', how: 'Learn the syllabus, practise past papers and take monthly mock tests' })),
