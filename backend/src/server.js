@@ -1,9 +1,9 @@
 import { config } from './config.js';
-import { createStore } from './store.js';
+import { createStore, redisFromEnv } from './store.js';
 import { createApp } from './app.js';
 import { aiStatus } from './ai/provider.js';
 
-const app = createApp(createStore(config.dataFile));
+const app = createApp(createStore(config.dataFile, { redis: redisFromEnv() }));
 const MAX_TRIES = 10;
 
 // If the port is taken by another app (e.g. something else on your laptop),

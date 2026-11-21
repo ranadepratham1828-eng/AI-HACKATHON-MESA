@@ -88,6 +88,24 @@ export function createApp(store) {
   app.use(cors({ origin: config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map((s) => s.trim()) }));
   app.use(express.json({ limit: '12mb' }));
 
+  // Hosted on Vercel with Redis: load the latest data first, and save it
+  // before any JSON response is sent (serverless functions stop after responding).
+  if (store.remote) {
+    app.use('/api', async (req, res, next) => {
+      try {
+        await store.load();
+        const send = res.json.bind(res);
+        res.json = (body) => {
+          store.flush()
+            .catch((err) => console.error('[store] save failed:', err.message))
+            .finally(() => send(body));
+          return res;
+        };
+        next();
+      } catch (err) { next(err); }
+    });
+  }
+
   // Every request: who is calling? (null when not logged in)
   app.use('/api', (req, res, next) => {
     req.token = bearerToken(req);
@@ -118,7 +136,7 @@ export function createApp(store) {
   };
 
   // ---- Basics ----
-  app.get('/api/health', (req, res) => res.json({ ok: true, app: 'disha', ai: aiStatus() }));
+  app.get('/api/health', (req, res) => res.json({ ok: true, app: 'disha', ai: aiStatus(), storage: store.mode }));
 
   app.get('/api/content', (req, res) => res.json({
     questionnaire: content.questionnaire,

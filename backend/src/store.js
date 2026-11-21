@@ -1,33 +1,85 @@
-// Tiny JSON-file store. Good enough for a demo; swap for a real database later.
+// Tiny JSON store. Three modes:
+//  - local file (npm start on a laptop): data/db.json
+//  - Redis over REST (Vercel + Upstash): the whole db is one JSON value, loaded
+//    at the start of each request and saved before the response is sent
+//  - memory only (tests)
 import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { randomUUID, randomBytes } from 'node:crypto';
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const familyCode = () => Array.from(randomBytes(6), (b) => CODE_CHARS[b % CODE_CHARS.length]).join('');
+const REDIS_KEY = 'disha:db:v1';
 
-export function createStore(file) {
+const normalize = (db) => {
+  const d = db && typeof db === 'object' ? db : {};
+  d.students ||= {};
+  d.users ||= {};
+  d.sessions ||= {};
+  return d;
+};
+
+/** Upstash / Vercel KV REST credentials from the environment, or null. */
+export function redisFromEnv(env = process.env) {
+  const url = env.UPSTASH_REDIS_REST_URL || env.KV_REST_API_URL;
+  const token = env.UPSTASH_REDIS_REST_TOKEN || env.KV_REST_API_TOKEN;
+  return url && token ? { url: url.replace(/\/$/, ''), token } : null;
+}
+
+async function redisCommand(redis, command) {
+  const res = await fetch(redis.url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${redis.token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(command),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) throw new Error(`Redis error: ${data.error || res.status}`);
+  return data.result;
+}
+
+export function createStore(file, { redis = null } = {}) {
   let db = {};
-  if (file && existsSync(file)) {
+  if (!redis && file && existsSync(file)) {
     try { db = JSON.parse(readFileSync(file, 'utf8')); } catch { console.warn(`[store] could not read ${file}, starting empty`); }
   }
-  db.students ||= {};
-  db.users ||= {};
-  db.sessions ||= {};
+  db = normalize(db);
 
+  let dirty = false;
   let pending = null;
   function persist() {
-    if (!file) return;
+    dirty = true;
+    if (redis || !file) return;
     clearTimeout(pending);
     pending = setTimeout(() => {
-      mkdirSync(path.dirname(file), { recursive: true });
-      const tmp = `${file}.tmp`;
-      writeFileSync(tmp, JSON.stringify(db, null, 2));
-      renameSync(tmp, file);
+      try {
+        mkdirSync(path.dirname(file), { recursive: true });
+        const tmp = `${file}.tmp`;
+        writeFileSync(tmp, JSON.stringify(db, null, 2));
+        renameSync(tmp, file);
+      } catch (err) {
+        console.warn(`[store] could not save ${file}: ${err.message}`);
+      }
     }, 50);
   }
 
   return {
+    mode: redis ? 'redis' : file ? 'file' : 'memory',
+    remote: Boolean(redis),
+
+    /** Redis mode: fetch the latest data before handling a request. */
+    async load() {
+      if (!redis) return;
+      const raw = await redisCommand(redis, ['GET', REDIS_KEY]);
+      db = normalize(raw ? JSON.parse(raw) : {});
+      dirty = false;
+    },
+    /** Redis mode: save changes before the response goes out. */
+    async flush() {
+      if (!redis || !dirty) return;
+      await redisCommand(redis, ['SET', REDIS_KEY, JSON.stringify(db)]);
+      dirty = false;
+    },
+
     // ---- Students ----
     createStudent(data) {
       const student = {

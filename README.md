@@ -30,6 +30,16 @@ On the login page, the **Quick demo** buttons need no account:
 
 Without an AI key, everything still works on scripted demo answers (the top bar shows **DEMO AI**). With a key it shows **AI ON**.
 
+## Hosting on Vercel
+
+The repo is ready for Vercel: `vercel.json` serves the web app from `frontend/` and runs the API from `api/index.js` as a serverless function. Every push to the default branch redeploys.
+
+1. **Project settings → General:** Root Directory = the repo root (leave it empty), Framework Preset = **Other**.
+2. **Settings → Environment Variables:** add `GEMINI_API_KEY` (your key). Optional: `GEMINI_MODEL`.
+3. **Storage → Create Database → Upstash (Redis), free plan → Connect to this project.** It adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically. Without it, accounts and progress reset whenever Vercel restarts the function (you'd be logged out and need to tap a demo button again).
+4. **Deployments → Redeploy** so the new variables are picked up.
+5. Check it: open `https://<your-app>.vercel.app/api/health`. You want `"configured": true` under `ai` and `"storage": "redis"`.
+
 ## Free AI key (Google Gemini)
 
 1. Go to <https://aistudio.google.com/apikey>, sign in, and click **Create API key**.
