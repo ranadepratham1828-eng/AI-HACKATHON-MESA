@@ -26,7 +26,10 @@ export const ANANYA_PROFILE = {
   openToLoan: true,
   dream: 'Something creative where I help people',
   interests: ['design', 'helping', 'health', 'writing'],
-  stated: { logical: 3, numerical: 1, verbal: 4, spatial: 3, memory: 4, critical: 2, creative: 4, social: 4 },
+  considering: ['ux-designer', 'psychologist', 'doctor'],
+  priorities: ['passion', 'helping'],
+  riasec: { r1: 0, r2: 1, r3: 1, i1: 1, i2: 1, i3: 2, a1: 2, a2: 2, a3: 1, s1: 2, s2: 2, s3: 2, e1: 1, e2: 0, e3: 1, c1: 0, c2: 1, c3: 1 },
+  stated: { logical: 3, numerical: 1, verbal: 4, spatial: 3, mechanical: 2, memory: 4, critical: 2, creative: 4, social: 4 },
 };
 
 // Ananya's Dishaa Quest answers: strong creative, people and spatial; numbers better than she thinks.
@@ -40,6 +43,8 @@ const QUEST_ANSWERS = {
   c1: { answer: 1, ms: 27000 }, c2: { answer: 1, ms: 12000 }, c3: { answer: 0, ms: 36000 },
   k1: { answer: 'plant pot\npencil stand\nbird feeder\npiggy bank\nlamp shade\nwatering can\nrolling pin\nsandbox scoop', ms: 45000 },
   p1: { answer: 2, ms: 11000 }, p2: { answer: 1, ms: 8000 },
+  l4: { answer: 1, ms: 26000 }, n4: { answer: 1, ms: 31000 }, v4: { answer: 1, ms: 8000 }, c4: { answer: 1, ms: 22000 },
+  g1: { answer: 1, ms: 24000 }, g2: { answer: 0, ms: 33000 }, g3: { answer: 2, ms: 19000 },
 };
 
 const min = (m) => m * 60 * 1000;

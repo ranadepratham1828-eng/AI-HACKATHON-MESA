@@ -3,7 +3,7 @@
 import { content } from '../content.js';
 import { askWithFallback, str, strList } from '../ai/ask.js';
 import { reportPrompt, parentReportPrompt, SUPPORTED_LANGS } from '../ai/prompts.js';
-import { scoreAssessment, statedVsMeasured, matchCareers, streamHint } from './assessment.js';
+import { scoreAssessment, statedVsMeasured, matchCareers, streamHint, riasecScores } from './assessment.js';
 
 /** Colleges for a career simulation, with Campus Connect counts. */
 export function collegesFor(missionId) {
@@ -30,17 +30,21 @@ export function campusConnect({ missionId, collegeId }) {
 /** Everything the report needs that doesn't use AI. */
 export function computeResults(student) {
   const quest = scoreAssessment(student, content);
-  const careers = matchCareers(student, content, quest.abilities).map((c) => ({
+  const all = matchCareers(student, content, quest.abilities).map((c) => ({
     ...c,
     pathway: c.missionId ? content.pathways[c.missionId] || null : null,
     colleges: collegesFor(c.missionId),
   }));
-  const top = careers.slice(0, 5);
-  const signature = JSON.stringify([student.assessment?.answers || {}, student.profile?.interests, student.profile?.stated, student.profile?.parentExpect]);
+  // Top 6, plus any career the student said they're considering (always shown, with an honest fit).
+  const top = [...all.slice(0, 6), ...all.slice(6).filter((c) => c.considering)];
+  const careers = top;
+  const signature = JSON.stringify([student.assessment?.answers || {}, student.profile?.interests, student.profile?.stated, student.profile?.parentExpect, student.profile?.considering, student.profile?.priorities, student.profile?.riasec]);
   return {
     quest,
     statedVsMeasured: statedVsMeasured(student.profile?.stated, quest.abilities),
     careers: top,
+    allCareers: all,
+    riasec: riasecScores(student.profile, content),
     stream: streamHint(top.slice(0, 3)),
     questionnaireDone: Boolean(student.profile?.interests?.length || student.profile?.stated),
     signature,

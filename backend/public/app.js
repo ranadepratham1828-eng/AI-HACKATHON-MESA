@@ -472,7 +472,7 @@ function startUses() {
 }
 
 /* ================= Student: about you (questionnaire) ================= */
-const ABOUT_STEPS = ['School and marks', 'Interests', 'How you see yourself', 'Family, budget and scholarships'];
+const ABOUT_STEPS = ['School and marks', 'Interests', 'Careers on your mind', 'What you enjoy doing', 'How you see yourself', 'Family, budget and scholarships'];
 const MARK_KEYS = { 9: ['class9'], 10: ['class9', 'class10'], 11: ['class9', 'class10', 'class11'], 12: ['class9', 'class10', 'class11', 'class12'] };
 
 function aboutView() {
@@ -484,6 +484,7 @@ function aboutView() {
       data: {
         cls: p.cls || '10', board: p.board || 'CBSE', schoolName: p.schoolName || '', city: p.city || '',
         subjects: [...(p.subjects || [])], likes: [...(p.likes || [])], interests: [...(p.interests || [])],
+        considering: [...(p.considering || [])], consideringOther: p.consideringOther || '', notSure: Boolean(p.notSure), priorities: [...(p.priorities || [])], riasec: { ...(p.riasec || {}) },
         marks: { ...(p.marks || {}) }, dream: p.dream || '', goal: p.goal || qc.goals[0],
         parentExpect: p.parentExpect || '', parentReason: p.parentReason || '',
         budget: p.budget || '', openToLoan: Boolean(p.openToLoan), relocate: p.relocate || '',
@@ -524,6 +525,18 @@ function aboutView() {
       <label>If you could do any job in the world, what would it be?<textarea id="q-dream" data-q="dream" placeholder="Dream big">${esc(d.dream)}</textarea></label>
       ${select('goal', 'Your main goal right now', qc.goals)}
     </div>`,
+    () => `<div class="stack">
+      <p class="muted">Are there careers you're already thinking about? Pick any, or choose "Not sure yet" and we'll recommend from your results.</p>
+      <div><button type="button" class="chip ${d.notSure ? 'on' : ''}" data-act="not-sure">Not sure yet</button></div>
+      ${d.notSure ? '' : S.content.careerCategories.map((cat) => `<div class="stack-sm"><h4>${esc(cat)}</h4><div class="chips">${S.content.careers.filter((c) => c.category === cat).map((c) => `<button type="button" class="chip ${d.considering.includes(c.id) ? 'on' : ''}" data-act="pick" data-list="considering" data-v="${c.id}">${esc(c.name)}</button>`).join('')}</div></div>`).join('')}
+      ${d.notSure ? '' : `<label><span>Another career in mind? <span class="muted small">(optional)</span></span><input id="q-consideringOther" data-q="consideringOther" value="${esc(d.consideringOther)}" placeholder="e.g. Pilot, Chef, Sports physio"></label>`}
+      <div class="stack-sm"><h4>What matters most to you in a career? <span class="muted small">(pick up to 2)</span></h4>
+        <div class="chips">${S.content.priorities.map((pr) => `<button type="button" class="chip ${d.priorities.includes(pr.id) ? 'on' : ''}" data-act="priority" data-v="${pr.id}">${esc(pr.label)}</button>`).join('')}</div></div>
+    </div>`,
+    () => `<div class="stack"><p class="muted">How much would you enjoy each activity? Go with your first feeling. This is a short version of the Holland (RIASEC) interest check used by career counsellors worldwide.</p>
+      ${qc.riasec.items.map((it) => `<div class="spread" style="padding:9px 0;border-bottom:1px solid var(--line)"><span style="flex:1;min-width:220px">${esc(it.text)}</span>
+        <div class="scale" role="group" aria-label="${esc(it.text)}">${qc.riasec.scale.map((o) => `<button type="button" style="width:auto;padding:0 12px" class="${d.riasec[it.id] === o.v ? 'on' : ''}" data-act="riasec" data-item="${it.id}" data-v="${o.v}">${esc(o.label)}</button>`).join('')}</div></div>`).join('')}
+      <p class="small muted">${Object.keys(d.riasec).length} of ${qc.riasec.items.length} answered</p></div>`,
     () => `<div class="stack"><p class="muted">Rate yourself honestly. Your report compares this with what the assessment measures.</p>
       ${qc.statedQuestions.map((sq) => `<div class="spread" style="padding:10px 0;border-bottom:1px solid var(--line)"><span style="flex:1;min-width:220px">${esc(sq.question)}</span>
         <div class="scale" role="group" aria-label="${esc(sq.question)}">${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="${d.stated[sq.ability] === n ? 'on' : ''}" data-act="rate" data-ability="${sq.ability}" data-n="${n}" aria-label="${n} of 5">${n}</button>`).join('')}</div></div>`).join('')}
@@ -570,7 +583,7 @@ async function reportView() {
   const r = await api(`/students/${S.student.id}/report`);
   const n = r.narrative;
   const careers = r.careers;
-  const sel = careers.find((c) => c.id === S.career) || careers[0];
+  const sel = r.allCareers.find((c) => c.id === S.career) || careers[0];
   const cc = sel.missionId ? await api(`/campus-connect?missionId=${encodeURIComponent(sel.missionId)}`) : { profiles: [] };
   const surprise = r.statedVsMeasured.biggestSurprise;
   const byId = Object.fromEntries(r.quest.abilities.map((a) => [a.id, a]));
@@ -607,13 +620,21 @@ async function reportView() {
     <section class="stack" id="careers">
       <div class="spread"><div class="stack-sm"><p class="eyebrow">Career matches</p><h2>Careers that fit you</h2></div>
         ${r.stream.suggestion ? `<span class="tag purple">Suggested stream: ${esc(r.stream.suggestion)}</span>` : ''}</div>
-      <div class="grid-3">${careers.map((c, i) => `<button class="career ${c === sel ? 'on' : ''}" data-act="career" data-id="${c.id}">
-        <div class="spread"><span class="tag ${i === 0 ? 'gold' : 'grey'}">#${i + 1} match</span><span class="fit num">${c.fit}%</span></div>
-        <h3>${esc(c.name)}</h3><p class="small muted">${esc(c.summary)}</p><p class="small">${esc(c.why)}</p></button>`).join('')}</div>
+      <div class="grid-3">${careers.map((c, i) => `<button class="career ${c.id === sel.id ? 'on' : ''}" data-act="career" data-id="${c.id}">
+        <div class="spread"><span class="row" style="gap:6px">${c.considering ? '<span class="tag purple">You picked this</span>' : `<span class="tag ${i === 0 ? 'gold' : 'grey'}">#${r.allCareers.findIndex((x) => x.id === c.id) + 1} match</span>`}<span class="tag grey">${esc(c.category)}</span></span><span class="fit num">${c.fit}%</span></div>
+        <h3>${esc(c.name)}</h3><p class="small muted">${esc(c.summary)}</p><p class="small">${esc(c.why)}</p>
+        <p class="small"><b>Early salary:</b> ${esc(c.salary)}</p><p class="small muted">Job demand in India: ${esc(c.demand)}</p></button>`).join('')}</div>
+      <details class="card tight"><summary style="cursor:pointer;font-weight:600">Explore all ${r.allCareers.length} careers</summary>
+        <div class="stack" style="margin-top:12px">${S.content.careerCategories.map((cat) => `<div class="stack-sm"><h4>${esc(cat)}</h4><div class="chips">${r.allCareers.filter((c) => c.category === cat).map((c) => `<button class="chip ${c.id === sel.id ? 'on' : ''}" data-act="career" data-id="${c.id}">${esc(c.name)} · ${c.fit}%</button>`).join('')}</div></div>`).join('')}</div></details>
     </section>
 
     <section class="card stack" id="path">
-      <div class="stack-sm"><p class="eyebrow">Career path</p><h2>How to become a ${esc(sel.name)}</h2></div>
+      <div class="spread"><div class="stack-sm"><p class="eyebrow">Career path · ${esc(sel.category)}</p><h2>How to become a ${esc(sel.name)}</h2></div><span class="fit num">${sel.fit}% fit</span></div>
+      <div class="grid-2" style="gap:14px">
+        <div class="card soft tight stack-sm"><h4 style="color:var(--green)">Pros</h4><ul class="clean small">${sel.pros.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
+        <div class="card gold tight stack-sm"><h4 style="color:#8a5a06">Cons</h4><ul class="clean small">${sel.cons.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
+      </div>
+      <p class="small"><b>Typical early salary in India:</b> ${esc(sel.salary)} ${sel.salarySource ? (sel.salarySource.startsWith('http') ? `· <a href="${esc(sel.salarySource)}" target="_blank" rel="noopener">source</a>` : `· ${esc(sel.salarySource)}`) : ''} <span class="muted">· Job demand: ${esc(sel.demand)}</span></p>
       ${pathView(sel)}
     </section>
 
@@ -932,10 +953,19 @@ document.addEventListener('click', async (e) => {
         break;
       }
       case 'rate': S.q.data.stated[el.dataset.ability] = Number(el.dataset.n); render(); break;
+      case 'riasec': S.q.data.riasec[el.dataset.item] = Number(el.dataset.v); render(); break;
+      case 'not-sure': S.q.data.notSure = !S.q.data.notSure; if (S.q.data.notSure) S.q.data.considering = []; render(); break;
+      case 'priority': {
+        const pr = S.q.data.priorities; const v = el.dataset.v;
+        S.q.data.priorities = pr.includes(v) ? pr.filter((x) => x !== v) : [...pr, v].slice(-2);
+        render();
+        break;
+      }
       case 'q-back': S.q.step = Math.max(0, S.q.step - 1); render(); break;
       case 'q-next':
         if (S.q.step === 0 && !S.q.data.subjects.length) { toast('Pick the subjects you study now.'); break; }
         if (S.q.step === 1 && !S.q.data.interests.length) { toast('Pick at least one interest.'); break; }
+        if (S.q.step === 3 && Object.keys(S.q.data.riasec).length < 9) { toast('Answer at least half of the activities.'); break; }
         S.q.step += 1; render(); window.scrollTo(0, 0); break;
       case 'q-save':
         S.student = await api(`/students/${S.student.id}`, { method: 'PATCH', body: S.q.data });

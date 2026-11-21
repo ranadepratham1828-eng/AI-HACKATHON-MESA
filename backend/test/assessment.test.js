@@ -38,7 +38,8 @@ test('Ananya: strengths, surprise and careers make sense', () => {
   assert.equal(svm.biggestSurprise.ability, 'numerical', 'she rated numbers 1/5 but did well');
   const careers = matchCareers(ananya, content, q.abilities);
   assert.equal(careers.length, content.careers.length);
-  assert.ok(careers.slice(0, 5).some((c) => ['Psychologist', 'UX Designer', 'Teacher', 'Journalist', 'Doctor'].includes(c.name)));
+  assert.ok(careers.slice(0, 6).some((c) => ['Psychologist', 'UX Designer', 'Teacher', 'Journalist', 'Doctor (MBBS)'].includes(c.name)));
+  assert.ok(careers.filter((c) => c.considering).length === 3, 'careers she is considering are flagged');
   assert.ok(careers.every((c, i) => i === 0 || careers[i - 1].fit >= c.fit), 'sorted by fit');
   const hint = streamHint(careers.slice(0, 3));
   assert.ok(hint.suggestion);
@@ -52,4 +53,20 @@ test('partial quest: only answered abilities get scores', () => {
   assert.equal(q.complete, false);
   assert.equal(q.abilities.find((a) => a.id === 'logical').score, 100);
   assert.equal(q.abilities.find((a) => a.id === 'numerical').score, null);
+});
+
+test('RIASEC interest check and priorities change the ranking', async () => {
+  const { riasecScores } = await import('../src/logic/assessment.js');
+  const base = ananyaData('finished');
+  const r = riasecScores(base.profile, content);
+  assert.ok(r.S > r.C && r.A > r.R, 'Ananya is more Social/Artistic than Conventional/Realistic');
+  assert.equal(riasecScores({ riasec: { r1: 2 } }, content), null, 'too few answers gives no RIASEC profile');
+
+  const quest = scoreAssessment(base, content);
+  const rank = (profile) => matchCareers({ ...base, profile: { ...base.profile, ...profile } }, content, quest.abilities);
+  const teacherFit = (pr) => rank({ priorities: pr, considering: [] }).find((c) => c.id === 'teacher').fit;
+  assert.ok(teacherFit(['earning']) < teacherFit(['balance']), 'teaching ranks lower when earning matters most');
+  const considered = rank({ considering: ['civil-services'] }).find((c) => c.id === 'civil-services');
+  const notConsidered = rank({ considering: [] }).find((c) => c.id === 'civil-services');
+  assert.equal(considered.fit - notConsidered.fit, 10, 'considered careers get a +10 boost');
 });

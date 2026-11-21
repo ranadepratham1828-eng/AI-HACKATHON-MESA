@@ -62,6 +62,23 @@ function cleanProfile(body = {}, existing = {}) {
       if (body.marks[k] !== '' && body.marks[k] != null && Number.isFinite(v) && v >= 0 && v <= 100) out.marks[k] = Math.round(v * 10) / 10;
     }
   }
+  if ('considering' in body) {
+    const valid = new Set(content.careers.map((c) => c.id));
+    out.considering = list(body.considering, 10).filter((id) => valid.has(id));
+  }
+  if ('consideringOther' in body) out.consideringOther = text(body.consideringOther, 120);
+  if ('notSure' in body) out.notSure = Boolean(body.notSure);
+  if ('priorities' in body) {
+    const valid = new Set(content.priorities.map((p) => p.id));
+    out.priorities = list(body.priorities, 3).filter((id) => valid.has(id));
+  }
+  if ('riasec' in body && body.riasec && typeof body.riasec === 'object') {
+    out.riasec = {};
+    for (const it of content.questionnaire.riasec.items) {
+      const v = Number(body.riasec[it.id]);
+      if ([0, 1, 2].includes(v)) out.riasec[it.id] = v;
+    }
+  }
   if ('interests' in body) {
     const valid = new Set(content.interests.map((i) => i.id));
     out.interests = list(body.interests).filter((i) => valid.has(i));
@@ -171,7 +188,9 @@ export function createApp(store) {
     traits: content.traits,
     assessment: publicAssessment(),
     interests: content.interests,
-    careers: content.careers.map(({ id, name }) => ({ id, name })),
+    careers: content.careers.map(({ id, name, category }) => ({ id, name, category })),
+    careerCategories: content.careerCategories,
+    priorities: content.priorities,
     games: content.games.map(publicGame),
     missions: content.missions.map(publicMission),
   }));
@@ -290,12 +309,15 @@ export function createApp(store) {
   // ---- Shared demo account: /demo logs straight in; also works with email + password ----
   const DEMO_EMAIL = (process.env.DEMO_EMAIL || 'ranadepratham1828@gmail.com').toLowerCase();
   const DEMO_PASSWORD = process.env.DEMO_PASSWORD || '123456';
+  // Bump when the demo student's data changes, so the shared account is rebuilt with the new data.
+  const DEMO_VERSION = 2;
   function ensureDemoAccount() {
     let user = store.getUserByEmail(DEMO_EMAIL);
-    if (user && user.studentId && store.getStudent(user.studentId)) return user;
+    const current = user?.studentId ? store.getStudent(user.studentId) : null;
+    if (current && current.demoVersion === DEMO_VERSION) return user;
     const data = ananyaData('finished');
     data.profile.name = 'Ananya (Demo)';
-    const student = store.createStudent({ ...data, demoAccount: true });
+    const student = store.createStudent({ ...data, demoAccount: true, demoVersion: DEMO_VERSION });
     if (user) {
       user.studentId = student.id;
       return store.saveUser(user);

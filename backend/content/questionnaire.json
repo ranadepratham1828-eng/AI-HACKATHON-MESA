@@ -54,6 +54,10 @@
       "question": "I can easily picture shapes and how things fit together."
     },
     {
+      "ability": "mechanical",
+      "question": "I understand how machines and gadgets work."
+    },
+    {
       "ability": "memory",
       "question": "I remember things easily."
     },
@@ -166,5 +170,146 @@
       "id": "city",
       "label": "Only my city"
     }
-  ]
+  ],
+  "riasec": {
+    "_note": "Short interest check based on Holland's RIASEC model (the basis of tools like the O*NET Interest Profiler). Items are original. 0 = dislike, 1 = not sure, 2 = like.",
+    "types": [
+      {
+        "id": "R",
+        "label": "Realistic",
+        "description": "Hands-on: tools, machines, building, the outdoors"
+      },
+      {
+        "id": "I",
+        "label": "Investigative",
+        "description": "Curious: science, maths, figuring out how things work"
+      },
+      {
+        "id": "A",
+        "label": "Artistic",
+        "description": "Creative: art, design, writing, performing"
+      },
+      {
+        "id": "S",
+        "label": "Social",
+        "description": "Helping: teaching, caring, supporting people"
+      },
+      {
+        "id": "E",
+        "label": "Enterprising",
+        "description": "Leading: business, persuading, starting things"
+      },
+      {
+        "id": "C",
+        "label": "Conventional",
+        "description": "Organised: data, records, clear processes"
+      }
+    ],
+    "items": [
+      {
+        "id": "r1",
+        "type": "R",
+        "text": "Fix a bike or a broken gadget"
+      },
+      {
+        "id": "r2",
+        "type": "R",
+        "text": "Build a model or work with tools"
+      },
+      {
+        "id": "r3",
+        "type": "R",
+        "text": "Work outdoors with machines, plants or animals"
+      },
+      {
+        "id": "i1",
+        "type": "I",
+        "text": "Do a science experiment"
+      },
+      {
+        "id": "i2",
+        "type": "I",
+        "text": "Solve a tricky maths or logic problem"
+      },
+      {
+        "id": "i3",
+        "type": "I",
+        "text": "Find out how the human body or the universe works"
+      },
+      {
+        "id": "a1",
+        "type": "A",
+        "text": "Draw, design or decorate something"
+      },
+      {
+        "id": "a2",
+        "type": "A",
+        "text": "Write a story, blog or make a video"
+      },
+      {
+        "id": "a3",
+        "type": "A",
+        "text": "Act, sing, dance or play music"
+      },
+      {
+        "id": "s1",
+        "type": "S",
+        "text": "Teach or tutor a younger student"
+      },
+      {
+        "id": "s2",
+        "type": "S",
+        "text": "Help a friend through a tough time"
+      },
+      {
+        "id": "s3",
+        "type": "S",
+        "text": "Volunteer for a community cause"
+      },
+      {
+        "id": "e1",
+        "type": "E",
+        "text": "Lead a team or a school club"
+      },
+      {
+        "id": "e2",
+        "type": "E",
+        "text": "Sell something or convince people of an idea"
+      },
+      {
+        "id": "e3",
+        "type": "E",
+        "text": "Start your own small business"
+      },
+      {
+        "id": "c1",
+        "type": "C",
+        "text": "Organise files, data or a budget"
+      },
+      {
+        "id": "c2",
+        "type": "C",
+        "text": "Keep careful records and check every detail"
+      },
+      {
+        "id": "c3",
+        "type": "C",
+        "text": "Follow a clear step-by-step process to get things right"
+      }
+    ],
+    "scale": [
+      {
+        "v": 0,
+        "label": "Dislike"
+      },
+      {
+        "v": 1,
+        "label": "Not sure"
+      },
+      {
+        "v": 2,
+        "label": "Like"
+      }
+    ]
+  }
 }

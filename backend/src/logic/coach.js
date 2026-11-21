@@ -25,9 +25,10 @@ function profileFacts(student, results) {
     `Marks: ${marks || 'not given'}.`,
     `College budget: ${BUDGET[p.budget] || 'not given'}. Open to an education loan: ${p.openToLoan ? 'yes' : 'not said'}. Will study: ${RELOCATE[p.relocate] || 'not said'}.`,
     `Family hopes for: ${p.parentExpect || 'not given'}${p.parentReason ? ` (because ${p.parentReason})` : ''}.`,
+    `Careers the student is already considering: ${(p.considering || []).map((id) => careerById(id)?.name).filter(Boolean).join(', ') || (p.consideringOther ? '' : 'not sure yet')}${p.consideringOther ? ` (also: ${p.consideringOther})` : ''}. What matters most to them: ${(p.priorities || []).map((id) => content.priorities.find((x) => x.id === id)?.label).filter(Boolean).join(', ') || 'not given'}.`,
     `Aptitude assessment scores (0-100): ${results.quest.abilities.filter((a) => a.score != null).map((a) => `${a.label} ${a.score}`).join(', ')}.`,
     `Strengths: ${results.quest.strengths.map(labelOf).join(', ')}. Growth areas: ${results.quest.growth.map(labelOf).join(', ') || 'none'}.`,
-    `Top career matches: ${results.careers.map((c) => `${c.name} (${c.fit}%)`).join(', ')}.`,
+    `Top career matches: ${results.careers.map((c) => `${c.name} (${c.fit}%; salary ${c.salary}; pros: ${c.pros.join('; ')}; cons: ${c.cons.join('; ')})`).join(' | ')}.`,
   ].join('\n');
 }
 
@@ -229,7 +230,7 @@ FACTS ABOUT THE STUDENT
 ${profileFacts(student, f.results)}
 
 CHOSEN GOAL: ${f.goal.name}${student.coach?.customGoal ? ` (student's words: ${student.coach.customGoal})` : ''}
-Career facts: ${f.goal.summary} Stream: ${f.goal.stream}. Degrees: ${f.goal.degrees.join('; ')}. Entrance exams: ${f.goal.exams.join('; ')}.
+Career facts: ${f.goal.summary} Stream: ${f.goal.stream}. Degrees: ${f.goal.degrees.join('; ')}. Entrance exams: ${f.goal.exams.join('; ')}. Typical early salary in India: ${f.goal.salary}. Pros: ${f.goal.pros.join('; ')}. Cons: ${f.goal.cons.join('; ')}. Job demand: ${f.goal.demand}.
 ${f.pathway ? `Exam timeline (as reported, verify officially): ${f.pathway.examTimeline.join('; ')}. First jobs: ${f.pathway.afterDegree.firstJobs.join('; ')}.` : ''}
 COLLEGES WE HAVE DATA FOR (only recommend from this list; if empty, recommend types of colleges, not names):
 ${collegeFacts || '(none)'}

@@ -124,7 +124,7 @@ test('full student journey: quest, questionnaire, report, parent, school', async
 
   const content = (await call('GET', '/content')).body;
   const items = content.assessment.zones.flatMap((z) => z.items);
-  assert.equal(items.length, 20);
+  assert.equal(items.length, 27);
   let last;
   for (const it of items) {
     const answer = it.type === 'memory' ? it.cells : it.type === 'uses' ? 'pot\nlamp\nfeeder' : 1;
@@ -148,7 +148,9 @@ test('full student journey: quest, questionnaire, report, parent, school', async
 
   const report = await call('GET', `/students/${id}/report`, null, token);
   assert.equal(report.body.quest.complete, true);
-  assert.equal(report.body.careers.length, 5);
+  assert.ok(report.body.careers.length >= 6);
+  assert.equal(report.body.allCareers.length, 36);
+  assert.ok(report.body.careers[0].pros.length && report.body.careers[0].cons.length && report.body.careers[0].salary, 'careers carry pros, cons and salary');
   assert.equal(report.body.narrative.strengths.length, 3);
   assert.equal(report.body.narrativeSource, 'scripted');
 

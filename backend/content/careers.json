@@ -1,54 +1,1578 @@
 {
-  "_note": "Career catalogue for recommendations. 'abilities' are weights (1-3) for the Dishaa Quest abilities; 'interests' match the questionnaire. Pathways are general guidance; check details with a counsellor and official exam sites. 'missionId' links to a career simulation and its colleges.",
+  "_note": "Career catalogue. abilities = Dishaa Quest weights (1-3); riasec = Holland code (first letter strongest); pay/stability/workLife/prestige = 1-5 relative to other Indian careers, used only when a student says that factor matters to them. Salaries are fresher/early-career ranges researched on 2026-11-21: sourced ones carry salarySource; ranges marked \"approx.\" are common industry estimates to verify. Always present them as indicative.",
+  "categories": [
+    "Engineering & Technology",
+    "Medicine & Health",
+    "Business & Finance",
+    "Law & Government",
+    "Design & Creative",
+    "Science & Research",
+    "Education & Media"
+  ],
+  "priorities": [
+    {
+      "id": "earning",
+      "label": "Earning well"
+    },
+    {
+      "id": "security",
+      "label": "Job security"
+    },
+    {
+      "id": "passion",
+      "label": "Doing what I love"
+    },
+    {
+      "id": "helping",
+      "label": "Helping people or society"
+    },
+    {
+      "id": "balance",
+      "label": "Work-life balance"
+    },
+    {
+      "id": "respect",
+      "label": "Respect and status"
+    }
+  ],
   "interests": [
-    { "id": "tech", "label": "Computers and technology" },
-    { "id": "building", "label": "Building and fixing things" },
-    { "id": "design", "label": "Art and design" },
-    { "id": "helping", "label": "Helping and teaching people" },
-    { "id": "health", "label": "Health and medicine" },
-    { "id": "business", "label": "Money and business" },
-    { "id": "law", "label": "Law, rights and society" },
-    { "id": "nature", "label": "Nature and environment" },
-    { "id": "writing", "label": "Writing and speaking" },
-    { "id": "science", "label": "Science and research" },
-    { "id": "puzzles", "label": "Solving puzzles and mysteries" }
+    {
+      "id": "tech",
+      "label": "Computers and technology"
+    },
+    {
+      "id": "building",
+      "label": "Building and fixing things"
+    },
+    {
+      "id": "design",
+      "label": "Art and design"
+    },
+    {
+      "id": "helping",
+      "label": "Helping and teaching people"
+    },
+    {
+      "id": "health",
+      "label": "Health and medicine"
+    },
+    {
+      "id": "business",
+      "label": "Money and business"
+    },
+    {
+      "id": "law",
+      "label": "Law, rights and society"
+    },
+    {
+      "id": "nature",
+      "label": "Nature and environment"
+    },
+    {
+      "id": "writing",
+      "label": "Writing and speaking"
+    },
+    {
+      "id": "science",
+      "label": "Science and research"
+    },
+    {
+      "id": "puzzles",
+      "label": "Solving puzzles and mysteries"
+    }
   ],
   "careers": [
-    { "id": "software-engineer", "name": "Software Engineer", "abilities": { "logical": 3, "numerical": 2, "critical": 2, "memory": 1 }, "interests": ["tech", "puzzles", "building"],
-      "summary": "Builds the apps, websites and systems people use every day.", "stream": "Science with Maths (PCM)", "degrees": ["B.Tech / B.E. in Computer Science", "BCA, then MCA"], "exams": ["JEE Main / JEE Advanced", "State engineering entrance tests"] },
-    { "id": "data-scientist", "name": "Data Scientist", "abilities": { "numerical": 3, "logical": 3, "critical": 2 }, "interests": ["tech", "science", "puzzles", "business"],
-      "summary": "Finds patterns in data to help companies and governments decide.", "stream": "Science with Maths, or Commerce with Maths", "degrees": ["B.Tech, or B.Sc in Statistics / Maths / Data Science"], "exams": ["JEE Main", "CUET", "ISI admission test"] },
-    { "id": "ux-designer", "missionId": "ux-designer", "name": "UX Designer", "abilities": { "creative": 3, "social": 2, "spatial": 2, "critical": 1 }, "interests": ["design", "tech", "helping"],
-      "summary": "Designs apps and products that are easy and pleasant to use.", "stream": "Any stream", "degrees": ["B.Des (Interaction or Communication Design)"], "exams": ["UCEED", "NID DAT", "NIFT entrance"] },
-    { "id": "architect", "missionId": "architect", "name": "Architect", "abilities": { "spatial": 3, "creative": 2, "numerical": 1, "logical": 1 }, "interests": ["design", "building"],
-      "summary": "Designs homes, schools and buildings that people live and work in.", "stream": "Science with Maths (PCM is required for B.Arch)", "degrees": ["B.Arch (5 years)"], "exams": ["NATA", "JEE Main Paper 2A"] },
-    { "id": "urban-planner", "missionId": "urban-planner", "name": "Urban Planner", "abilities": { "spatial": 2, "critical": 2, "social": 2, "logical": 1 }, "interests": ["nature", "building", "law"],
-      "summary": "Plans roads, transport and neighbourhoods so cities work for everyone.", "stream": "Science with Maths", "degrees": ["B.Plan (Bachelor of Planning)"], "exams": ["JEE Main Paper 2B"] },
-    { "id": "forensic-accountant", "missionId": "forensic-accountant", "name": "Forensic Accountant", "abilities": { "numerical": 3, "critical": 3, "logical": 1 }, "interests": ["business", "puzzles", "law"],
-      "summary": "Follows the money to uncover fraud for companies and investigators.", "stream": "Commerce with Maths", "degrees": ["B.Com alongside CA"], "exams": ["CA Foundation (ICAI)"] },
-    { "id": "chartered-accountant", "name": "Chartered Accountant", "abilities": { "numerical": 3, "logical": 2, "memory": 1 }, "interests": ["business"],
-      "summary": "Manages accounts, audits and taxes for people and companies.", "stream": "Commerce (any stream allowed)", "degrees": ["CA through ICAI, often with B.Com"], "exams": ["CA Foundation, Intermediate and Final"] },
-    { "id": "doctor", "name": "Doctor", "abilities": { "memory": 3, "social": 2, "critical": 2, "logical": 1 }, "interests": ["health", "helping", "science"],
-      "summary": "Diagnoses and treats patients in hospitals and clinics.", "stream": "Science with Biology (PCB)", "degrees": ["MBBS (5.5 years including internship)"], "exams": ["NEET-UG"] },
-    { "id": "psychologist", "name": "Psychologist", "abilities": { "social": 3, "verbal": 2, "critical": 2 }, "interests": ["helping", "health", "science"],
-      "summary": "Helps people with their thoughts, feelings and behaviour.", "stream": "Any stream (Psychology in Class 11-12 helps)", "degrees": ["BA / B.Sc Psychology, then MA / M.Sc", "Clinical work needs further RCI-recognised training"], "exams": ["CUET"] },
-    { "id": "lawyer", "name": "Lawyer", "abilities": { "verbal": 3, "critical": 3, "memory": 1 }, "interests": ["law", "writing", "helping"],
-      "summary": "Advises clients and argues cases in court.", "stream": "Any stream", "degrees": ["5-year integrated BA LLB / BBA LLB", "Or a degree, then 3-year LLB"], "exams": ["CLAT", "AILET", "University law entrance tests"] },
-    { "id": "journalist", "name": "Journalist", "abilities": { "verbal": 3, "critical": 2, "social": 1, "creative": 1 }, "interests": ["writing", "law"],
-      "summary": "Investigates and reports news in print, TV and online.", "stream": "Any stream", "degrees": ["BJMC / BA in Journalism or Mass Communication"], "exams": ["CUET", "University entrance tests"] },
-    { "id": "civil-engineer", "name": "Civil Engineer", "abilities": { "spatial": 2, "numerical": 2, "logical": 2 }, "interests": ["building", "nature"],
-      "summary": "Builds bridges, metros, roads and buildings.", "stream": "Science with Maths (PCM)", "degrees": ["B.Tech / B.E. in Civil Engineering"], "exams": ["JEE Main", "State engineering entrance tests"] },
-    { "id": "robotics-engineer", "name": "Robotics Engineer", "abilities": { "spatial": 2, "logical": 3, "numerical": 2 }, "interests": ["building", "tech", "puzzles"],
-      "summary": "Designs machines that sense, move and work on their own.", "stream": "Science with Maths (PCM)", "degrees": ["B.Tech in Mechanical, Electronics or Robotics"], "exams": ["JEE Main / JEE Advanced"] },
-    { "id": "economist", "name": "Economist", "abilities": { "numerical": 2, "critical": 3, "verbal": 1, "logical": 1 }, "interests": ["business", "law", "science"],
-      "summary": "Studies how money, jobs and markets work, and advises on policy.", "stream": "Any stream with Maths", "degrees": ["BA / B.Sc Economics"], "exams": ["CUET", "ISI admission test"] },
-    { "id": "environmental-scientist", "name": "Environmental Scientist", "abilities": { "critical": 2, "logical": 2, "memory": 1, "numerical": 1 }, "interests": ["nature", "science"],
-      "summary": "Studies pollution, climate and ecosystems, and finds ways to protect them.", "stream": "Science", "degrees": ["B.Sc Environmental Science, or B.Sc then M.Sc"], "exams": ["CUET"] },
-    { "id": "game-designer", "name": "Game Designer", "abilities": { "creative": 3, "logical": 2, "spatial": 1 }, "interests": ["design", "tech", "puzzles"],
-      "summary": "Invents the rules, levels and stories of video games.", "stream": "Any stream", "degrees": ["B.Des in Game Design", "Or B.Sc / B.Tech with a strong portfolio"], "exams": ["UCEED", "NID DAT", "Institute entrance tests"] },
-    { "id": "teacher", "name": "Teacher", "abilities": { "verbal": 2, "social": 3, "memory": 1 }, "interests": ["helping", "writing"],
-      "summary": "Helps students learn, grow and discover what they love.", "stream": "Any stream", "degrees": ["A degree in your subject, then B.Ed"], "exams": ["CUET", "TET / CTET to teach in schools"] },
-    { "id": "product-manager", "name": "Product Manager", "abilities": { "critical": 2, "social": 2, "creative": 1, "logical": 2 }, "interests": ["tech", "business", "design"],
-      "summary": "Decides what a tech product should do and leads the team building it.", "stream": "Any stream", "degrees": ["Usually engineering, design or business, often followed by an MBA"], "exams": ["JEE / CUET / design entrances", "CAT later for an MBA"] }
+    {
+      "id": "software-engineer",
+      "name": "Software Engineer",
+      "category": "Engineering & Technology",
+      "riasec": "IRC",
+      "abilities": {
+        "logical": 3,
+        "numerical": 2,
+        "critical": 2,
+        "memory": 1
+      },
+      "interests": [
+        "tech",
+        "puzzles",
+        "building"
+      ],
+      "pay": 4,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 4,
+      "demand": "High",
+      "salary": "₹3.5–6 LPA at IT services; ₹8–22 LPA at product companies (freshers)",
+      "salarySource": "https://resources.instahyre.com/blog/software-engineer-salary-in-india/",
+      "pros": [
+        "Huge number of jobs across India",
+        "Strong pay growth with skills, not just degrees",
+        "Remote and global opportunities"
+      ],
+      "cons": [
+        "Crowded entry level at IT services",
+        "Skills go out of date fast; constant learning",
+        "Long hours near deadlines"
+      ],
+      "stream": "Science with Maths (PCM)",
+      "degrees": [
+        "B.Tech / B.E. in Computer Science or IT",
+        "BCA, then MCA"
+      ],
+      "exams": [
+        "JEE Main / JEE Advanced",
+        "BITSAT, VITEEE and state CETs"
+      ],
+      "summary": "Builds the apps, websites and systems people use every day."
+    },
+    {
+      "id": "data-scientist",
+      "name": "Data Scientist",
+      "category": "Engineering & Technology",
+      "riasec": "ICR",
+      "abilities": {
+        "numerical": 3,
+        "logical": 3,
+        "critical": 2
+      },
+      "interests": [
+        "tech",
+        "science",
+        "puzzles",
+        "business"
+      ],
+      "pay": 4,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 4,
+      "demand": "High",
+      "salary": "₹4–9 LPA (freshers); higher at top product firms",
+      "salarySource": "https://resources.instahyre.com/blog/data-scientist-salary-in-india/",
+      "pros": [
+        "Fast-growing field across every industry",
+        "Mix of maths, coding and business",
+        "Good pay growth"
+      ],
+      "cons": [
+        "Entry roles often need a strong portfolio or a master's",
+        "Lots of data cleaning, not just modelling"
+      ],
+      "stream": "Science with Maths, or Commerce with Maths",
+      "degrees": [
+        "B.Tech (CS/AI), or B.Sc in Statistics / Maths / Data Science"
+      ],
+      "exams": [
+        "JEE Main",
+        "CUET",
+        "ISI admission test"
+      ],
+      "summary": "Finds patterns in data to help companies and governments decide."
+    },
+    {
+      "id": "mechanical-engineer",
+      "name": "Mechanical Engineer",
+      "category": "Engineering & Technology",
+      "riasec": "RIC",
+      "abilities": {
+        "mechanical": 3,
+        "spatial": 2,
+        "numerical": 2,
+        "logical": 1
+      },
+      "interests": [
+        "building",
+        "tech",
+        "puzzles"
+      ],
+      "pay": 2,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹3–6 LPA (freshers, approx.)",
+      "salarySource": null,
+      "pros": [
+        "Works in cars, energy, manufacturing, aerospace",
+        "Hands-on, tangible work",
+        "Path to EV and robotics jobs"
+      ],
+      "cons": [
+        "Lower starting pay than software",
+        "Many roles in factories or outside cities"
+      ],
+      "stream": "Science with Maths (PCM)",
+      "degrees": [
+        "B.Tech / B.E. in Mechanical Engineering"
+      ],
+      "exams": [
+        "JEE Main / JEE Advanced",
+        "State CETs"
+      ],
+      "summary": "Designs machines, engines and the systems that make things move."
+    },
+    {
+      "id": "civil-engineer",
+      "name": "Civil Engineer",
+      "category": "Engineering & Technology",
+      "riasec": "RIC",
+      "abilities": {
+        "spatial": 2,
+        "numerical": 2,
+        "mechanical": 2,
+        "logical": 1
+      },
+      "interests": [
+        "building",
+        "nature"
+      ],
+      "pay": 2,
+      "stability": 3,
+      "workLife": 2,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹3–5 LPA (freshers, approx.); government jobs via GATE/ESE pay more",
+      "salarySource": null,
+      "pros": [
+        "India is building metros, roads and cities",
+        "Government jobs through GATE and ESE",
+        "See your work standing for decades"
+      ],
+      "cons": [
+        "Site work in heat and long hours",
+        "Lower private-sector starting pay"
+      ],
+      "stream": "Science with Maths (PCM)",
+      "degrees": [
+        "B.Tech / B.E. in Civil Engineering"
+      ],
+      "exams": [
+        "JEE Main",
+        "State CETs"
+      ],
+      "summary": "Builds bridges, metros, roads and buildings."
+    },
+    {
+      "id": "electrical-engineer",
+      "name": "Electrical / Electronics Engineer",
+      "category": "Engineering & Technology",
+      "riasec": "RIC",
+      "abilities": {
+        "logical": 2,
+        "numerical": 2,
+        "mechanical": 2,
+        "spatial": 1
+      },
+      "interests": [
+        "tech",
+        "building",
+        "puzzles"
+      ],
+      "pay": 3,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹3.5–7 LPA (freshers, approx.); chip design roles pay more",
+      "salarySource": null,
+      "pros": [
+        "Semiconductors and EVs are growing in India",
+        "Power sector PSU jobs",
+        "Can move into software"
+      ],
+      "cons": [
+        "Core electronics jobs are concentrated in a few cities",
+        "Tough maths-heavy degree"
+      ],
+      "stream": "Science with Maths (PCM)",
+      "degrees": [
+        "B.Tech in Electrical, Electronics (ECE) or EEE"
+      ],
+      "exams": [
+        "JEE Main / JEE Advanced",
+        "State CETs"
+      ],
+      "summary": "Designs circuits, chips, power systems and electronic devices."
+    },
+    {
+      "id": "chemical-engineer",
+      "name": "Chemical Engineer",
+      "category": "Engineering & Technology",
+      "riasec": "IRC",
+      "abilities": {
+        "numerical": 2,
+        "logical": 2,
+        "critical": 1,
+        "mechanical": 1
+      },
+      "interests": [
+        "science",
+        "building"
+      ],
+      "pay": 3,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹4–7 LPA (freshers, approx.)",
+      "salarySource": null,
+      "pros": [
+        "Jobs in pharma, energy, food and materials",
+        "PSU opportunities",
+        "Good mix of chemistry and engineering"
+      ],
+      "cons": [
+        "Plants are often outside big cities",
+        "Safety-critical, shift work"
+      ],
+      "stream": "Science with Maths (PCM)",
+      "degrees": [
+        "B.Tech in Chemical Engineering"
+      ],
+      "exams": [
+        "JEE Main / JEE Advanced"
+      ],
+      "summary": "Turns raw materials into fuels, medicines, food and plastics at scale."
+    },
+    {
+      "id": "aerospace-engineer",
+      "name": "Aerospace Engineer",
+      "category": "Engineering & Technology",
+      "riasec": "IRR",
+      "abilities": {
+        "mechanical": 3,
+        "numerical": 2,
+        "spatial": 2,
+        "logical": 2
+      },
+      "interests": [
+        "science",
+        "building",
+        "tech"
+      ],
+      "pay": 3,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 4,
+      "demand": "Medium",
+      "salary": "About ₹4–8 LPA (freshers, approx.)",
+      "salarySource": null,
+      "pros": [
+        "Work on aircraft, satellites and space missions",
+        "ISRO, HAL, DRDO and private space startups",
+        "High prestige"
+      ],
+      "cons": [
+        "Few seats and few employers",
+        "Often needs a master's for core design roles"
+      ],
+      "stream": "Science with Maths (PCM)",
+      "degrees": [
+        "B.Tech in Aerospace / Aeronautical Engineering"
+      ],
+      "exams": [
+        "JEE Main / JEE Advanced",
+        "IIST admission (via JEE Advanced)"
+      ],
+      "summary": "Designs aircraft, rockets and satellites."
+    },
+    {
+      "id": "robotics-engineer",
+      "name": "Robotics / AI Engineer",
+      "category": "Engineering & Technology",
+      "riasec": "RIC",
+      "abilities": {
+        "logical": 3,
+        "mechanical": 2,
+        "spatial": 2,
+        "numerical": 2
+      },
+      "interests": [
+        "building",
+        "tech",
+        "puzzles"
+      ],
+      "pay": 4,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 4,
+      "demand": "High",
+      "salary": "About ₹5–10 LPA (freshers, approx.)",
+      "salarySource": null,
+      "pros": [
+        "Future-facing: automation, drones, AI",
+        "Mix of hardware and software",
+        "Startups growing fast"
+      ],
+      "cons": [
+        "Fewer entry roles than software",
+        "Needs strong maths and projects"
+      ],
+      "stream": "Science with Maths (PCM)",
+      "degrees": [
+        "B.Tech in Mechatronics, Robotics, ECE or CS (AI)"
+      ],
+      "exams": [
+        "JEE Main / JEE Advanced"
+      ],
+      "summary": "Builds machines and AI systems that sense, decide and move."
+    },
+    {
+      "id": "cybersecurity-analyst",
+      "name": "Cybersecurity Analyst",
+      "category": "Engineering & Technology",
+      "riasec": "ICR",
+      "abilities": {
+        "logical": 3,
+        "critical": 3,
+        "memory": 1
+      },
+      "interests": [
+        "tech",
+        "puzzles",
+        "law"
+      ],
+      "pay": 4,
+      "stability": 4,
+      "workLife": 3,
+      "prestige": 3,
+      "demand": "High",
+      "salary": "About ₹4–8 LPA (freshers, approx.)",
+      "salarySource": null,
+      "pros": [
+        "Shortage of skilled people",
+        "Every company and bank needs security",
+        "Certifications count, not just degrees"
+      ],
+      "cons": [
+        "On-call work during attacks",
+        "Constant learning as threats change"
+      ],
+      "stream": "Science with Maths, or any stream with computer skills",
+      "degrees": [
+        "B.Tech / BCA / B.Sc in CS, plus security certifications"
+      ],
+      "exams": [
+        "JEE Main",
+        "CUET"
+      ],
+      "summary": "Protects companies and people from hackers."
+    },
+    {
+      "id": "product-manager",
+      "name": "Product Manager",
+      "category": "Engineering & Technology",
+      "riasec": "EIA",
+      "abilities": {
+        "critical": 2,
+        "social": 2,
+        "logical": 2,
+        "creative": 1
+      },
+      "interests": [
+        "tech",
+        "business",
+        "design"
+      ],
+      "pay": 5,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 4,
+      "demand": "High",
+      "salary": "Usually reached after a few years in tech or an MBA; pays very well (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Leads what gets built",
+        "Among the best-paid tech roles",
+        "Mix of people, business and tech"
+      ],
+      "cons": [
+        "Rarely a first job",
+        "High pressure and responsibility"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "Engineering, design or business degree, often followed by an MBA"
+      ],
+      "exams": [
+        "JEE / CUET / design entrances",
+        "CAT later for an MBA"
+      ],
+      "summary": "Decides what a tech product should do and leads the team building it."
+    },
+    {
+      "id": "doctor",
+      "name": "Doctor (MBBS)",
+      "category": "Medicine & Health",
+      "riasec": "ISR",
+      "abilities": {
+        "memory": 3,
+        "social": 2,
+        "critical": 2,
+        "logical": 1
+      },
+      "interests": [
+        "health",
+        "helping",
+        "science"
+      ],
+      "pay": 4,
+      "stability": 5,
+      "workLife": 1,
+      "prestige": 5,
+      "demand": "High",
+      "salary": "Govt junior resident about ₹60,000–1,05,000/month; private ₹40,000–90,000/month at start",
+      "salarySource": "https://future-mbbs.com/blog/career/doctor-salary-in-india/",
+      "pros": [
+        "Very high respect and job security",
+        "Directly saves lives",
+        "Strong earnings after specialisation"
+      ],
+      "cons": [
+        "Very competitive NEET",
+        "5.5 years plus 3 for a specialisation (MD/MS)",
+        "Long, irregular hours"
+      ],
+      "stream": "Science with Biology (PCB)",
+      "degrees": [
+        "MBBS (5.5 years including internship)",
+        "Then MD / MS to specialise"
+      ],
+      "exams": [
+        "NEET-UG",
+        "NEET-PG / NExT later"
+      ],
+      "summary": "Diagnoses and treats patients in hospitals and clinics."
+    },
+    {
+      "id": "dentist",
+      "name": "Dentist (BDS)",
+      "category": "Medicine & Health",
+      "riasec": "IRS",
+      "abilities": {
+        "spatial": 2,
+        "memory": 2,
+        "mechanical": 1,
+        "social": 1
+      },
+      "interests": [
+        "health",
+        "science",
+        "helping"
+      ],
+      "pay": 3,
+      "stability": 4,
+      "workLife": 4,
+      "prestige": 4,
+      "demand": "Medium",
+      "salary": "Varies widely; strong earnings for an established clinic (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Better work-life balance than many doctors",
+        "Can run your own clinic",
+        "Respected profession"
+      ],
+      "cons": [
+        "Low pay in the first years",
+        "Setting up a clinic is expensive"
+      ],
+      "stream": "Science with Biology (PCB)",
+      "degrees": [
+        "BDS (5 years)"
+      ],
+      "exams": [
+        "NEET-UG"
+      ],
+      "summary": "Treats teeth, gums and mouth problems."
+    },
+    {
+      "id": "nurse",
+      "name": "Nurse",
+      "category": "Medicine & Health",
+      "riasec": "SIR",
+      "abilities": {
+        "social": 3,
+        "memory": 2,
+        "critical": 1
+      },
+      "interests": [
+        "health",
+        "helping"
+      ],
+      "pay": 1,
+      "stability": 4,
+      "workLife": 2,
+      "prestige": 3,
+      "demand": "High",
+      "salary": "About ₹15,000–35,000/month in private hospitals at start (approx.); higher in government and abroad",
+      "salarySource": null,
+      "pros": [
+        "High demand in India and abroad",
+        "Directly cares for patients",
+        "Government jobs available"
+      ],
+      "cons": [
+        "Low private-sector pay in India",
+        "Night shifts and physically demanding"
+      ],
+      "stream": "Science with Biology (PCB)",
+      "degrees": [
+        "B.Sc Nursing (4 years)"
+      ],
+      "exams": [
+        "State and institute nursing entrances (some use NEET)"
+      ],
+      "summary": "Cares for patients and supports doctors every day."
+    },
+    {
+      "id": "pharmacist",
+      "name": "Pharmacist",
+      "category": "Medicine & Health",
+      "riasec": "ICS",
+      "abilities": {
+        "memory": 2,
+        "numerical": 1,
+        "critical": 2
+      },
+      "interests": [
+        "health",
+        "science"
+      ],
+      "pay": 2,
+      "stability": 4,
+      "workLife": 4,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹30,000–65,000/month for clinical pharmacists at large hospitals",
+      "salarySource": "https://jobvumi.com/blog/healthcare-jobs-salary-in-india/",
+      "pros": [
+        "Stable jobs in hospitals and pharma",
+        "Can open your own pharmacy",
+        "India is a global pharma hub"
+      ],
+      "cons": [
+        "Retail pharmacy pay can be low",
+        "Research roles need further study"
+      ],
+      "stream": "Science (PCB or PCM)",
+      "degrees": [
+        "B.Pharm (4 years)",
+        "Pharm.D (6 years)"
+      ],
+      "exams": [
+        "State CETs",
+        "Some colleges via NEET or their own tests"
+      ],
+      "summary": "Prepares and checks medicines, and advises patients on using them."
+    },
+    {
+      "id": "physiotherapist",
+      "name": "Physiotherapist",
+      "category": "Medicine & Health",
+      "riasec": "SRI",
+      "abilities": {
+        "social": 2,
+        "spatial": 1,
+        "mechanical": 1,
+        "memory": 2
+      },
+      "interests": [
+        "health",
+        "helping"
+      ],
+      "pay": 1,
+      "stability": 3,
+      "workLife": 4,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "₹20,000–40,000/month at start; ₹50,000–1,50,000 with an MPT and experience",
+      "salarySource": "https://jobvumi.com/blog/healthcare-jobs-salary-in-india/",
+      "pros": [
+        "Growing with sports and an ageing population",
+        "Good work-life balance",
+        "Can practise independently"
+      ],
+      "cons": [
+        "Low starting pay",
+        "Physically active work"
+      ],
+      "stream": "Science with Biology (PCB)",
+      "degrees": [
+        "BPT (4.5 years)"
+      ],
+      "exams": [
+        "State and university entrances"
+      ],
+      "summary": "Helps people recover movement after injury or illness."
+    },
+    {
+      "id": "psychologist",
+      "name": "Psychologist",
+      "category": "Medicine & Health",
+      "riasec": "SIA",
+      "abilities": {
+        "social": 3,
+        "verbal": 2,
+        "critical": 2
+      },
+      "interests": [
+        "helping",
+        "health",
+        "science"
+      ],
+      "pay": 2,
+      "stability": 3,
+      "workLife": 4,
+      "prestige": 3,
+      "demand": "High",
+      "salary": "About ₹3–5 LPA at start (approx.); grows with private practice",
+      "salarySource": null,
+      "pros": [
+        "Rising awareness of mental health in India",
+        "Meaningful, people-focused work",
+        "Private practice possible"
+      ],
+      "cons": [
+        "Needs a master's (and RCI licence for clinical work)",
+        "Emotionally demanding"
+      ],
+      "stream": "Any stream (Psychology in Class 11-12 helps)",
+      "degrees": [
+        "BA / B.Sc Psychology, then MA / M.Sc",
+        "Clinical work needs RCI-recognised training"
+      ],
+      "exams": [
+        "CUET"
+      ],
+      "summary": "Helps people with their thoughts, feelings and behaviour."
+    },
+    {
+      "id": "chartered-accountant",
+      "name": "Chartered Accountant",
+      "category": "Business & Finance",
+      "riasec": "CEI",
+      "abilities": {
+        "numerical": 3,
+        "logical": 2,
+        "memory": 1,
+        "critical": 1
+      },
+      "interests": [
+        "business"
+      ],
+      "pay": 4,
+      "stability": 4,
+      "workLife": 2,
+      "prestige": 4,
+      "demand": "High",
+      "salary": "₹6–13 LPA for newly qualified CAs; Big 4 often ₹9–14 LPA",
+      "salarySource": "https://www.business-standard.com/finance/personal-finance/ca-salary-in-india-freshers-can-earn-6-13-lakh-top-roles-cross-40-lakh-126042000434_1.html",
+      "pros": [
+        "Strong demand in every industry",
+        "High respect and good pay",
+        "No college fees needed for the CA course itself"
+      ],
+      "cons": [
+        "Exams are tough with low pass rates",
+        "Busy seasons with very long hours"
+      ],
+      "stream": "Commerce (any stream allowed)",
+      "degrees": [
+        "CA through ICAI, often alongside B.Com"
+      ],
+      "exams": [
+        "CA Foundation, Intermediate and Final"
+      ],
+      "summary": "Manages accounts, audits and taxes for people and companies."
+    },
+    {
+      "id": "forensic-accountant",
+      "missionId": "forensic-accountant",
+      "name": "Forensic Accountant",
+      "category": "Business & Finance",
+      "riasec": "CIE",
+      "abilities": {
+        "numerical": 3,
+        "critical": 3,
+        "logical": 1
+      },
+      "interests": [
+        "business",
+        "puzzles",
+        "law"
+      ],
+      "pay": 4,
+      "stability": 4,
+      "workLife": 3,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "Usually starts at CA levels (₹6–13 LPA) and grows with specialisation",
+      "salarySource": "https://www.business-standard.com/finance/personal-finance/ca-salary-in-india-freshers-can-earn-6-13-lakh-top-roles-cross-40-lakh-126042000434_1.html",
+      "pros": [
+        "Detective-style finance work",
+        "Growing need after big frauds",
+        "Good pay"
+      ],
+      "cons": [
+        "Usually requires CA first",
+        "Detailed, document-heavy work"
+      ],
+      "stream": "Commerce with Maths",
+      "degrees": [
+        "CA (ICAI), then forensic certifications"
+      ],
+      "exams": [
+        "CA Foundation"
+      ],
+      "summary": "Follows the money to uncover fraud for companies and investigators."
+    },
+    {
+      "id": "investment-banker",
+      "name": "Investment Banker",
+      "category": "Business & Finance",
+      "riasec": "ECI",
+      "abilities": {
+        "numerical": 3,
+        "critical": 2,
+        "verbal": 1,
+        "logical": 1
+      },
+      "interests": [
+        "business"
+      ],
+      "pay": 5,
+      "stability": 3,
+      "workLife": 1,
+      "prestige": 5,
+      "demand": "Medium",
+      "salary": "Among the highest-paying starts, mostly via top MBA or CA routes (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Very high pay and bonuses",
+        "Work on big deals",
+        "Fast learning"
+      ],
+      "cons": [
+        "Very long hours",
+        "Few jobs, mostly in Mumbai, from top colleges"
+      ],
+      "stream": "Commerce with Maths, or Science with Maths",
+      "degrees": [
+        "B.Com / BBA / B.Tech, then MBA (Finance) or CA / CFA"
+      ],
+      "exams": [
+        "CUET / IPMAT",
+        "CAT later"
+      ],
+      "summary": "Helps companies raise money and buy or merge with other companies."
+    },
+    {
+      "id": "management-consultant",
+      "name": "Management Consultant",
+      "category": "Business & Finance",
+      "riasec": "EIC",
+      "abilities": {
+        "critical": 3,
+        "logical": 2,
+        "verbal": 2,
+        "social": 1
+      },
+      "interests": [
+        "business",
+        "puzzles"
+      ],
+      "pay": 5,
+      "stability": 3,
+      "workLife": 2,
+      "prestige": 5,
+      "demand": "Medium",
+      "salary": "₹15–30 LPA from tier-1 MBA colleges; much lower from average colleges (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Solve problems for big companies",
+        "High pay from top MBAs",
+        "Great launchpad to leadership"
+      ],
+      "cons": [
+        "Travel and long hours",
+        "Very competitive hiring"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "Any degree (often B.Tech / BBA / B.Com), then MBA"
+      ],
+      "exams": [
+        "CUET / IPMAT",
+        "CAT / GMAT later"
+      ],
+      "summary": "Advises companies on how to grow and fix problems."
+    },
+    {
+      "id": "entrepreneur",
+      "name": "Entrepreneur",
+      "category": "Business & Finance",
+      "riasec": "EAS",
+      "abilities": {
+        "creative": 2,
+        "social": 2,
+        "critical": 2,
+        "verbal": 1
+      },
+      "interests": [
+        "business",
+        "design",
+        "tech"
+      ],
+      "pay": 3,
+      "stability": 1,
+      "workLife": 1,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "No fixed salary: from nothing to very high, depending on the business",
+      "salarySource": null,
+      "pros": [
+        "Build something of your own",
+        "Unlimited upside",
+        "India has a large startup ecosystem"
+      ],
+      "cons": [
+        "High risk; most startups fail",
+        "No fixed income at the start"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "BBA, B.Com or any degree; many build skills first"
+      ],
+      "exams": [
+        "IPMAT / CUET (for BBA)"
+      ],
+      "summary": "Starts and runs a business or startup."
+    },
+    {
+      "id": "marketing-manager",
+      "name": "Marketing & Brand Manager",
+      "category": "Business & Finance",
+      "riasec": "EAS",
+      "abilities": {
+        "creative": 2,
+        "verbal": 2,
+        "social": 2,
+        "critical": 1
+      },
+      "interests": [
+        "business",
+        "writing",
+        "design"
+      ],
+      "pay": 3,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 3,
+      "demand": "High",
+      "salary": "About ₹3–6 LPA at start (approx.); much higher after an MBA",
+      "salarySource": null,
+      "pros": [
+        "Creative and business mix",
+        "Digital marketing jobs everywhere",
+        "Fast growth for good performers"
+      ],
+      "cons": [
+        "Results-driven pressure",
+        "Best roles often need an MBA"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "BBA / B.Com / BA, then MBA (Marketing)"
+      ],
+      "exams": [
+        "IPMAT / CUET",
+        "CAT later"
+      ],
+      "summary": "Decides how products are promoted and how brands talk to people."
+    },
+    {
+      "id": "economist",
+      "name": "Economist",
+      "category": "Business & Finance",
+      "riasec": "ICE",
+      "abilities": {
+        "numerical": 2,
+        "critical": 3,
+        "verbal": 1,
+        "logical": 1
+      },
+      "interests": [
+        "business",
+        "law",
+        "science"
+      ],
+      "pay": 3,
+      "stability": 4,
+      "workLife": 4,
+      "prestige": 4,
+      "demand": "Medium",
+      "salary": "About ₹4–8 LPA at start (approx.); Indian Economic Service on the government scale",
+      "salarySource": null,
+      "pros": [
+        "Shape policy in government, RBI and think tanks",
+        "Good work-life balance",
+        "Respected"
+      ],
+      "cons": [
+        "Best roles need a master's or PhD",
+        "Fewer entry jobs than business roles"
+      ],
+      "stream": "Any stream with Maths",
+      "degrees": [
+        "BA / B.Sc Economics, then MA"
+      ],
+      "exams": [
+        "CUET",
+        "ISI admission test"
+      ],
+      "summary": "Studies how money, jobs and markets work, and advises on policy."
+    },
+    {
+      "id": "lawyer",
+      "name": "Lawyer",
+      "category": "Law & Government",
+      "riasec": "ESI",
+      "abilities": {
+        "verbal": 3,
+        "critical": 3,
+        "memory": 1
+      },
+      "interests": [
+        "law",
+        "writing",
+        "helping"
+      ],
+      "pay": 3,
+      "stability": 3,
+      "workLife": 2,
+      "prestige": 4,
+      "demand": "Medium",
+      "salary": "Corporate law freshers about ₹5–7 LPA; litigation ₹15,000–40,000/month at start",
+      "salarySource": "https://www.thebusinessscroll.com/lawyer-salary-in-india/",
+      "pros": [
+        "Corporate law pays well from top colleges",
+        "High respect",
+        "Path to judiciary"
+      ],
+      "cons": [
+        "Litigation pays little in the first years",
+        "Long hours and heavy reading"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "5-year BA LLB / BBA LLB",
+        "Or a degree, then 3-year LLB"
+      ],
+      "exams": [
+        "CLAT",
+        "AILET",
+        "MH-CET Law and others"
+      ],
+      "summary": "Advises clients and argues cases in court."
+    },
+    {
+      "id": "civil-services",
+      "name": "Civil Services (IAS / IPS)",
+      "category": "Law & Government",
+      "riasec": "ESC",
+      "abilities": {
+        "verbal": 2,
+        "critical": 2,
+        "memory": 2,
+        "social": 2
+      },
+      "interests": [
+        "law",
+        "helping"
+      ],
+      "pay": 3,
+      "stability": 5,
+      "workLife": 2,
+      "prestige": 5,
+      "demand": "Low",
+      "salary": "Starts at Pay Level 10 (basic ₹56,100/month) plus allowances, housing and perks",
+      "salarySource": "7th Pay Commission pay matrix",
+      "pros": [
+        "Huge impact on society",
+        "Highest job security and respect",
+        "Housing, transport and other perks"
+      ],
+      "cons": [
+        "Extremely competitive UPSC exam",
+        "Can take several attempts",
+        "Transfers and pressure"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "Any graduate degree"
+      ],
+      "exams": [
+        "UPSC Civil Services Examination (after graduation)"
+      ],
+      "summary": "Runs districts and government departments."
+    },
+    {
+      "id": "defence-officer",
+      "name": "Defence Officer",
+      "category": "Law & Government",
+      "riasec": "RES",
+      "abilities": {
+        "social": 2,
+        "mechanical": 1,
+        "critical": 1,
+        "spatial": 1
+      },
+      "interests": [
+        "helping",
+        "nature"
+      ],
+      "pay": 3,
+      "stability": 5,
+      "workLife": 2,
+      "prestige": 5,
+      "demand": "Medium",
+      "salary": "Lieutenant starts at Pay Level 10 (basic ₹56,100/month) plus military allowances",
+      "salarySource": "7th Pay Commission pay matrix",
+      "pros": [
+        "Serve the country with great respect",
+        "Free training, housing and medical care",
+        "Early leadership"
+      ],
+      "cons": [
+        "Postings in remote areas",
+        "Physically and mentally demanding"
+      ],
+      "stream": "Science with Maths for NDA (Army allows any stream)",
+      "degrees": [
+        "NDA after Class 12, or a degree then CDS / AFCAT"
+      ],
+      "exams": [
+        "NDA",
+        "CDS",
+        "AFCAT"
+      ],
+      "summary": "Leads teams in the Army, Navy or Air Force."
+    },
+    {
+      "id": "ux-designer",
+      "missionId": "ux-designer",
+      "name": "UX Designer",
+      "category": "Design & Creative",
+      "riasec": "AIS",
+      "abilities": {
+        "creative": 3,
+        "social": 2,
+        "spatial": 2,
+        "critical": 1
+      },
+      "interests": [
+        "design",
+        "tech",
+        "helping"
+      ],
+      "pay": 3,
+      "stability": 3,
+      "workLife": 3,
+      "prestige": 3,
+      "demand": "High",
+      "salary": "About ₹4–8 LPA at start (approx.); grows fast with a strong portfolio",
+      "salarySource": null,
+      "pros": [
+        "Creative work in the tech industry",
+        "Portfolio matters more than marks",
+        "Strong demand in startups"
+      ],
+      "cons": [
+        "Competitive entry without a good portfolio",
+        "Design schools can be expensive"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "B.Des (Interaction or Communication Design)"
+      ],
+      "exams": [
+        "UCEED",
+        "NID DAT",
+        "NIFT entrance"
+      ],
+      "summary": "Designs apps and products that are easy and pleasant to use."
+    },
+    {
+      "id": "architect",
+      "missionId": "architect",
+      "name": "Architect",
+      "category": "Design & Creative",
+      "riasec": "AIR",
+      "abilities": {
+        "spatial": 3,
+        "creative": 2,
+        "numerical": 1,
+        "mechanical": 1
+      },
+      "interests": [
+        "design",
+        "building"
+      ],
+      "pay": 2,
+      "stability": 3,
+      "workLife": 2,
+      "prestige": 4,
+      "demand": "Medium",
+      "salary": "About ₹3–6 LPA at start (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Creative and technical",
+        "See your buildings come to life",
+        "Own practice possible"
+      ],
+      "cons": [
+        "5-year degree",
+        "Low starting pay; studio deadlines"
+      ],
+      "stream": "Science with Maths (PCM is required for B.Arch)",
+      "degrees": [
+        "B.Arch (5 years)"
+      ],
+      "exams": [
+        "NATA",
+        "JEE Main Paper 2A"
+      ],
+      "summary": "Designs homes, schools and buildings that people live and work in."
+    },
+    {
+      "id": "urban-planner",
+      "missionId": "urban-planner",
+      "name": "Urban Planner",
+      "category": "Design & Creative",
+      "riasec": "IEA",
+      "abilities": {
+        "spatial": 2,
+        "critical": 2,
+        "social": 2,
+        "logical": 1
+      },
+      "interests": [
+        "nature",
+        "building",
+        "law"
+      ],
+      "pay": 2,
+      "stability": 4,
+      "workLife": 4,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹4–7 LPA at start (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Shape how cities work",
+        "Smart City and government projects",
+        "Good work-life balance"
+      ],
+      "cons": [
+        "Fewer jobs than engineering",
+        "Slow-moving government projects"
+      ],
+      "stream": "Science with Maths",
+      "degrees": [
+        "B.Plan (Bachelor of Planning)"
+      ],
+      "exams": [
+        "JEE Main Paper 2B"
+      ],
+      "summary": "Plans roads, transport and neighbourhoods so cities work for everyone."
+    },
+    {
+      "id": "game-designer",
+      "name": "Game Designer",
+      "category": "Design & Creative",
+      "riasec": "AIE",
+      "abilities": {
+        "creative": 3,
+        "logical": 2,
+        "spatial": 1
+      },
+      "interests": [
+        "design",
+        "tech",
+        "puzzles"
+      ],
+      "pay": 3,
+      "stability": 2,
+      "workLife": 2,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹3.5–7 LPA at start (approx.)",
+      "salarySource": null,
+      "pros": [
+        "India's gaming industry is growing fast",
+        "Creative and technical",
+        "Global opportunities"
+      ],
+      "cons": [
+        "Crunch time before launches",
+        "Smaller industry than software"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "B.Des in Game Design",
+        "Or B.Sc / B.Tech with a strong portfolio"
+      ],
+      "exams": [
+        "UCEED",
+        "NID DAT",
+        "Institute tests"
+      ],
+      "summary": "Invents the rules, levels and stories of video games."
+    },
+    {
+      "id": "fashion-designer",
+      "name": "Fashion Designer",
+      "category": "Design & Creative",
+      "riasec": "AES",
+      "abilities": {
+        "creative": 3,
+        "spatial": 2,
+        "social": 1
+      },
+      "interests": [
+        "design",
+        "business"
+      ],
+      "pay": 2,
+      "stability": 2,
+      "workLife": 2,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹2.5–5 LPA at start (approx.); varies hugely",
+      "salarySource": null,
+      "pros": [
+        "Highly creative",
+        "Can build your own label",
+        "Big Indian textile and fashion market"
+      ],
+      "cons": [
+        "Low and uncertain early pay",
+        "Very competitive"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "B.Des in Fashion Design"
+      ],
+      "exams": [
+        "NIFT entrance",
+        "NID DAT",
+        "UCEED"
+      ],
+      "summary": "Designs clothes, accessories and collections."
+    },
+    {
+      "id": "research-scientist",
+      "name": "Research Scientist",
+      "category": "Science & Research",
+      "riasec": "IRA",
+      "abilities": {
+        "logical": 3,
+        "critical": 2,
+        "numerical": 2,
+        "memory": 1
+      },
+      "interests": [
+        "science",
+        "puzzles"
+      ],
+      "pay": 2,
+      "stability": 3,
+      "workLife": 4,
+      "prestige": 4,
+      "demand": "Medium",
+      "salary": "PhD scholars receive a fellowship; scientists in ISRO, DRDO and CSIR are paid on government scales",
+      "salarySource": null,
+      "pros": [
+        "Discover new things",
+        "Respected, with funded PhDs",
+        "Flexible, curiosity-driven work"
+      ],
+      "cons": [
+        "Long path: master's and PhD",
+        "Lower pay than industry early on"
+      ],
+      "stream": "Science (PCM or PCB)",
+      "degrees": [
+        "B.Sc / BS-MS (IISERs, IISc), then PhD"
+      ],
+      "exams": [
+        "IISER Aptitude Test",
+        "JEE Advanced",
+        "CUET"
+      ],
+      "summary": "Asks questions nobody has answered yet and tests them."
+    },
+    {
+      "id": "environmental-scientist",
+      "name": "Environmental Scientist",
+      "category": "Science & Research",
+      "riasec": "IRS",
+      "abilities": {
+        "critical": 2,
+        "logical": 2,
+        "memory": 1,
+        "numerical": 1
+      },
+      "interests": [
+        "nature",
+        "science"
+      ],
+      "pay": 2,
+      "stability": 3,
+      "workLife": 4,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹3–6 LPA at start (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Climate and sustainability jobs are growing",
+        "Meaningful work",
+        "Fieldwork outdoors"
+      ],
+      "cons": [
+        "Lower pay than engineering",
+        "Many roles need a master's"
+      ],
+      "stream": "Science",
+      "degrees": [
+        "B.Sc Environmental Science, or B.Sc then M.Sc"
+      ],
+      "exams": [
+        "CUET"
+      ],
+      "summary": "Studies pollution, climate and ecosystems, and finds ways to protect them."
+    },
+    {
+      "id": "biotechnologist",
+      "name": "Biotechnologist",
+      "category": "Science & Research",
+      "riasec": "IRC",
+      "abilities": {
+        "logical": 2,
+        "memory": 2,
+        "critical": 2
+      },
+      "interests": [
+        "science",
+        "health"
+      ],
+      "pay": 2,
+      "stability": 3,
+      "workLife": 4,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹3–6 LPA at start (approx.); higher with a master's",
+      "salarySource": null,
+      "pros": [
+        "Vaccines, medicines and agriculture research",
+        "India is a biotech and pharma hub",
+        "Lab-based, curiosity-driven"
+      ],
+      "cons": [
+        "Good roles usually need a master's or PhD",
+        "Modest starting pay"
+      ],
+      "stream": "Science with Biology (PCB or PCMB)",
+      "degrees": [
+        "B.Tech / B.Sc Biotechnology"
+      ],
+      "exams": [
+        "JEE Main (for B.Tech)",
+        "CUET"
+      ],
+      "summary": "Uses living cells and biology to make medicines, crops and new materials."
+    },
+    {
+      "id": "teacher",
+      "name": "Teacher",
+      "category": "Education & Media",
+      "riasec": "SAE",
+      "abilities": {
+        "verbal": 2,
+        "social": 3,
+        "memory": 1
+      },
+      "interests": [
+        "helping",
+        "writing"
+      ],
+      "pay": 1,
+      "stability": 4,
+      "workLife": 4,
+      "prestige": 3,
+      "demand": "High",
+      "salary": "Government (KVS) basic ₹35,400–47,600/month plus allowances; private schools often ₹15,000–35,000/month at start (approx.)",
+      "salarySource": "https://myinhand.in/govt/kvs-teacher-salary/",
+      "pros": [
+        "Shape young lives",
+        "Good holidays and work-life balance",
+        "Government jobs are very secure"
+      ],
+      "cons": [
+        "Private-school pay is low",
+        "Government posts need TET/CTET and competitive exams"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "A degree in your subject, then B.Ed"
+      ],
+      "exams": [
+        "CUET",
+        "CTET / TET to teach in schools"
+      ],
+      "summary": "Helps students learn, grow and discover what they love."
+    },
+    {
+      "id": "journalist",
+      "name": "Journalist",
+      "category": "Education & Media",
+      "riasec": "AES",
+      "abilities": {
+        "verbal": 3,
+        "critical": 2,
+        "social": 1,
+        "creative": 1
+      },
+      "interests": [
+        "writing",
+        "law"
+      ],
+      "pay": 1,
+      "stability": 2,
+      "workLife": 2,
+      "prestige": 3,
+      "demand": "Medium",
+      "salary": "About ₹2.5–5 LPA at start (approx.)",
+      "salarySource": null,
+      "pros": [
+        "Tell important stories",
+        "Meet people and travel",
+        "Digital media creates new roles"
+      ],
+      "cons": [
+        "Low starting pay",
+        "Job insecurity in traditional media",
+        "Unpredictable hours"
+      ],
+      "stream": "Any stream",
+      "degrees": [
+        "BJMC / BA in Journalism or Mass Communication"
+      ],
+      "exams": [
+        "CUET",
+        "University entrance tests"
+      ],
+      "summary": "Investigates and reports news in print, TV and online."
+    }
   ]
 }

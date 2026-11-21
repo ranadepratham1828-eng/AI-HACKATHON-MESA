@@ -112,37 +112,78 @@ export function statedVsMeasured(stated = {}, abilities = []) {
   return { rows, biggestSurprise: surprises[0] || null };
 }
 
-/** Rank every career by ability fit (65%) and interest fit (35%). */
+/** Holland RIASEC scores (0-1 per type) from the interest check, or null if mostly unanswered. */
+export function riasecScores(profile, content) {
+  const answers = profile?.riasec || {};
+  const items = content.questionnaire.riasec?.items || [];
+  const answered = items.filter((it) => answers[it.id] != null);
+  if (answered.length < items.length / 2) return null;
+  const out = {};
+  for (const t of ['R', 'I', 'A', 'S', 'E', 'C']) {
+    const its = answered.filter((it) => it.type === t);
+    out[t] = its.length ? its.reduce((sum, it) => sum + Number(answers[it.id]), 0) / (2 * its.length) : 0.5;
+  }
+  return out;
+}
+
+const PRIORITY_FIELD = { earning: 'pay', security: 'stability', balance: 'workLife', respect: 'prestige' };
+const RIASEC_WEIGHTS = [0.5, 0.3, 0.2];
+
+/**
+ * Rank every career. Fit (0-100) = 45% measured abilities + 25% RIASEC interest
+ * fit + 15% chosen interest areas + 15% the student's priorities. Careers the
+ * student is already considering get a +10 boost and are always shown.
+ */
 export function matchCareers(student, content, abilities) {
+  const p = student.profile || {};
   const scoreOf = Object.fromEntries(abilities.map((a) => [a.id, a.score]));
-  const chosen = new Set(student.profile?.interests || []);
+  const chosen = new Set(p.interests || []);
+  const considering = new Set(p.considering || []);
+  const priorities = (p.priorities || []).filter(Boolean);
+  const riasec = riasecScores(p, content);
   const interestLabel = Object.fromEntries(content.interests.map((i) => [i.id, i.label]));
   const abilityLabel = Object.fromEntries(abilities.map((a) => [a.id, a.label.toLowerCase()]));
+  const typeLabel = { R: 'hands-on', I: 'investigative', A: 'creative', S: 'helping', E: 'leading', C: 'organised' };
 
   return content.careers
     .map((c) => {
       let sum = 0;
       let w = 0;
-      for (const [id, weight] of Object.entries(c.abilities)) {
-        sum += weight * (scoreOf[id] ?? 50);
-        w += weight;
-      }
+      for (const [id, weight] of Object.entries(c.abilities)) { sum += weight * (scoreOf[id] ?? 50); w += weight; }
       const abilityMatch = Math.round(sum / w);
       const shared = c.interests.filter((i) => chosen.has(i));
       const interestMatch = chosen.size ? Math.round((shared.length / c.interests.length) * 100) : 50;
-      const fit = Math.round(0.65 * abilityMatch + 0.35 * interestMatch);
+      const code = String(c.riasec || '').split('');
+      const riasecMatch = riasec ? Math.round(100 * code.reduce((acc, t, i) => acc + (RIASEC_WEIGHTS[i] || 0) * (riasec[t] ?? 0.5), 0)) : interestMatch;
+      const priorityMatch = priorities.length
+        ? Math.round(priorities.reduce((acc, pr) => {
+          if (PRIORITY_FIELD[pr]) return acc + ((c[PRIORITY_FIELD[pr]] ?? 3) - 1) / 4 * 100;
+          if (pr === 'helping') return acc + (code.includes('S') ? 100 : c.interests.includes('helping') ? 70 : 30);
+          return acc + riasecMatch; // passion: follow interests
+        }, 0) / priorities.length)
+        : 50;
+      const isConsidering = considering.has(c.id);
+      const raw = 0.45 * abilityMatch + 0.25 * riasecMatch + 0.15 * interestMatch + 0.15 * priorityMatch + (isConsidering ? 10 : 0);
+      const fit = Math.max(1, Math.min(99, Math.round(raw)));
+
       const bestAbilities = Object.entries(c.abilities)
         .filter(([id]) => (scoreOf[id] ?? 0) >= 60)
-        .sort((a, b) => b[1] * (scoreOf[b[0]] ?? 0) - a[1] * (scoreOf[a[0]] ?? 0))
+        .sort((x, y) => y[1] * (scoreOf[y[0]] ?? 0) - x[1] * (scoreOf[x[0]] ?? 0))
         .slice(0, 2)
         .map(([id]) => abilityLabel[id]);
+      const topType = riasec ? code.find((t) => riasec[t] >= 0.6) : null;
       const why = [
-        bestAbilities.length ? `Uses your ${bestAbilities.join(' and ')}` : `Builds on skills you can grow`,
+        bestAbilities.length ? `Uses your ${bestAbilities.join(' and ')}` : 'Builds on skills you can grow',
+        topType ? `suits your ${typeLabel[topType]} side` : null,
         shared.length ? `matches your interest in ${shared.map((i) => interestLabel[i].toLowerCase()).join(' and ')}` : null,
-      ].filter(Boolean).join(', and ');
-      return { id: c.id, name: c.name, fit, abilityMatch, interestMatch, why: `${why}.`, summary: c.summary, stream: c.stream, degrees: c.degrees, exams: c.exams, missionId: c.missionId || null };
+      ].filter(Boolean).join(', ');
+      return {
+        id: c.id, name: c.name, category: c.category, fit, abilityMatch, riasecMatch, interestMatch, priorityMatch, considering: isConsidering,
+        why: `${why}.`, summary: c.summary, stream: c.stream, degrees: c.degrees, exams: c.exams, missionId: c.missionId || null,
+        riasec: c.riasec, salary: c.salary, salarySource: c.salarySource, demand: c.demand, pros: c.pros, cons: c.cons,
+      };
     })
-    .sort((a, b) => b.fit - a.fit);
+    .sort((x, y) => y.fit - x.fit);
 }
 
 /** Which Class 11 stream the top careers point to. */
