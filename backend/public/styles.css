@@ -158,7 +158,7 @@ body::before { content: ''; position: fixed; inset: 0 0 auto; height: env(safe-a
 .auth { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--line); }
 @media (max-width: 900px) { .auth { grid-template-columns: 1fr; } }
 .auth-brand { background: radial-gradient(120% 80% at 20% 0%, #2a1a5e 0%, var(--navy-950) 60%); color: var(--cream); padding: 44px; display: grid; gap: 28px; align-content: start; }
-.auth-brand img.logo { width: 120px; height: 120px; border-radius: 50%; }
+.auth-brand img.logo { width: 120px; height: 120px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(242, 178, 58, .35), 0 10px 30px rgba(107, 63, 214, .35); }
 .auth-brand h1 { color: #fff; font-size: clamp(30px, 4vw, 42px); }
 .auth-brand h1 span { color: var(--gold-500); }
 .auth-brand p { color: #cfc6ea; }

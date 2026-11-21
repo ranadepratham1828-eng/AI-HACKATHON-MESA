@@ -14,7 +14,7 @@ const pct = (v, max) => Math.max(0, Math.min(100, Math.round((v / max) * 100)));
 const initials = (name) => String(name || '?').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
 const ICONS = {
-  game: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg>',
+  game: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
   compass: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3z"/></svg>',
   people: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>',
 };
@@ -251,7 +251,7 @@ function questView() {
     <span class="xp">★ ${q.xp} XP</span>
   </div>`;
   return `<div class="game-wrap"><div class="game">${hud}${questScreen(q, zones)}</div>
-    <p class="game-note">There are no right or wrong people here. Answer honestly and at your own pace: Dishaa uses accuracy and response time to understand your strengths.</p></div>`;
+    <p class="game-note">This isn't a pass-or-fail test. Answer honestly and at your own pace: Dishaa uses accuracy and response time to understand your strengths.</p></div>`;
 }
 
 function questScreen(q, zones) {
