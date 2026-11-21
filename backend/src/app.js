@@ -16,6 +16,8 @@ import { hashPassword, checkPassword, publicUser, canSeeStudent, canEditStudent,
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { sendEmail, loginEmail, emailStatus } from './email.js';
 
 const FRONTEND_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -110,6 +112,7 @@ function view(student) {
 
 export function createApp(store) {
   const app = express();
+  app.set('trust proxy', true);
   app.use(cors({ origin: config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map((s) => s.trim()) }));
   app.use(express.json({ limit: '12mb' }));
 
@@ -174,34 +177,120 @@ export function createApp(store) {
   }));
 
   // ---- Accounts (P0) ----
-  app.post('/api/auth/signup', wrap(async (req, res) => {
-    const role = ['student', 'parent', 'school'].includes(req.body?.role) ? req.body.role : null;
-    const name = text(req.body?.name, 60);
-    const email = text(req.body?.email, 120).toLowerCase();
-    const password = typeof req.body?.password === 'string' ? req.body.password : '';
-    if (!role) throw new HttpError(400, 'Choose student, parent or school');
-    if (!name) throw new HttpError(400, 'Name is required');
-    if (!EMAIL_RE.test(email)) throw new HttpError(400, 'Enter a valid email');
-    if (password.length < 6) throw new HttpError(400, 'Password must be at least 6 characters');
-    if (store.getUserByEmail(email)) throw new HttpError(409, 'An account with this email already exists. Log in instead.');
+  // ---- Paid model: there is no public sign-up. Accounts are created by the
+  // Dishaa team (admin key) and login details are emailed to each person. ----
+  const ADMIN_KEY = process.env.ADMIN_KEY || '';
+  const requireAdmin = (req) => {
+    if (!ADMIN_KEY) throw new HttpError(503, 'Admin is not set up yet: add ADMIN_KEY to the server settings');
+    const given = Buffer.from(String(req.headers['x-admin-key'] || ''));
+    const want = Buffer.from(ADMIN_KEY);
+    if (given.length !== want.length || !timingSafeEqual(given, want)) throw new HttpError(401, 'Wrong admin key');
+  };
+  const loginUrlFor = (req) => `${(process.env.APP_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '')}/app`;
+  const PW_CHARS = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const tempPassword = () => Array.from(randomBytes(10), (b) => PW_CHARS[b % PW_CHARS.length]).join('');
 
-    const user = { role, name, email, ...hashPassword(password) };
+  async function provision(req, spec) {
+    const role = ['student', 'parent', 'school'].includes(spec.role) ? spec.role : null;
+    const name = text(spec.name, 60);
+    const email = text(spec.email, 120).toLowerCase();
+    if (!role) return { email, status: 'error', error: 'Role must be student, parent or school' };
+    if (!name) return { email, status: 'error', error: 'Name is required' };
+    if (!EMAIL_RE.test(email)) return { email, status: 'error', error: 'Invalid email' };
+    if (store.getUserByEmail(email)) return { email, role, name, status: 'exists', error: 'An account with this email already exists' };
+    const password = tempPassword();
+    const user = { role, name, email, ...hashPassword(password), mustChangePassword: true };
     if (role === 'student') {
-      const student = store.createStudent({ profile: cleanProfile({ name, cls: req.body?.cls }) });
+      const student = store.createStudent({ profile: cleanProfile({ name, cls: spec.cls || '10', city: spec.city || '' }), classId: (text(spec.classId, 10) || '10B').toUpperCase() });
       user.studentId = student.id;
     } else if (role === 'parent') {
-      const child = store.findStudentByFamilyCode(req.body?.familyCode);
-      if (!child) throw new HttpError(400, "Family code not found. Ask your child for the code on their Dishaa home screen.");
+      const childUser = spec.childEmail ? store.getUserByEmail(spec.childEmail) : null;
+      const child = childUser?.studentId ? store.getStudent(childUser.studentId) : store.findStudentByFamilyCode(spec.familyCode);
+      if (!child) return { email, role, name, status: 'error', error: "Child not found: give the child's student email or family code" };
       user.linkedStudentId = child.id;
     } else {
-      user.classId = (text(req.body?.classId, 10) || '10B').toUpperCase();
+      user.classId = (text(spec.classId, 10) || '10B').toUpperCase();
+      if (spec.school) user.school = text(spec.school, 120);
     }
-    session(store.createUser(user), 201)(res);
+    const created = store.createUser(user);
+    const mail = loginEmail({ name, role, email, password, loginUrl: loginUrlFor(req) });
+    const sent = spec.sendEmail === false ? { sent: false, reason: 'Email skipped' } : await sendEmail({ to: email, ...mail });
+    return { id: created.id, email, role, name, status: 'created', emailed: sent.sent, emailError: sent.sent ? undefined : sent.reason, password: sent.sent ? undefined : password };
+  }
+
+  app.get('/api/admin/status', wrap(async (req, res) => {
+    requireAdmin(req);
+    res.json({ email: emailStatus(), ai: aiStatus(), storage: store.mode, loginUrl: loginUrlFor(req) });
+  }));
+
+  app.post('/api/admin/accounts', wrap(async (req, res) => {
+    requireAdmin(req);
+    const list = Array.isArray(req.body?.accounts) ? req.body.accounts.slice(0, 500) : [req.body || {}];
+    const results = [];
+    for (const spec of list) results.push(await provision(req, { ...spec, sendEmail: req.body?.sendEmail !== false && spec.sendEmail !== false }));
+    res.status(201).json({ results });
+  }));
+
+  app.get('/api/admin/accounts', wrap(async (req, res) => {
+    requireAdmin(req);
+    res.json({ users: store.listUsers().filter((u) => !u.demo).map(publicUser) });
+  }));
+
+  app.post('/api/admin/accounts/:userId/reset', wrap(async (req, res) => {
+    requireAdmin(req);
+    const user = store.getUser(req.params.userId);
+    if (!user) throw new HttpError(404, 'User not found');
+    const password = tempPassword();
+    Object.assign(user, hashPassword(password), { mustChangePassword: true });
+    store.saveUser(user);
+    const sent = await sendEmail({ to: user.email, ...loginEmail({ name: user.name, role: user.role, email: user.email, password, loginUrl: loginUrlFor(req), reset: true }) });
+    res.json({ email: user.email, emailed: sent.sent, emailError: sent.sent ? undefined : sent.reason, password: sent.sent ? undefined : password });
+  }));
+
+  app.get('/api/admin/leads', wrap(async (req, res) => {
+    requireAdmin(req);
+    res.json({ leads: store.listLeads() });
+  }));
+
+  // Landing page "request access" form (public)
+  app.post('/api/leads', wrap(async (req, res) => {
+    if (req.body?.website) return res.status(201).json({ ok: true }); // honeypot: bots fill hidden fields
+    const lead = {
+      name: text(req.body?.name, 80),
+      email: text(req.body?.email, 120).toLowerCase(),
+      phone: text(req.body?.phone, 30),
+      role: ['school', 'parent', 'student', 'other'].includes(req.body?.role) ? req.body.role : 'other',
+      organisation: text(req.body?.organisation, 120),
+      city: text(req.body?.city, 60),
+      students: text(String(req.body?.students ?? ''), 20),
+      message: text(req.body?.message, 1000),
+    };
+    if (!lead.name) throw new HttpError(400, 'Please add your name');
+    if (!EMAIL_RE.test(lead.email)) throw new HttpError(400, 'Please add a valid email');
+    store.addLead(lead);
+    if (process.env.LEADS_NOTIFY_EMAIL) {
+      sendEmail({ to: process.env.LEADS_NOTIFY_EMAIL, subject: `New Dishaa enquiry: ${lead.name} (${lead.role})`, text: JSON.stringify(lead, null, 2), html: `<pre>${JSON.stringify(lead, null, 2).replace(/</g, '&lt;')}</pre>` }).catch(() => {});
+    }
+    res.status(201).json({ ok: true });
+  }));
+
+  app.post('/api/auth/password', wrap(async (req, res) => {
+    const user = requireUser(req);
+    const current = String(req.body?.current || '');
+    const next = String(req.body?.next || '');
+    if (!checkPassword(current, user)) throw new HttpError(400, 'Your current password is wrong');
+    if (next.length < 8) throw new HttpError(400, 'Choose a password with at least 8 characters');
+    if (next === current) throw new HttpError(400, 'Choose a new password, different from the temporary one');
+    Object.assign(user, hashPassword(next), { mustChangePassword: false });
+    store.saveUser(user);
+    res.json({ ok: true, user: publicUser(user) });
   }));
 
   app.post('/api/auth/login', wrap(async (req, res) => {
     const user = store.getUserByEmail(req.body?.email);
     if (!user || !checkPassword(String(req.body?.password || ''), user)) throw new HttpError(401, 'Email or password is wrong');
+    user.lastLoginAt = new Date().toISOString();
+    store.saveUser(user);
     session(user)(res);
   }));
 
@@ -464,7 +553,8 @@ export function createApp(store) {
 
   // ---- The web app (backend/public) is served from the same server ----
   if (existsSync(FRONTEND_DIR)) {
-    app.use(express.static(FRONTEND_DIR));
+    app.use(express.static(FRONTEND_DIR, { extensions: ['html'] }));
+    app.get(['/app', '/app/*'], (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'app.html')));
     app.get('*', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));
   }
   // eslint-disable-next-line no-unused-vars

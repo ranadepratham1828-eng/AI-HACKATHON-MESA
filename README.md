@@ -8,7 +8,11 @@ Product summary: [`docs/PRODUCT.md`](docs/PRODUCT.md) · Notes for Claude Code: 
 
 ## Live site
 
-**https://ai-hackathon-mesa-backend.vercel.app**
+- **Landing page:** https://ai-hackathon-mesa-backend.vercel.app
+- **App (log in):** https://ai-hackathon-mesa-backend.vercel.app/app
+- **Admin (Dishaa team):** https://ai-hackathon-mesa-backend.vercel.app/app#admin
+
+Dishaa is a paid service, so there is no public sign-up. The Dishaa team creates accounts on the admin page (one at a time, or a whole class at once) and each person is emailed their login with a temporary password, which they change on first login. Enquiries from the landing page's "Request a demo" form appear on the admin page too.
 
 On the login page, the demo buttons need no account:
 
@@ -47,7 +51,7 @@ Open the address it prints (normally **http://localhost:4747**). If that port is
 Works with Root Directory set to either the repo root or `backend`. Every push to the default branch redeploys.
 
 1. **Settings → Build and Deployment:** Framework Preset = **Other**.
-2. **Settings → Environment Variables:** add `GEMINI_API_KEY`.
+2. **Settings → Environment Variables:** add `GEMINI_API_KEY` and `ADMIN_KEY` (a long secret for the admin page). For emailed logins also add `RESEND_API_KEY`, `EMAIL_FROM` and `APP_URL` (see `backend/.env.example`).
 3. **Storage → Create Database → Upstash (Redis), free plan → Connect to project.** Without it, accounts reset when Vercel restarts the server.
 4. **Settings → Deployment Protection:** turn off Vercel Authentication if people outside your team see a Vercel login page.
 5. **Redeploy**, then check `https://<your-app>.vercel.app/api/health` for `"configured": true` and `"storage": "redis"`.

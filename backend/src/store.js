@@ -16,6 +16,7 @@ const normalize = (db) => {
   d.students ||= {};
   d.users ||= {};
   d.sessions ||= {};
+  d.leads ||= [];
   return d;
 };
 
@@ -115,6 +116,21 @@ export function createStore(file, { redis = null } = {}) {
     },
     listStudents({ classId } = {}) {
       return Object.values(db.students).filter((s) => !classId || s.classId === classId);
+    },
+
+    // ---- Leads from the landing page ----
+    addLead(lead) {
+      const l = { id: randomUUID(), createdAt: new Date().toISOString(), ...lead };
+      db.leads.push(l);
+      if (db.leads.length > 2000) db.leads.shift();
+      persist();
+      return l;
+    },
+    listLeads() {
+      return [...db.leads].reverse();
+    },
+    listUsers() {
+      return Object.values(db.users).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
 
     // ---- Users and sessions ----

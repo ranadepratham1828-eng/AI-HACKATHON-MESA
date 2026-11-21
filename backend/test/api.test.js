@@ -3,6 +3,8 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.AI_PROVIDER = 'none';
+process.env.ADMIN_KEY = 'test-admin-key';
+delete process.env.RESEND_API_KEY;
 const { createApp } = await import('../src/app.js');
 const { createStore } = await import('../src/store.js');
 
@@ -31,37 +33,81 @@ test('health and content', async () => {
   assert.equal(c.body.games[0].answer, undefined, 'answers must not leak');
 });
 
-test('signup, login and access rules', async () => {
-  const bad = await call('POST', '/auth/signup', { role: 'student', name: 'X', email: 'nope', password: '123456' });
-  assert.equal(bad.status, 400);
-  const s = await call('POST', '/auth/signup', { role: 'student', name: 'Kiran', email: 'Kiran@Example.com', password: 'secret1', cls: '12' });
-  assert.equal(s.status, 201);
-  assert.equal(s.body.user.hash, undefined, 'password hash must not leak');
-  assert.equal((await call('POST', '/auth/signup', { role: 'student', name: 'K', email: 'kiran@example.com', password: 'secret1' })).status, 409);
-  assert.equal((await call('POST', '/auth/login', { email: 'kiran@example.com', password: 'wrong!' })).status, 401);
-  const login = await call('POST', '/auth/login', { email: 'kiran@example.com', password: 'secret1' });
+// Accounts are created by an admin (paid model); returns a logged-in session.
+const ADMIN = { 'x-admin-key': 'test-admin-key' };
+const adminCall = async (method, path, body) => {
+  const res = await fetch(base + path, { method, headers: { 'Content-Type': 'application/json', ...ADMIN }, body: body ? JSON.stringify(body) : undefined });
+  return { status: res.status, body: await res.json() };
+};
+async function account(spec) {
+  const r = await adminCall('POST', '/admin/accounts', { ...spec, sendEmail: false });
+  const out = r.body.results[0];
+  assert.equal(out.status, 'created', JSON.stringify(out));
+  const login = await call('POST', '/auth/login', { email: spec.email, password: out.password });
   assert.equal(login.status, 200);
-  const me = await call('GET', '/auth/me', null, login.body.token);
+  return { token: login.body.token, user: login.body.user, password: out.password };
+}
+
+test('no public sign-up; admin creates accounts with emailed (or shown) logins', async () => {
+  assert.equal((await call('POST', '/auth/signup', { role: 'student', name: 'X', email: 'x@example.com', password: '123456' })).status, 404);
+  assert.equal((await call('POST', '/admin/accounts', { role: 'student', name: 'X', email: 'x@example.com' })).status, 401, 'needs the admin key');
+
+  const bulk = await adminCall('POST', '/admin/accounts', { accounts: [
+    { role: 'student', name: 'Kiran', email: 'Kiran@Example.com', cls: '12' },
+    { role: 'student', name: 'Bad', email: 'nope' },
+    { role: 'student', name: 'Dup', email: 'kiran@example.com' },
+  ] });
+  assert.deepEqual(bulk.body.results.map((r) => r.status), ['created', 'error', 'exists']);
+  const kiran = bulk.body.results[0];
+  assert.equal(kiran.emailed, false, 'email not configured in tests');
+  assert.ok(kiran.password.length >= 10, 'temporary password shown to admin when not emailed');
+
+  assert.equal((await call('POST', '/auth/login', { email: 'kiran@example.com', password: 'wrong!' })).status, 401);
+  const login = await call('POST', '/auth/login', { email: 'kiran@example.com', password: kiran.password });
+  assert.equal(login.body.user.hash, undefined, 'password hash must not leak');
+  assert.equal(login.body.user.mustChangePassword, true);
+  const t = login.body.token;
+  assert.equal((await call('POST', '/auth/password', { current: 'wrong', next: 'newpassword1' }, t)).status, 400);
+  assert.equal((await call('POST', '/auth/password', { current: kiran.password, next: 'short' }, t)).status, 400);
+  const changed = await call('POST', '/auth/password', { current: kiran.password, next: 'newpassword1' }, t);
+  assert.equal(changed.body.user.mustChangePassword, false);
+  const me = await call('GET', '/auth/me', null, (await call('POST', '/auth/login', { email: 'kiran@example.com', password: 'newpassword1' })).body.token);
   assert.equal(me.body.student.profile.cls, '12');
 
-  const other = await call('POST', '/auth/signup', { role: 'student', name: 'Other', email: 'other@example.com', password: 'secret1' });
+  const other = await account({ role: 'student', name: 'Other', email: 'other@example.com' });
   assert.equal((await call('GET', `/students/${me.body.student.id}`)).status, 401);
-  assert.equal((await call('GET', `/students/${me.body.student.id}`, null, other.body.token)).status, 403);
+  assert.equal((await call('GET', `/students/${me.body.student.id}`, null, other.token)).status, 403);
 
-  const parent = await call('POST', '/auth/signup', { role: 'parent', name: 'Mom', email: 'mom@example.com', password: 'secret1', familyCode: me.body.student.familyCode.toLowerCase() });
-  assert.equal(parent.status, 201);
-  assert.equal((await call('GET', `/students/${me.body.student.id}`, null, parent.body.token)).status, 200);
-  assert.equal((await call('PATCH', `/students/${me.body.student.id}`, { city: 'Pune' }, parent.body.token)).status, 403, 'parents cannot edit');
-  assert.equal((await call('POST', '/auth/signup', { role: 'parent', name: 'D', email: 'd@example.com', password: 'secret1', familyCode: 'ZZZZZZ' })).status, 400);
+  const parent = await account({ role: 'parent', name: 'Mom', email: 'mom@example.com', childEmail: 'kiran@example.com' });
+  assert.equal((await call('GET', `/students/${me.body.student.id}`, null, parent.token)).status, 200);
+  assert.equal((await call('PATCH', `/students/${me.body.student.id}`, { city: 'Pune' }, parent.token)).status, 403, 'parents cannot edit');
+  const noChild = await adminCall('POST', '/admin/accounts', { role: 'parent', name: 'D', email: 'd@example.com', familyCode: 'ZZZZZZ', sendEmail: false });
+  assert.equal(noChild.body.results[0].status, 'error');
 
-  await call('POST', '/auth/logout', null, login.body.token);
-  assert.equal((await call('GET', '/auth/me', null, login.body.token)).status, 401);
+  const reset = await adminCall('POST', `/admin/accounts/${other.user.id}/reset`);
+  assert.ok(reset.body.password);
+  assert.equal((await call('POST', '/auth/login', { email: 'other@example.com', password: reset.body.password })).status, 200);
+  const users = await adminCall('GET', '/admin/accounts');
+  assert.ok(users.body.users.some((u) => u.email === 'kiran@example.com' && !u.hash));
+
+  await call('POST', '/auth/logout', null, t);
+  assert.equal((await call('GET', '/auth/me', null, t)).status, 401);
+});
+
+test('landing page leads', async () => {
+  assert.equal((await call('POST', '/leads', { name: 'Ms Rao', email: 'bad' })).status, 400);
+  assert.equal((await call('POST', '/leads', { name: 'Ms Rao', email: 'rao@school.example', role: 'school', organisation: 'Demo School', students: '300' })).status, 201);
+  assert.equal((await call('POST', '/leads', { name: 'Bot', email: 'bot@x.example', website: 'spam' })).status, 201, 'honeypot is accepted silently');
+  const leads = await adminCall('GET', '/admin/leads');
+  assert.equal(leads.body.leads.length, 1);
+  assert.equal(leads.body.leads[0].organisation, 'Demo School');
+  assert.equal((await call('GET', '/admin/leads')).status, 401);
 });
 
 test('full student journey: quest, questionnaire, report, parent, school', async () => {
-  const signup = await call('POST', '/auth/signup', { role: 'student', name: 'Test', email: 'test@example.com', password: 'secret1', cls: '10' });
-  const token = signup.body.token;
-  const id = signup.body.user.studentId;
+  const signup = await account({ role: 'student', name: 'Test', email: 'test@example.com', cls: '10' });
+  const token = signup.token;
+  const id = signup.user.studentId;
 
   const content = (await call('GET', '/content')).body;
   const items = content.assessment.zones.flatMap((z) => z.items);

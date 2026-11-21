@@ -32,5 +32,7 @@ docs/               Product, API, design and AI setup docs
 - **College figures (fees, cutoffs, NIRF rank) only from official sources**, with `source` and `lastChecked` filled. Leave `null` rather than guess.
 - **Sample data is labelled** (`sample: true`) and never presented as real people.
 - **Tone for students:** an explorer, not a judge. Never say a student can't do something.
+- **No public sign-up (paid model).** Accounts are created via `/api/admin/accounts` (ADMIN_KEY) and logins are emailed (`src/email.js`, Resend). Temporary passwords must be changed on first login.
+- The landing page is `public/index.html`; the app is `public/app.html` (served at `/app`).
 - Students are minors: no real personal data in demos, and don't commit `.env` or `backend/data/`.
 - Work on your own branch and open a pull request into `main`.

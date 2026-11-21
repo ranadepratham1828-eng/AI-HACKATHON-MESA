@@ -3,18 +3,190 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Dishaa</title>
-  <meta name="description" content="Dishaa helps Class 10 and 12 students discover their real strengths and the careers that fit them.">
-  <link rel="icon" href="logo-256.jpg">
+  <title>Dishaa · Career guidance for Class 10 and 12</title>
+  <meta name="description" content="Dishaa helps Class 10 and 12 students choose their stream, degree and college with an aptitude assessment, AI career coach and a personalised career plan.">
+  <meta property="og:title" content="Dishaa · Find the career that fits who you really are">
+  <meta property="og:description" content="Aptitude assessment, career matches, an AI career coach and a personalised plan with colleges and scholarships. For schools and families.">
+  <meta property="og:image" content="/img/report.jpg">
+  <link rel="icon" href="/logo-256.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Press+Start+2P&family=VT323&display=swap">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/landing.css">
 </head>
-<body>
-  <header class="topbar" id="topbar"></header>
-  <main id="app" class="wrap" aria-live="polite"></main>
-  <div id="toast" class="toast" role="status" hidden></div>
-  <script type="module" src="app.js"></script>
+<body class="landing">
+  <header class="l-nav">
+    <div class="l-in">
+      <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="51" height="34"><span>dishaa</span></a>
+      <nav class="l-links" aria-label="Main">
+        <a href="#how">How it works</a><a href="#features">Features</a><a href="#schools">For schools</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+      </nav>
+      <div class="row"><a class="btn outline small l-login" href="/app">Log in</a><a class="btn gold small" href="#contact">Request a demo</a></div>
+    </div>
+  </header>
+
+  <section class="l-hero">
+    <div class="l-in l-hero-grid">
+      <div class="stack-lg">
+        <p class="eyebrow" style="color:var(--gold-500)">Career guidance for Class 10 and 12</p>
+        <h1>Find the career that fits <span>who you really are.</span></h1>
+        <p class="l-lead">Most students choose a stream or degree based on marks and what relatives say. Dishaa measures what each student can actually do, matches them to careers, and builds a step-by-step plan with colleges and scholarships, so families decide with confidence.</p>
+        <div class="row"><a class="btn gold" href="#contact">Book a school demo</a><a class="btn outline l-ghost" href="#how">See how it works</a></div>
+        <ul class="l-ticks">
+          <li>10-minute aptitude assessment</li><li>18 careers with Indian pathways</li><li>Parent view in English, ಕನ್ನಡ, हिन्दी</li>
+        </ul>
+      </div>
+      <figure class="l-shot l-shot-hero"><img src="/img/report.jpg" alt="A Dishaa student report showing ability scores and strengths" width="1440" height="810"></figure>
+    </div>
+  </section>
+
+  <section class="l-section">
+    <div class="l-in stack-lg">
+      <div class="l-head"><p class="eyebrow">The problem</p><h2>One of the biggest decisions a student makes, made almost blind</h2></div>
+      <div class="grid-3">
+        <div class="card stack-sm"><h3>Choices based on marks and hearsay</h3><p class="muted">Streams and degrees are picked from a handful of familiar careers, not from what the student is good at or enjoys.</p></div>
+        <div class="card stack-sm"><h3>Too few counsellors</h3><p class="muted">Many schools have no career counsellor, or one person for hundreds of students.</p></div>
+        <div class="card stack-sm"><h3>Information everywhere</h3><p class="muted">Exams, colleges, fees, cutoffs and scholarships are spread across dozens of websites.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="l-section l-alt" id="how">
+    <div class="l-in stack-lg">
+      <div class="l-head"><p class="eyebrow">How it works</p><h2>From "I'm not sure" to a clear plan in four steps</h2></div>
+      <ol class="l-steps">
+        <li><span>1</span><h3>About you</h3><p>Class, board, subjects, marks, interests, family expectations and budget.</p></li>
+        <li><span>2</span><h3>Aptitude assessment</h3><p>20 interactive challenges measure 8 abilities in about 10 minutes.</p></li>
+        <li><span>3</span><h3>Report and career matches</h3><p>Strengths with evidence, areas to grow and the careers that fit best.</p></li>
+        <li><span>4</span><h3>AI coach and career plan</h3><p>A conversation to settle the goal, then a full plan to the first job.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="l-section" id="features">
+    <div class="l-in stack-lg">
+      <div class="l-row">
+        <div class="stack"><p class="eyebrow">Aptitude assessment</p><h2>Measures what students can do, not just what they say</h2>
+          <p class="muted">Logical, numerical, verbal and spatial reasoning, memory, critical thinking, creativity and people skills. Students also rate themselves, and the report shows where their self-image and their results differ.</p></div>
+        <figure class="l-shot"><img src="/img/shapes.jpg" alt="A spatial reasoning challenge in the Dishaa assessment" loading="lazy" width="1440" height="810"></figure>
+      </div>
+      <div class="l-row l-flip">
+        <div class="stack"><p class="eyebrow">Career matches</p><h2>Careers matched to abilities and interests</h2>
+          <p class="muted">Each match explains why it fits, then lays out the route: stream after Class 10, degree and entrance exams, colleges with fees, cutoffs and NIRF ranks, and first jobs after the degree.</p></div>
+        <figure class="l-shot"><img src="/img/careers.jpg" alt="Career matches with fit percentages" loading="lazy" width="1440" height="810"></figure>
+      </div>
+      <div class="l-row">
+        <div class="stack"><p class="eyebrow">AI career coach and plan</p><h2>A counsellor available to every student</h2>
+          <p class="muted">The coach talks the student through their options, including family expectations, then builds a personalised plan: timeline, exam preparation, dream, target and safe colleges within budget, scholarships to apply for, and the next 30 days. Studying abroad is supported too.</p></div>
+        <figure class="l-shot"><img src="/img/plan.jpg" alt="A personalised career plan" loading="lazy" width="1440" height="810"></figure>
+      </div>
+      <div class="l-row l-flip">
+        <div class="stack"><p class="eyebrow">For parents</p><h2>The whole family on the same page</h2>
+          <p class="muted">Parents see their child's strengths next to their own hopes, where they match and where they differ, with conversation starters in English, Kannada or Hindi.</p></div>
+        <figure class="l-shot"><img src="/img/parent.jpg" alt="The parent view in Kannada" loading="lazy" width="1440" height="810"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="l-section l-alt" id="schools">
+    <div class="l-in l-row">
+      <div class="stack">
+        <p class="eyebrow">For schools</p><h2>One counsellor, a whole class, clear priorities</h2>
+        <ul class="l-list">
+          <li>Class dashboard: completion, strengths across the class and career interests</li>
+          <li>A ranked "needs a conversation" list, so counsellors know who to meet first</li>
+          <li>Weekly suggested actions for the counsellor</li>
+          <li>Accounts set up for every student and parent, with logins sent by email</li>
+        </ul>
+        <div><a class="btn" href="#contact">Book a school demo</a></div>
+      </div>
+      <figure class="l-shot"><img src="/img/school.jpg" alt="The school counsellor dashboard" loading="lazy" width="1440" height="810"></figure>
+    </div>
+  </section>
+
+  <section class="l-section" id="pricing">
+    <div class="l-in stack-lg">
+      <div class="l-head"><p class="eyebrow">Pricing</p><h2>Simple plans for schools and families</h2><p class="muted">Pilot pricing. Contact us for a quote for your school.</p></div>
+      <div class="grid-3 l-prices">
+        <div class="card stack"><h3>Schools</h3><p class="l-price">₹499<small> per student / year</small></p>
+          <ul class="l-list small"><li>Every Class 9-12 student and their parents</li><li>Assessment, report, AI coach and career plan</li><li>Counsellor dashboard</li><li>Onboarding with emailed logins</li></ul>
+          <a class="btn" href="#contact">Talk to us</a></div>
+        <div class="card stack l-featured"><span class="tag gold" style="justify-self:start">For families</span><h3>Dishaa Plus</h3><p class="l-price">₹1,499<small> per year</small></p>
+          <ul class="l-list small"><li>Full report and career plan for one student</li><li>Unlimited AI coach conversations</li><li>Parent view in 3 languages</li><li>Plan updates every year until college</li></ul>
+          <a class="btn gold" href="#contact">Get Dishaa Plus</a></div>
+        <div class="card stack"><h3>Talk to a real person</h3><p class="l-price">from ₹149<small> per 15 min</small></p>
+          <ul class="l-list small"><li>Verified career counsellors</li><li>Current students and alumni of the colleges you're considering</li><li>Book when you need it</li></ul>
+          <a class="btn outline" href="#contact">Ask about calls</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="l-section l-alt" id="faq">
+    <div class="l-in stack-lg" style="max-width:820px">
+      <div class="l-head"><p class="eyebrow">FAQ</p><h2>Questions families ask</h2></div>
+      <details class="card"><summary>Is this an exam? Can a student fail?</summary><p class="muted">No. It's an aptitude assessment with no pass or fail. It shows strengths and areas to grow, and never tells a student they can't do something.</p></details>
+      <details class="card"><summary>Who is it for?</summary><p class="muted">Students in Class 9-12: Class 10 students choosing a stream, and Class 12 students choosing a degree, entrance exams and colleges.</p></details>
+      <details class="card"><summary>How do students and parents get access?</summary><p class="muted">Dishaa is a paid service. Once a school or family subscribes, we create the accounts and email each person their login details.</p></details>
+      <details class="card"><summary>Where does the college and scholarship information come from?</summary><p class="muted">From official and published sources, each shown with its source and the date it was checked. Fees and cutoffs change every year, so we always link to the official site.</p></details>
+      <details class="card"><summary>Is student data private?</summary><p class="muted">Yes. Students' results are visible only to the student, their linked parent and their school counsellor. Scholarship details are optional and used only to find scholarships.</p></details>
+    </div>
+  </section>
+
+  <section class="l-section l-contact" id="contact">
+    <div class="l-in l-row">
+      <div class="stack">
+        <p class="eyebrow" style="color:var(--gold-500)">Get started</p><h2 style="color:#fff">Bring Dishaa to your school or family</h2>
+        <p style="color:#cfc6ea">Tell us a little about you and we'll get back to you to set up a demo or create your accounts.</p>
+        <p style="color:#cfc6ea">Already a customer? <a href="/app" style="color:var(--gold-500)">Log in here</a>.</p>
+      </div>
+      <form id="lead-form" class="card stack">
+        <div class="grid-2" style="gap:12px">
+          <label>Your name<input name="name" required autocomplete="name"></label>
+          <label>I am a<select name="role"><option value="school">School / principal / counsellor</option><option value="parent">Parent</option><option value="student">Student</option><option value="other">Other</option></select></label>
+          <label>Email<input name="email" type="email" required autocomplete="email"></label>
+          <label><span>Phone <span class="muted small">(optional)</span></span><input name="phone" type="tel" autocomplete="tel"></label>
+          <label>School or organisation<input name="organisation"></label>
+          <label>City<input name="city" autocomplete="address-level2"></label>
+        </div>
+        <label><span>Number of students <span class="muted small">(schools)</span></span><input name="students" inputmode="numeric"></label>
+        <label><span>Message <span class="muted small">(optional)</span></span><textarea name="message" style="min-height:80px"></textarea></label>
+        <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
+        <p id="lead-msg" class="small" hidden></p>
+        <button class="btn" type="submit">Request a demo</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="l-foot">
+    <div class="l-in spread">
+      <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="51" height="34"><span>dishaa</span></a>
+      <p class="small">Built at the Weekend at Mesa AI Hackathon · Education &amp; Careers</p>
+      <a class="small" href="/app">Log in</a>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('lead-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const msg = document.getElementById('lead-msg');
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+        form.reset();
+        msg.textContent = "Thanks! We've got your request and will get back to you soon.";
+        msg.style.color = 'var(--green)';
+      } catch (err) {
+        msg.textContent = err.message;
+        msg.style.color = 'var(--red)';
+      }
+      msg.hidden = false;
+      btn.disabled = false;
+    });
+  </script>
 </body>
 </html>

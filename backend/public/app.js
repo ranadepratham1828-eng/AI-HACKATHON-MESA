@@ -1,6 +1,6 @@
 // Dishaa web app: plain JavaScript, no build step. Talks to the backend at /api.
 // The product is professional; only Dishaa Quest (the game) is pixel art.
-import { star, trophy, gridSprite, gem } from './sprites.js';
+import { star, trophy, gridSprite, gem } from '/sprites.js';
 
 /* ================= Helpers ================= */
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -72,7 +72,14 @@ async function render() {
   const id = ++renderId;
   renderTopbar();
   const app = $('#app');
+  if (route().name === 'admin') {
+    app.innerHTML = '<p class="loading">Loading…</p>';
+    const html = await adminView();
+    if (id === renderId) { app.innerHTML = html; bindLogin(); }
+    return;
+  }
   if (!S.user) { app.innerHTML = loginView(); bindLogin(); window.scrollTo(0, 0); return; }
+  if (S.user.mustChangePassword && !S.user.demo) { app.innerHTML = passwordView(); bindLogin(); return; }
   const { name, arg } = route();
   const views = {
     student: { home: homeView, about: aboutView, quest: questView, report: reportView, coach: coachView, plan: planView },
@@ -106,7 +113,7 @@ function renderTopbar() {
   }[S.user.role] || [];
   const ai = S.health?.ai;
   $('#topbar').innerHTML = `<div class="topbar-in">
-    <a class="brand" href="#"><img src="logo-mark.png" alt="" width="51" height="34"><span>dishaa</span></a>
+    <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="51" height="34"><span>dishaa</span></a>
     <nav class="nav" aria-label="Main">${links.map(([h, l]) => `<a href="#${h}" class="${r === h ? 'on' : ''}">${l}</a>`).join('')}</nav>
     ${S.user ? `<div class="user">
       ${ai ? `<span class="ai-dot" style="--ai:${ai.configured ? '#5ed68f' : '#f2b23a'}" title="${ai.configured ? 'AI connected' : 'AI not connected: demo text'}">${ai.configured ? 'AI on' : 'Demo mode'}</span>` : ''}
@@ -114,13 +121,11 @@ function renderTopbar() {
   </div>`;
 }
 
-/* ================= Login ================= */
+/* ================= Login (no public sign-up: accounts are emailed) ================= */
 function loginView() {
-  const tab = S.authTab;
-  const role = S.signupRole;
   return `<section class="auth">
     <div class="auth-brand">
-      <img class="logo" src="logo-256.jpg" alt="Dishaa logo" width="120" height="120">
+      <img class="logo" src="/logo-256.jpg" alt="Dishaa logo" width="120" height="120">
       <div class="stack">
         <h1>Find the career that fits <span>who you really are.</span></h1>
         <p class="lead" style="color:#cfc6ea">Dishaa helps Class 10 and 12 students choose their stream, degree and college with confidence, based on what they can actually do, not just marks.</p>
@@ -132,31 +137,16 @@ function loginView() {
       </div>
     </div>
     <div class="auth-form">
-      <div class="stack-sm"><h2>${tab === 'login' ? 'Welcome back' : 'Create your account'}</h2><p class="muted small">${tab === 'login' ? 'Log in to continue your journey.' : 'It takes less than a minute.'}</p></div>
-      <div class="tabs" role="tablist">
-        <button role="tab" class="${tab === 'login' ? 'on' : ''}" data-act="tab" data-tab="login">Log in</button>
-        <button role="tab" class="${tab === 'signup' ? 'on' : ''}" data-act="tab" data-tab="signup">Sign up</button>
-      </div>
+      <div class="stack-sm"><h2>Log in to Dishaa</h2><p class="muted small">Use the email and password we sent you when your school or family subscribed.</p></div>
       ${S.authError ? `<p class="error">${esc(S.authError)}</p>` : ''}
-      ${tab === 'login' ? `
-        <form id="login-form" class="stack">
-          <label>Email<input id="login-email" name="email" type="email" autocomplete="email" required></label>
-          <label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
-          <button class="btn block" type="submit">Log in</button>
-        </form>` : `
-        <form id="signup-form" class="stack">
-          <div class="stack-sm"><span style="font:500 14px var(--f-body);color:var(--ink-2)">I am a</span>
-            <div class="chips">${[['student', 'Student'], ['parent', 'Parent'], ['school', 'School counsellor']].map(([v, l]) => `<button type="button" class="chip ${role === v ? 'on' : ''}" data-act="role" data-role="${v}">${l}</button>`).join('')}</div></div>
-          <label>Full name<input id="su-name" name="name" required maxlength="60" autocomplete="name"></label>
-          ${role === 'student' ? `<div class="grid-2" style="gap:12px">
-            <label>Class<select id="su-cls" name="cls">${['9', '10', '11', '12'].map((c) => `<option ${c === '10' ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
-            <label>City<input id="su-city" name="city" autocomplete="address-level2" placeholder="e.g. Bengaluru"></label></div>` : ''}
-          ${role === 'parent' ? `<label>Your child's family code<input id="su-code" name="familyCode" required placeholder="e.g. K7M2QX" style="text-transform:uppercase"></label><p class="small muted">Your child can find this code on their Dishaa overview page.</p>` : ''}
-          ${role === 'school' ? `<label>Class you counsel<input id="su-class" name="classId" value="10B" required></label>` : ''}
-          <label>Email<input id="su-email" name="email" type="email" required autocomplete="email"></label>
-          <label>Password<input id="su-password" name="password" type="password" minlength="6" required autocomplete="new-password" placeholder="At least 6 characters"></label>
-          <button class="btn block" type="submit">Create account</button>
-        </form>`}
+      <form id="login-form" class="stack">
+        <label>Email<input id="login-email" name="email" type="email" autocomplete="email" required></label>
+        <label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
+        <button class="btn block" type="submit">Log in</button>
+      </form>
+      <details class="small muted"><summary style="cursor:pointer">Forgot your password or didn't get an email?</summary>
+        <p style="margin-top:8px">Ask your school counsellor, or <a href="/#contact">contact the Dishaa team</a> and we'll send you a new one.</p></details>
+      <p class="small muted">Not a customer yet? <a href="/#contact">Request access for your school or family</a>.</p>
       <div class="or">or explore a demo</div>
       <div class="demo-grid">
         <button class="btn gold" data-act="demo" data-as="student">Start as a new student</button>
@@ -179,20 +169,118 @@ function bindLogin() {
       go('');
     } catch (err) { S.authError = err.message; render(); }
   });
-  $('#signup-form')?.addEventListener('submit', async (e) => {
+  $('#pw-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const body = Object.fromEntries(new FormData(e.target));
-    body.role = S.signupRole;
+    const f = new FormData(e.target);
+    if (f.get('next') !== f.get('confirm')) { S.authError = "The new passwords don't match"; render(); return; }
     try {
-      signIn(await api('/auth/signup', { body }));
+      const out = await api('/auth/password', { body: { current: f.get('current'), next: f.get('next') } });
+      S.user = out.user;
       S.authError = '';
-      await refreshMe();
-      if (S.user.role === 'student' && body.city) {
-        S.student = await api(`/students/${S.student.id}`, { method: 'PATCH', body: { city: body.city } });
-      }
-      go(S.user.role === 'student' ? 'about' : '');
+      toast('Password saved');
+      go('');
     } catch (err) { S.authError = err.message; render(); }
   });
+  $('#admin-key-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    ADMIN.key = new FormData(e.target).get('key');
+    try { sessionStorage.setItem('dishaa-admin', ADMIN.key); } catch { /* private mode */ }
+    render();
+  });
+  $('#admin-create')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const spec = Object.fromEntries(new FormData(e.target));
+    spec.sendEmail = Boolean(spec.sendEmail);
+    await adminCreate([spec], spec.sendEmail);
+  });
+  $('#admin-bulk')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const role = f.get('role');
+    const rows = String(f.get('rows') || '').split('\n').map((l) => l.trim()).filter(Boolean).map((l) => l.split(',').map((x) => x.trim()));
+    const specs = rows.map(([name, email, third, fourth]) => role === 'student' ? { role, name, email, cls: third || '10', classId: fourth || '10B' }
+      : role === 'parent' ? { role, name, email, childEmail: third } : { role, name, email, classId: third || '10B', school: fourth });
+    await adminCreate(specs, Boolean(f.get('sendEmail')));
+  });
+}
+
+/* ================= First login: choose a password ================= */
+function passwordView() {
+  return `<section class="card stack" style="max-width:520px;margin:24px auto">
+    <div class="stack-sm"><p class="eyebrow">Welcome, ${esc(S.user.name)}</p><h2>Choose your own password</h2>
+      <p class="muted small">You logged in with a temporary password. Set a new one to continue.</p></div>
+    ${S.authError ? `<p class="error">${esc(S.authError)}</p>` : ''}
+    <form id="pw-form" class="stack">
+      <label>Temporary password<input name="current" type="password" autocomplete="current-password" required></label>
+      <label>New password<input name="next" type="password" minlength="8" autocomplete="new-password" required placeholder="At least 8 characters"></label>
+      <label>Repeat new password<input name="confirm" type="password" minlength="8" autocomplete="new-password" required></label>
+      <button class="btn block" type="submit">Save password</button>
+    </form>
+  </section>`;
+}
+
+/* ================= Admin (Dishaa team): create accounts, see enquiries ================= */
+const ADMIN = { key: (() => { try { return sessionStorage.getItem('dishaa-admin') || ''; } catch { return ''; } })(), tab: 'create', results: null };
+async function adminApi(path, body, method) {
+  const res = await fetch(`/api${path}`, { method: method || (body ? 'POST' : 'GET'), headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN.key }, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { ADMIN.key = ''; try { sessionStorage.removeItem('dishaa-admin'); } catch { /* */ } }
+  if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+  return data;
+}
+async function adminCreate(accounts, sendEmail) {
+  try {
+    ADMIN.results = (await adminApi('/admin/accounts', { accounts, sendEmail })).results;
+    toast(`${ADMIN.results.filter((r) => r.status === 'created').length} account(s) created`);
+  } catch (err) { toast(err.message); }
+  render();
+}
+async function adminView() {
+  if (!ADMIN.key) {
+    return `<section class="card stack" style="max-width:480px;margin:24px auto"><p class="eyebrow">Dishaa team</p><h2>Admin</h2>
+      <p class="muted small">Enter the admin key set on the server (ADMIN_KEY).</p>
+      <form id="admin-key-form" class="stack"><label>Admin key<input name="key" type="password" required></label><button class="btn" type="submit">Continue</button></form></section>`;
+  }
+  let status;
+  try { status = await adminApi('/admin/status'); } catch (err) {
+    return `<div class="card stack" style="max-width:520px;margin:24px auto"><h2>Admin unavailable</h2><p class="muted">${esc(err.message)}</p><div><button class="btn" data-act="admin-logout">Try another key</button></div></div>`;
+  }
+  const tab = ADMIN.tab;
+  let body = '';
+  if (tab === 'create') {
+    const results = ADMIN.results ? `<div class="card stack"><h3>Results</h3><div class="table-scroll"><table><thead><tr><th>Email</th><th>Status</th><th>Login details</th></tr></thead><tbody>
+      ${ADMIN.results.map((r) => `<tr><td>${esc(r.email)}</td><td><span class="tag ${r.status === 'created' ? 'green' : r.status === 'exists' ? 'grey' : 'red'}">${esc(r.status)}</span> <span class="small muted">${esc(r.error || '')}</span></td>
+        <td class="small">${r.status !== 'created' ? '' : r.emailed ? 'Emailed ✓' : `Not emailed (${esc(r.emailError || '')}). Share: <b style="font-family:monospace">${esc(r.password)}</b>`}</td></tr>`).join('')}</tbody></table></div></div>` : '';
+    body = `<div class="grid-2">
+      <form id="admin-create" class="card stack"><h3>Create one account</h3>
+        <label>Role<select name="role"><option value="student">Student</option><option value="parent">Parent</option><option value="school">School counsellor</option></select></label>
+        <label>Full name<input name="name" required></label><label>Email<input name="email" type="email" required></label>
+        <div class="grid-2" style="gap:10px"><label>Class (students)<select name="cls"><option>9</option><option selected>10</option><option>11</option><option>12</option></select></label>
+          <label>Class group<input name="classId" value="10B"></label></div>
+        <label>Child's student email (parents)<input name="childEmail" type="email"></label>
+        <label class="check"><input type="checkbox" name="sendEmail" checked> <span>Email the login details</span></label>
+        <button class="btn" type="submit">Create account</button></form>
+      <form id="admin-bulk" class="card stack"><h3>Add a whole class</h3>
+        <label>Role<select name="role"><option value="student">Students</option><option value="parent">Parents</option><option value="school">Counsellors</option></select></label>
+        <label>One per line<textarea name="rows" style="min-height:180px;font-family:monospace;font-size:13px" placeholder="Students:   name, email, class, class group&#10;Parents:    name, email, child's email&#10;Counsellors: name, email, class group, school"></textarea></label>
+        <label class="check"><input type="checkbox" name="sendEmail" checked> <span>Email everyone their login details</span></label>
+        <button class="btn" type="submit">Create accounts</button></form>
+    </div>${results}`;
+  } else if (tab === 'accounts') {
+    const { users } = await adminApi('/admin/accounts');
+    body = `<div class="card stack"><h3>${users.length} accounts</h3><div class="table-scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Last login</th><th></th></tr></thead><tbody>
+      ${users.map((u) => `<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${esc(u.role)}${u.mustChangePassword ? ' <span class="tag gold">temp password</span>' : ''}</td><td class="small">${u.lastLoginAt ? esc(new Date(u.lastLoginAt).toLocaleString('en-IN')) : 'Never'}</td>
+        <td><button class="btn outline small" data-act="admin-reset" data-id="${u.id}">Reset password</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  } else {
+    const { leads } = await adminApi('/admin/leads');
+    body = `<div class="card stack"><h3>${leads.length} enquiries from the website</h3><div class="table-scroll"><table><thead><tr><th>When</th><th>Name</th><th>Contact</th><th>Type</th><th>Organisation</th><th>Students</th><th>Message</th></tr></thead><tbody>
+      ${leads.map((l) => `<tr><td class="small">${esc(new Date(l.createdAt).toLocaleDateString('en-IN'))}</td><td>${esc(l.name)}</td><td class="small">${esc(l.email)}<br>${esc(l.phone)}</td><td>${esc(l.role)}</td><td class="small">${esc(l.organisation)}${l.city ? `, ${esc(l.city)}` : ''}</td><td>${esc(l.students)}</td><td class="small">${esc(l.message)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  }
+  return `<div class="stack-lg"><section class="spread"><div class="stack-sm"><p class="eyebrow">Dishaa team</p><h1>Admin</h1>
+      <p class="small muted">Email: ${status.email.configured ? `on (from ${esc(status.email.from)})` : 'not set up: passwords are shown here instead'} · AI: ${status.ai.configured ? 'on' : 'off'} · Storage: ${esc(status.storage)}</p></div>
+      <button class="btn outline small" data-act="admin-logout">Lock admin</button></section>
+    <div class="tabs" style="max-width:520px">${[['create', 'Create accounts'], ['accounts', 'Accounts'], ['leads', 'Enquiries']].map(([v, l]) => `<button class="${tab === v ? 'on' : ''}" data-act="admin-tab" data-tab="${v}">${l}</button>`).join('')}</div>
+    ${body}</div>`;
 }
 
 /* ================= Student: overview ================= */
@@ -410,12 +498,12 @@ function aboutView() {
     const label = typeof x === 'string' ? x : x.label;
     return `<button type="button" class="chip ${d[list].includes(id) ? 'on' : ''}" data-act="pick" data-list="${list}" data-v="${esc(id)}">${esc(label)}</button>`;
   }).join('');
-  const select = (key, label, options, { optional = false } = {}) => `<label>${label}${optional ? ' <span class="muted small">(optional)</span>' : ''}<select id="q-${key}" data-q="${key}">
+  const select = (key, label, options, { optional = false } = {}) => `<label><span>${label}${optional ? ' <span class="muted small">(optional)</span>' : ''}</span><select id="q-${key}" data-q="${key}">
     <option value="">${optional ? 'Prefer not to say' : 'Choose…'}</option>${options.map((o) => { const v = typeof o === 'string' ? o : o.id; const l = typeof o === 'string' ? o : o.label; return `<option value="${esc(v)}" ${d[key] === v ? 'selected' : ''}>${esc(l === 'prefer-not' ? 'Prefer not to say' : l)}</option>`; }).join('')}</select></label>`;
   const marksFields = (MARK_KEYS[d.cls] || MARK_KEYS[10]).map((k) => {
     const n = k.replace('class', '');
     const current = String(n) === String(d.cls);
-    return `<label>Class ${n} ${current ? '<span class="muted small">(expected or latest)</span>' : ''}<input id="q-mark-${k}" type="number" min="0" max="100" step="0.1" inputmode="decimal" data-mark="${k}" value="${esc(d.marks[k] ?? '')}" placeholder="%"></label>`;
+    return `<label><span>Class ${n} ${current ? '<span class="muted small">(expected or latest)</span>' : ''}</span><input id="q-mark-${k}" type="number" min="0" max="100" step="0.1" inputmode="decimal" data-mark="${k}" value="${esc(d.marks[k] ?? '')}" placeholder="%"></label>`;
   }).join('');
 
   const steps = [
@@ -423,7 +511,7 @@ function aboutView() {
       <div class="grid-2" style="gap:14px">
         <label>Class<select id="q-cls" data-q="cls" data-rerender="1">${qc.classes.map((c) => `<option ${c === d.cls ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
         ${select('board', 'Board', qc.boards)}
-        <label>School name <span class="muted small">(optional)</span><input id="q-schoolName" data-q="schoolName" value="${esc(d.schoolName)}"></label>
+        <label><span>School name <span class="muted small">(optional)</span></span><input id="q-schoolName" data-q="schoolName" value="${esc(d.schoolName)}"></label>
         <label>City<input id="q-city" data-q="city" value="${esc(d.city)}" placeholder="e.g. Bengaluru"></label>
       </div>
       <div class="stack-sm"><h4>Subjects you study now</h4><div class="chips">${chipList('subjects', qc.subjects)}</div></div>
@@ -616,7 +704,7 @@ function coachHTML(typing = false) {
   const userTurns = c.messages.filter((m) => m.role === 'user').length;
   return `<div class="coach-layout">
     <section class="card coach">
-      <div class="coach-head"><img src="logo-mark.png" alt="" width="45" height="30"><div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
+      <div class="coach-head"><img src="/logo-mark.png" alt="" width="45" height="30"><div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
       <div class="msgs" id="msgs">${c.messages.map((m) => `<div class="msg ${m.role}">${esc(m.content)}</div>`).join('')}${typing ? '<div class="msg assistant typing"><span></span><span></span><span></span></div>' : ''}</div>
       ${c.suggestions?.length && !typing ? `<div class="quick">${c.suggestions.map((t) => `<button class="chip" data-act="coach-suggest" data-text="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
       <form id="coach-form" class="coach-input"><input id="coach-msg" autocomplete="off" placeholder="Type your answer…" ${typing ? 'disabled' : ''}><button class="btn" type="submit" ${typing ? 'disabled' : ''}>Send</button></form>
@@ -792,8 +880,13 @@ document.addEventListener('click', async (e) => {
     switch (act) {
       case 'reload': render(); break;
       case 'logout': signOut(); break;
-      case 'tab': S.authTab = el.dataset.tab; S.authError = ''; render(); break;
-      case 'role': S.signupRole = el.dataset.role; render(); break;
+      case 'admin-tab': ADMIN.tab = el.dataset.tab; render(); break;
+      case 'admin-logout': ADMIN.key = ''; try { sessionStorage.removeItem('dishaa-admin'); } catch { /* */ } render(); break;
+      case 'admin-reset': {
+        const out = await adminApi(`/admin/accounts/${el.dataset.id}/reset`, {});
+        toast(out.emailed ? `New password emailed to ${out.email}` : `New password for ${out.email}: ${out.password}`);
+        break;
+      }
       case 'demo': {
         el.disabled = true;
         signIn(await api('/auth/demo', { body: { as: el.dataset.as } }));
