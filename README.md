@@ -2,7 +2,7 @@
 
 Our project for the **Weekend at Mesa AI Hackathon** (Theme 02: Education & Careers).
 
-Dishaa helps Class 10 and Class 12 students choose their stream, degree and college with confidence. A student tells us about themselves, takes a 10-minute interactive aptitude assessment, and gets their strengths, career matches, a conversation with an AI career coach, and a personalised career plan with colleges and scholarships.
+Dishaa helps Class 10 and Class 12 students choose their stream, degree and college with confidence. A student tells us about themselves, takes a 15-minute interactive aptitude and interest assessment, and gets their strengths, career matches, a conversation with an AI career coach, and a personalised career plan with colleges and scholarships.
 
 Product summary: [`docs/PRODUCT.md`](docs/PRODUCT.md) · Notes for Claude Code: [`CLAUDE.md`](CLAUDE.md)
 
@@ -27,8 +27,8 @@ On the login page, the demo buttons need no account:
 ## The student journey
 
 1. **About you:** class, board, current subjects, marks (Classes 9-12), interests, dream job, family expectations, college budget, relocation, and optional details for scholarships.
-2. **Aptitude assessment (Dishaa Quest):** 20 interactive challenges across 8 abilities: logical, numerical, verbal, spatial, memory, critical thinking, creativity and people skills. This is the only part with a pixel-art style.
-3. **Report:** ability scores with evidence, strengths and growth areas, self-rating vs measured, top career matches from 18 careers, career path, colleges and scholarships.
+2. **Aptitude assessment (Dishaa Quest):** 27 interactive questions across 9 abilities: logical, numerical, verbal, spatial and mechanical reasoning, memory, critical thinking, creativity and people skills. This is the only part with a pixel-art style.
+3. **Report:** ability scores with evidence, strengths and growth areas, self-rating vs measured, top career matches from 36 careers, career path, colleges and scholarships.
 4. **Dishaa Coach:** an AI chat that helps the student settle on one goal.
 5. **Career plan:** timeline to the first job, exam preparation, colleges (dream / target / safe) within budget and location, scholarships, budget advice and next 30 days.
 

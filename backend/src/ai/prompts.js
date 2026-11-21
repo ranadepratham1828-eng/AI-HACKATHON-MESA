@@ -86,7 +86,7 @@ export function reportPrompt({ student, computed }) {
   const p = student.profile || {};
   return `${VOICE}
 
-Write the report for ${p.name || 'the student'}, Class ${p.cls || '10'}, ${p.city || 'India'}, after they completed Dishaa's 10-minute aptitude assessment. Call it "the assessment", never a game.
+Write the report for ${p.name || 'the student'}, Class ${p.cls || '10'}, ${p.city || 'India'}, after they completed Dishaa's aptitude assessment. Call it "the assessment", never a game.
 
 MEASURED ABILITIES (from the assessment):
 ${abilityLines(computed)}
@@ -113,7 +113,7 @@ export function parentReportPrompt({ student, computed, lang }) {
 
 Write a short note for the PARENT of ${p.name || 'a student'} (Class ${p.cls || '10'}), in ${LANGS[lang] || LANGS.en}.
 The parent expects their child to become: "${p.parentExpect || 'not given'}". Their reason: "${p.parentReason || 'not given'}".
-The child completed Dishaa's 10-minute aptitude assessment (call it "the assessment", never a game). Measured abilities:
+The child completed Dishaa's aptitude assessment (call it "the assessment", never a game). Measured abilities:
 ${abilityLines(computed)}
 Top career matches: ${computed.careers.map((c) => `${c.name} (${c.fit}%)`).join(', ')}
 

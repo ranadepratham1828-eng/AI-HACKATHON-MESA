@@ -116,7 +116,7 @@ export function scriptedParentReport(student, c) {
   const expectMatch = expect && careerNames.find((n) => n.toLowerCase().includes(expect.toLowerCase()));
   return {
     summary: c.quest.answered
-      ? `${name} completed Dishaa's 10-minute aptitude assessment. ${name}'s strongest areas are ${strengths.join(', ')}. The best-matching careers are ${careerNames.slice(0, 3).join(', ')}.`
+      ? `${name} completed Dishaa's aptitude assessment. ${name}'s strongest areas are ${strengths.join(', ')}. The best-matching careers are ${careerNames.slice(0, 3).join(', ')}.`
       : `${name} hasn't completed the aptitude assessment yet.`,
     match: expectMatch
       ? `${expect} appears in ${name}'s top career matches, which supports your hope.`

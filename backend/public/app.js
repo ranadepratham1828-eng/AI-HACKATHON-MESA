@@ -113,10 +113,10 @@ function renderTopbar() {
   }[S.user.role] || [];
   const ai = S.health?.ai;
   $('#topbar').innerHTML = `<div class="topbar-in">
-    <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="51" height="34"><span>dishaa</span></a>
+    <a class="brand" href="/"><img src="/logo-mark-t.png" alt="" width="38" height="26"><span>dishaa</span></a>
     <nav class="nav" aria-label="Main">${links.map(([h, l]) => `<a href="#${h}" class="${r === h ? 'on' : ''}">${l}</a>`).join('')}</nav>
     ${S.user ? `<div class="user">
-      ${ai ? `<span class="ai-dot" style="--ai:${ai.configured ? '#5ed68f' : '#f2b23a'}" title="${ai.configured ? 'AI connected' : 'AI not connected: demo text'}">${ai.configured ? 'AI on' : 'Demo mode'}</span>` : ''}
+      ${ai ? `<span class="ai-dot" style="--ai:${ai.configured ? 'var(--green)' : 'var(--gold)'}" title="${ai.configured ? 'AI connected' : 'AI not connected: demo text'}">${ai.configured ? 'AI on' : 'Demo mode'}</span>` : ''}
       <span>${esc(S.user.name)}</span><button class="btn outline small" data-act="logout">Log out</button></div>` : ''}
   </div>`;
 }
@@ -125,35 +125,36 @@ function renderTopbar() {
 function loginView() {
   return `<section class="auth">
     <div class="auth-brand">
-      <img class="logo" src="/logo-256.jpg" alt="Dishaa logo" width="120" height="120">
       <div class="stack">
-        <h1>Find the career that fits <span>who you really are.</span></h1>
-        <p class="lead" style="color:#cfc6ea">Dishaa helps Class 10 and 12 students choose their stream, degree and college with confidence, based on what they can actually do, not just marks.</p>
+        <p class="eyebrow">Career guidance for Class 9 to 12</p>
+        <h1>Choose a stream, degree and college based on what you can actually do.</h1>
+        <p class="lead">Dishaa measures a student's abilities and interests, matches them to careers in India, and builds a plan with colleges and scholarships.</p>
       </div>
-      <div class="stack">
-        <div class="point"><span class="ico">${ICONS.game}</span><div><h4>A 10-minute aptitude assessment</h4><p class="small">Eight abilities measured through interactive challenges: logic, numbers, language, spatial reasoning, memory, critical thinking, creativity and people skills.</p></div></div>
-        <div class="point"><span class="ico">${ICONS.compass}</span><div><h4>Careers matched to your strengths</h4><p class="small">The stream, degrees, entrance exams and colleges for each career, in one place.</p></div></div>
-        <div class="point"><span class="ico">${ICONS.people}</span><div><h4>Built for families and schools</h4><p class="small">A parent view in English, ಕನ್ನಡ or हिन्दी, and a dashboard for school counsellors.</p></div></div>
-      </div>
+      <ul class="points">
+        <li><span>Assessment</span><p class="small">27 questions across 9 abilities, plus a short interest check. About 15 minutes.</p></li>
+        <li><span>Career matches</span><p class="small">36 careers with the stream, degrees, entrance exams, salaries, and pros and cons for each.</p></li>
+        <li><span>Coach and plan</span><p class="small">An AI coach helps settle on a goal, then builds a plan with colleges within budget.</p></li>
+        <li><span>Families</span><p class="small">A parent view in English, ಕನ್ನಡ and हिन्दी, and a dashboard for school counsellors.</p></li>
+      </ul>
     </div>
     <div class="auth-form">
-      <div class="stack-sm"><h2>Log in to Dishaa</h2><p class="muted small">Use the email and password we sent you when your school or family subscribed.</p></div>
+      <div class="stack-sm"><h2>Log in</h2><p class="muted small">Use the email and password we sent you when your school or family subscribed.</p></div>
       ${S.authError ? `<p class="error">${esc(S.authError)}</p>` : ''}
       <form id="login-form" class="stack">
         <label>Email<input id="login-email" name="email" type="email" autocomplete="email" required></label>
         <label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
         <button class="btn block" type="submit">Log in</button>
       </form>
-      <details class="small muted"><summary style="cursor:pointer">Forgot your password or didn't get an email?</summary>
+      <details class="small muted"><summary>Forgot your password or didn't get an email?</summary>
         <p style="margin-top:8px">Ask your school counsellor, or <a href="/#contact">contact the Dishaa team</a> and we'll send you a new one.</p></details>
-      <p class="small muted">Not a customer yet? <a href="/#contact">Request access for your school or family</a>.</p>
-      <div class="or">or explore a demo</div>
+      <div class="or">Or explore a demo</div>
       <div class="demo-grid">
-        <button class="btn gold" data-act="demo" data-as="student">Start as a new student</button>
-        <button class="btn outline" data-act="demo" data-as="student-finished">See a finished report</button>
+        <button class="btn gold" data-act="demo" data-as="student">New student</button>
+        <button class="btn outline" data-act="demo" data-as="student-finished">Finished report</button>
         <button class="btn outline" data-act="demo" data-as="parent">Parent view</button>
-        <button class="btn outline" data-act="demo" data-as="school">Counsellor dashboard</button>
+        <button class="btn outline" data-act="demo" data-as="school">Counsellor view</button>
       </div>
+      <p class="small muted">Not a customer yet? <a href="/#contact">Request access for your school or family</a>.</p>
     </div>
   </section>`;
 }
@@ -290,20 +291,20 @@ function homeView() {
   const next = !p.questionnaireDone ? 'about' : !p.questDone ? 'quest' : 'report';
   const steps = [
     ['about', 1, 'About you', 'Your class, subjects, marks, interests and budget.', p.questionnaireDone, p.questionnaireDone ? 'Completed' : 'About 3 minutes', p.questionnaireDone ? 100 : 0],
-    ['quest', 2, 'Aptitude assessment', 'An interactive 10-minute assessment of 8 abilities.', p.questDone, p.questDone ? 'Completed' : p.questAnswered ? `${p.questAnswered} of ${p.questTotal} questions done` : 'About 10 minutes', pct(p.questAnswered, p.questTotal)],
-    ['report', 3, 'Careers and your plan', 'Your strengths, career matches, a chat with your coach and a full career plan.', Boolean(st.plan), st.plan ? 'Plan ready' : p.reportReady ? 'Report ready' : 'Unlocks after the quest', st.plan ? 100 : p.reportReady ? 60 : 0],
+    ['quest', 2, 'Aptitude assessment', '27 questions across 9 abilities, about 15 minutes.', p.questDone, p.questDone ? 'Completed' : p.questAnswered ? `${p.questAnswered} of ${p.questTotal} questions done` : 'About 15 minutes', pct(p.questAnswered, p.questTotal)],
+    ['report', 3, 'Careers and your plan', 'Your strengths, career matches, a chat with your coach and a full career plan.', Boolean(st.plan), st.plan ? 'Plan ready' : p.reportReady ? 'Report ready' : 'Unlocks after the assessment', st.plan ? 100 : p.reportReady ? 60 : 0],
   ];
   const cta = next === 'about' ? 'Tell us about you' : next === 'quest' ? (p.questAnswered ? 'Continue the assessment' : 'Start the assessment') : 'View my report';
   return `<div class="stack-lg">
     <section class="spread">
       <div class="stack-sm"><p class="eyebrow">Class ${esc(st.profile.cls || '10')}${st.profile.city ? ` · ${esc(st.profile.city)}` : ''}</p><h1>Hi ${esc(st.profile.name || 'there')}, let's find your direction.</h1>
         <p class="lead">Three steps. Your plan gets better with each one.</p></div>
-      <button class="btn" data-go="${next}">${cta} →</button>
+      <button class="btn gold" data-go="${next}">${cta}</button>
     </section>
     <section class="steps">${steps.map(([h, n, t, sub, done, state, w]) => `
       <a class="card step ${done ? 'done' : ''} ${h === next ? 'current' : ''} ${h === 'report' && !p.reportReady ? 'locked' : ''}" href="#${h}">
-        <span class="n">${done ? '✓' : n}</span><h3>${t}</h3><p class="muted small">${sub}</p>
-        <div class="spread small"><span class="muted">${state}</span></div>
+        <span class="n">Step ${n}</span><h3>${t}</h3><p class="muted small">${sub}</p>
+        <span class="small ${done ? '' : 'muted'}" style="${done ? 'color:var(--green)' : ''}">${state}</span>
         <div class="progress"><i style="width:${w}%"></i></div>
       </a>`).join('')}</section>
     <section class="card soft spread">
@@ -578,7 +579,7 @@ function abilityRows(abilities, { evidence = false } = {}) {
 async function reportView() {
   if (!S.student.progress.questAnswered) {
     return `<div class="card stack" style="max-width:680px;margin:0 auto"><p class="eyebrow">Your report</p><h2>Complete the aptitude assessment to unlock your report</h2>
-      <p class="muted">It takes about 10 minutes. Your report shows your strengths, areas to grow and the careers that fit you.</p><div><button class="btn" data-go="quest">Start the assessment →</button></div></div>`;
+      <p class="muted">It takes about 15 minutes. Your report shows your strengths, areas to grow and the careers that fit you.</p><div><button class="btn" data-go="quest">Start the assessment</button></div></div>`;
   }
   const r = await api(`/students/${S.student.id}/report`);
   const n = r.narrative;
@@ -593,8 +594,8 @@ async function reportView() {
     ${!r.questionnaireDone ? `<div class="card soft spread"><p>Add your subjects and interests to get sharper career matches.</p><button class="btn small" data-go="about">Tell us about you</button></div>` : ''}
 
     <section class="card navy stack">
-      <p class="eyebrow" style="color:var(--gold-500)">Dishaa report · ${esc(S.student.profile.name)} · Class ${esc(S.student.profile.cls || '10')}</p>
-      <h1 style="color:#fff">${esc(n.headline)}</h1>
+      <p class="eyebrow">Dishaa report · ${esc(S.student.profile.name)} · Class ${esc(S.student.profile.cls || '10')}</p>
+      <h1 style="max-width:30ch">${esc(n.headline)}</h1>
       <div class="row small"><span class="muted">${r.quest.stats.accuracy}% accuracy · about ${r.quest.stats.avgSeconds}s per question · ${r.quest.answered} questions answered</span>
         <span class="tag ${r.narrativeSource === 'ai' ? 'gold' : 'grey'}">${r.narrativeSource === 'ai' ? 'Written by AI from your results' : 'Standard summary'}</span></div>
     </section>
@@ -605,7 +606,7 @@ async function reportView() {
       <div class="stack">
         <div class="card stack"><p class="eyebrow">Your top strengths</p>
           ${n.strengths.map((s) => `<div class="stack-sm"><h3>${esc(s.name)}</h3><p class="small">${esc(s.evidence)}</p>${s.whyItMatters ? `<p class="small muted">${esc(s.whyItMatters)}</p>` : ''}</div>`).join('<div class="divider"></div>')}</div>
-        ${n.growth?.length ? `<div class="card gold stack"><p class="eyebrow" style="color:#8a5a06">Areas to grow</p>
+        ${n.growth?.length ? `<div class="card gold stack"><p class="eyebrow" style="color:var(--gold-ink)">Areas to grow</p>
           ${n.growth.map((g) => `<div class="stack-sm"><h4>${esc(g.name)}</h4><p class="small">${esc(g.tip)}</p></div>`).join('')}</div>` : ''}
       </div>
     </section>
@@ -630,9 +631,9 @@ async function reportView() {
 
     <section class="card stack" id="path">
       <div class="spread"><div class="stack-sm"><p class="eyebrow">Career path · ${esc(sel.category)}</p><h2>How to become a ${esc(sel.name)}</h2></div><span class="fit num">${sel.fit}% fit</span></div>
-      <div class="grid-2" style="gap:14px">
-        <div class="card soft tight stack-sm"><h4 style="color:var(--green)">Pros</h4><ul class="clean small">${sel.pros.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
-        <div class="card gold tight stack-sm"><h4 style="color:#8a5a06">Cons</h4><ul class="clean small">${sel.cons.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div class="pc">
+        <div class="pro"><p class="eyebrow">Pros</p><ul>${sel.pros.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
+        <div class="con"><p class="eyebrow">Cons</p><ul>${sel.cons.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
       </div>
       <p class="small"><b>Typical early salary in India:</b> ${esc(sel.salary)} ${sel.salarySource ? (sel.salarySource.startsWith('http') ? `· <a href="${esc(sel.salarySource)}" target="_blank" rel="noopener">source</a>` : `· ${esc(sel.salarySource)}`) : ''} <span class="muted">· Job demand: ${esc(sel.demand)}</span></p>
       ${pathView(sel)}
@@ -647,9 +648,9 @@ async function reportView() {
       <p class="small muted">Sample profiles for the demo. Real students and alumni join with a verified college email.</p></section>` : ''}
 
     <section class="card navy spread">
-      <div class="stack-sm" style="max-width:640px"><p class="eyebrow" style="color:var(--gold-500)">Dishaa Coach</p><h2 style="color:#fff">${r.hasPlan ? 'Your career plan is ready' : 'Not sure which career to aim for?'}</h2>
+      <div class="stack-sm" style="max-width:640px"><p class="eyebrow">Dishaa Coach</p><h2>${r.hasPlan ? 'Your career plan is ready' : 'Not sure which career to aim for?'}</h2>
         <p class="muted">Chat with your AI coach to settle on a goal. It then builds your full plan: stream, exams, colleges within your budget, scholarships and what to do next.</p></div>
-      <div class="row">${r.hasPlan ? '<button class="btn gold" data-go="plan">View my plan →</button><button class="btn outline" data-go="coach" style="background:transparent;color:#fff;border-color:var(--navy-800)">Talk to coach</button>' : '<button class="btn gold" data-go="coach">Talk to my coach →</button>'}</div>
+      <div class="row">${r.hasPlan ? '<button class="btn gold" data-go="plan">View my plan</button><button class="btn outline" data-go="coach">Talk to coach</button>' : '<button class="btn gold" data-go="coach">Talk to my coach</button>'}</div>
     </section>
 
     ${r.scholarships?.length ? `<section class="stack"><div class="stack-sm"><p class="eyebrow">Scholarships</p><h2>Scholarships you may qualify for</h2>
@@ -714,7 +715,7 @@ function scholarshipCard(x) {
 let coachCache = null;
 async function coachView() {
   if (!S.student.progress.questAnswered) {
-    return `<div class="card stack" style="max-width:680px;margin:0 auto"><h2>Complete the aptitude assessment first</h2><p class="muted">Your coach uses your results to guide you.</p><div><button class="btn" data-go="quest">Start the assessment →</button></div></div>`;
+    return `<div class="card stack" style="max-width:680px;margin:0 auto"><h2>Complete the aptitude assessment first</h2><p class="muted">Your coach uses your results to guide you.</p><div><button class="btn" data-go="quest">Start the assessment</button></div></div>`;
   }
   coachCache = await api(`/students/${S.student.id}/coach`);
   return coachHTML();
@@ -725,7 +726,7 @@ function coachHTML(typing = false) {
   const userTurns = c.messages.filter((m) => m.role === 'user').length;
   return `<div class="coach-layout">
     <section class="card coach">
-      <div class="coach-head"><img src="/logo-mark.png" alt="" width="45" height="30"><div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
+      <div class="coach-head"><img src="/logo-mark-t.png" alt="" width="32" height="22"><div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
       <div class="msgs" id="msgs">${c.messages.map((m) => `<div class="msg ${m.role}">${esc(m.content)}</div>`).join('')}${typing ? '<div class="msg assistant typing"><span></span><span></span><span></span></div>' : ''}</div>
       ${c.suggestions?.length && !typing ? `<div class="quick">${c.suggestions.map((t) => `<button class="chip" data-act="coach-suggest" data-text="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
       <form id="coach-form" class="coach-input"><input id="coach-msg" autocomplete="off" placeholder="Type your answer…" ${typing ? 'disabled' : ''}><button class="btn" type="submit" ${typing ? 'disabled' : ''}>Send</button></form>
@@ -734,9 +735,9 @@ function coachHTML(typing = false) {
       <div class="card stack-sm"><p class="eyebrow">Your goal</p><h3>${esc(S.content.careers?.find?.((x) => x.id === c.goal)?.name || (c.goal ? c.goal : 'Not decided yet'))}</h3>
         <p class="small muted">${c.readyForPlan ? 'Your coach has what it needs.' : 'Chat for a few turns to settle on a goal.'}</p>
         <button class="btn ${c.readyForPlan ? 'gold' : 'outline'}" data-act="build-plan" ${userTurns ? '' : 'disabled'}>${c.hasPlan ? 'Rebuild my plan' : 'Build my career plan'}</button>
-        ${c.hasPlan ? '<button class="btn ghost" data-go="plan">View my plan →</button>' : ''}</div>
-      <div class="card soft stack-sm"><p class="eyebrow">Try asking</p>
-        ${['Which of my matches suits me best?', 'My parents want me to be a doctor. What should I do?', 'Which stream should I take after Class 10?'].map((t) => `<button class="chip" data-act="coach-suggest" data-text="${esc(t)}" style="text-align:left">${esc(t)}</button>`).join('')}</div>
+        ${c.hasPlan ? '<button class="btn ghost" data-go="plan">View my plan</button>' : ''}</div>
+      <div class="card stack-sm"><p class="eyebrow">Try asking</p><div class="ask-list">
+        ${['Which of my matches suits me best?', 'My parents want me to be a doctor. What should I do?', 'Which stream should I take after Class 10?'].map((t) => `<button data-act="coach-suggest" data-text="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>
     </aside>
   </div>`;
 }
@@ -764,14 +765,14 @@ async function planView() {
   let plan;
   try { plan = await api(`/students/${S.student.id}/plan`); } catch {
     return `<div class="card stack" style="max-width:680px;margin:0 auto"><p class="eyebrow">My plan</p><h2>You don't have a career plan yet</h2>
-      <p class="muted">Chat with Dishaa Coach to pick a goal, then build your plan.</p><div><button class="btn" data-go="coach">Talk to my coach →</button></div></div>`;
+      <p class="muted">Chat with Dishaa Coach to pick a goal, then build your plan.</p><div><button class="btn" data-go="coach">Talk to my coach</button></div></div>`;
   }
   const tierTag = { dream: 'gold', target: 'purple', safe: 'green' };
   return `<div class="stack-lg">
     <section class="card navy stack">
-      <p class="eyebrow" style="color:var(--gold-500)">Career plan · ${esc(S.student.profile.name)}</p>
-      <h1 style="color:#fff">Goal: ${esc(plan.goal.name)}</h1>
-      <p style="color:#e7e1f8">${esc(plan.summary)}</p>
+      <p class="eyebrow">Career plan · ${esc(S.student.profile.name)}</p>
+      <h1>Goal: ${esc(plan.goal.name)}</h1>
+      <p class="lead">${esc(plan.summary)}</p>
       <div class="row small"><span class="muted">Created ${esc(new Date(plan.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }))}</span>
         <span class="tag ${plan.source === 'ai' ? 'gold' : 'grey'}">${plan.source === 'ai' ? 'Personalised by AI' : 'Standard plan'}</span>
         ${plan.goal.fit != null ? `<span class="tag purple">${plan.goal.fit}% match</span>` : ''}</div>
@@ -798,7 +799,7 @@ async function planView() {
           <p class="small muted">Unofficial source, checked ${esc(data.lastChecked)} · <a href="${esc(data.source)}" target="_blank" rel="noopener">source</a></p>` : ''}</div>`; }).join('')}</div></section>` : ''}
 
     <section class="grid-2">
-      <div class="card gold stack-sm"><p class="eyebrow" style="color:#8a5a06">Budget and funding</p><p>${esc(plan.budgetAdvice)}</p></div>
+      <div class="card gold stack-sm"><p class="eyebrow" style="color:var(--gold-ink)">Budget and funding</p><p>${esc(plan.budgetAdvice)}</p></div>
       <div class="card stack"><h3>Your next 30 days</h3>${plan.next30Days.map((x, i) => `<label class="check"><input type="checkbox" id="p30-${i}"> <span>${esc(x)}</span></label>`).join('')}</div>
     </section>
 
@@ -822,14 +823,14 @@ async function parentView() {
     <section class="spread"><div class="stack-sm"><p class="eyebrow">Parent view</p><h1>${name}'s strengths and career matches</h1></div>
       <div class="tabs" style="min-width:280px">${[['en', 'English'], ['kn', 'ಕನ್ನಡ'], ['hi', 'हिन्दी']].map(([v, l]) => `<button class="${lang === v ? 'on' : ''}" data-act="lang" data-lang="${v}">${l}</button>`).join('')}</div></section>
     ${pr.requestedLanguage !== pr.language ? '<p class="card gold small">Translation needs the AI to be connected. Showing English for now.</p>' : ''}
-    <section class="card navy stack"><p style="font-size:17px;color:#fff">${esc(pr.summary)}</p>
+    <section class="card navy stack"><p class="lead" style="max-width:none">${esc(pr.summary)}</p>
       <span class="small muted">${pr.source === 'ai' ? 'Written by AI from your child\'s results' : 'Standard summary'}</span></section>
     <section class="grid-2">
       <div class="card stack"><p class="eyebrow">Ability profile</p>${abilityRows(report.quest.abilities)}</div>
       <div class="stack">
         <div class="card stack-sm"><p class="eyebrow">Your hope</p><h3>${esc(pr.parentExpect || 'Not shared yet')}</h3>${pr.parentReason ? `<p class="small muted">"${esc(pr.parentReason)}"</p>` : ''}</div>
-        <div class="card stack-sm" style="border-left:4px solid var(--green)"><p class="eyebrow" style="color:var(--green)">Where it matches</p><p>${esc(pr.match)}</p></div>
-        <div class="card stack-sm" style="border-left:4px solid var(--gold-500)"><p class="eyebrow" style="color:#8a5a06">Where it differs</p><p>${esc(pr.differ)}</p></div>
+        <div class="card stack-sm"><p class="eyebrow" style="color:var(--green)">Where it matches</p><p>${esc(pr.match)}</p></div>
+        <div class="card stack-sm"><p class="eyebrow" style="color:var(--gold-ink)">Where it differs</p><p>${esc(pr.differ)}</p></div>
         <div class="card stack-sm"><p class="eyebrow">Top career matches</p>${pr.topCareers.map((c) => `<div class="spread"><span>${esc(c.name)}</span><b class="num">${c.fit}%</b></div>`).join('')}</div>
       </div>
     </section>
