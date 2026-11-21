@@ -8,10 +8,10 @@ Product summary: [`docs/PRODUCT.md`](docs/PRODUCT.md) · Notes for Claude Code: 
 
 ## Live site
 
-- **Landing page:** https://ai-hackathon-mesa-backend.vercel.app
-- **Product (log in):** https://ai-hackathon-mesa-backend.vercel.app/product
-- **Live demo (logs straight in):** https://ai-hackathon-mesa-backend.vercel.app/demo
-- **Admin (Dishaa team):** https://ai-hackathon-mesa-backend.vercel.app/product#admin
+- **Landing page:** https://dishaa-blue.vercel.app
+- **Product (log in):** https://dishaa-blue.vercel.app/product
+- **Live demo (logs straight in):** https://dishaa-blue.vercel.app/demo
+- **Admin (Dishaa team):** https://dishaa-blue.vercel.app/product#admin
 
 Dishaa is a paid service, so there is no public sign-up. The Dishaa team creates accounts on the admin page (one at a time, or a whole class at once) and each person is emailed their login with a temporary password, which they change on first login. Enquiries from the landing page's "Request a demo" form appear on the admin page too.
 
