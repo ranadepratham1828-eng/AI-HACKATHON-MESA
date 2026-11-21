@@ -13,7 +13,7 @@ function pickProvider() {
 }
 
 export const config = {
-  port: Number(env.PORT) || 8787,
+  port: Number(env.PORT) || 4747,
   corsOrigin: env.CORS_ORIGIN || '*',
   dataFile: env.DATA_FILE || 'data/db.json',
   ai: {

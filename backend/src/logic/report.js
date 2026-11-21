@@ -185,7 +185,7 @@ export function collegesFor(missionId) {
     .filter((c) => c.careers.includes(missionId))
     .map((c) => ({
       ...c,
-      verified: Boolean(c.source && c.lastChecked),
+      verified: c.sourceType === 'official' && Boolean(c.source && c.lastChecked),
       campusConnectCount: content.campusProfiles.filter((p) => p.collegeId === c.id).length,
     }));
 }

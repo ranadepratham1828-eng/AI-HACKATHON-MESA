@@ -1,20 +1,92 @@
 {
-  "_note": "Fill fees, cutoff and rank ONLY from official sources (NIRF at nirfindia.org, the college's own website, the exam body). Put the page in 'source' and today's date in 'lastChecked'. Fields left null show as 'Verified figure coming soon' in the app. Never guess a number.",
+  "_note": "Researched on 2026-11-21. Most figures come from education aggregator sites (Shiksha, Collegedunia, Careers360, etc.), which often disagree, so ranges are given and sourceType is 'aggregator'. NIRF 2026 rankings were not yet published, so ranks are NIRF 2025. Before showing real students, confirm on the official site (nirfindia.org, josaa.nic.in, the college's fee notice) and set sourceType to 'official'. Never guess a number.",
   "colleges": [
-    { "id": "iitb-idc", "name": "IIT Bombay, IDC School of Design", "city": "Mumbai", "course": "B.Des", "careers": ["ux-designer"], "entrance": "UCEED", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "nid-ahmedabad", "name": "National Institute of Design, Ahmedabad", "city": "Ahmedabad", "course": "B.Des", "careers": ["ux-designer"], "entrance": "NID DAT", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "srishti-bengaluru", "name": "Srishti Manipal Institute of Art, Design and Technology", "city": "Bengaluru", "course": "B.Des", "careers": ["ux-designer"], "entrance": "Institute's own entrance", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
+    {
+      "id": "iitb-idc", "name": "IIT Bombay, IDC School of Design", "city": "Mumbai", "course": "B.Des", "careers": ["ux-designer"], "entrance": "UCEED",
+      "feesPerYearINR": null, "feesNote": "About ₹2 lakh/yr (₹8–8.8 lakh for 4 years; sources differ)",
+      "cutoff": "UCEED closing rank 16 (General, final round 2026)",
+      "nirfRank": "No NIRF design category",
+      "source": "https://collegedunia.com/university/25703-iit-bombay-indian-institute-of-technology-iitb-mumbai/cutoff", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "nid-ahmedabad", "name": "National Institute of Design, Ahmedabad", "city": "Ahmedabad", "course": "B.Des", "careers": ["ux-designer"], "entrance": "NID DAT",
+      "feesPerYearINR": 451000, "feesNote": "Tuition ₹4.51 lakh/yr; about ₹18.15 lakh for 4 years (2026 batch, without hostel)",
+      "cutoff": "NID DAT prelims + mains; no public cutoff",
+      "nirfRank": "No NIRF design category",
+      "source": "https://www.toprankers.com/nid-fee-structure", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "srishti-bengaluru", "name": "Srishti Manipal Institute of Art, Design and Technology", "city": "Bengaluru", "course": "B.Des", "careers": ["ux-designer"], "entrance": "Institute's own entrance",
+      "feesPerYearINR": null, "feesNote": "₹17–31 lakh for 4 years (sources disagree widely)",
+      "cutoff": "Own entrance test and interview",
+      "nirfRank": "No NIRF design category",
+      "source": "https://collegedunia.com/college/5682-srishti-manipal-institute-of-art-design-and-technology-bangalore/bachelor-of-design-bdes-5809", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
 
-    { "id": "christ-bcom", "name": "Christ University", "city": "Bengaluru", "course": "B.Com (with CA preparation)", "careers": ["forensic-accountant"], "entrance": "University entrance + CA Foundation via ICAI", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "sjcc-bcom", "name": "St. Joseph's College of Commerce", "city": "Bengaluru", "course": "B.Com", "careers": ["forensic-accountant"], "entrance": "College admission process", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "srcc-bcom", "name": "Shri Ram College of Commerce", "city": "Delhi", "course": "B.Com (Hons)", "careers": ["forensic-accountant"], "entrance": "CUET", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
+    {
+      "id": "christ-bcom", "name": "Christ University", "city": "Bengaluru", "course": "B.Com (with CA preparation)", "careers": ["forensic-accountant"], "entrance": "University entrance + CA Foundation via ICAI",
+      "feesPerYearINR": null, "feesNote": "About ₹3.6–4.6 lakh for 3 years (general B.Com)",
+      "cutoff": "Christ entrance test and interview",
+      "nirfRank": "#63 University (NIRF 2025)",
+      "source": "https://collegedunia.com/university/25598-christ-university-bangalore/bachelor-of-commerce-bcom-full-time", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "sjcc-bcom", "name": "St. Joseph's College of Commerce", "city": "Bengaluru", "course": "B.Com", "careers": ["forensic-accountant"], "entrance": "College admission process",
+      "feesPerYearINR": null, "feesNote": "About ₹4 lakh for 3 years (standard B.Com)",
+      "cutoff": "College's own admission process",
+      "nirfRank": "#98 College (NIRF 2025)",
+      "source": "https://collegedunia.com/college/18892-st-josephs-college-of-commerce-sjcc-bangalore", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "srcc-bcom", "name": "Shri Ram College of Commerce", "city": "Delhi", "course": "B.Com (Hons)", "careers": ["forensic-accountant"], "entrance": "CUET",
+      "feesPerYearINR": 30645, "feesNote": "About ₹30,600/yr",
+      "cutoff": "CUET 923.84/1000 (General, Round 1, 2026)",
+      "nirfRank": "#18 College (NIRF 2025)",
+      "source": "https://collegedunia.com/college/4417-shri-ram-college-of-commerce-srcc-new-delhi/cutoff", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
 
-    { "id": "spa-delhi-bplan", "name": "School of Planning and Architecture, Delhi", "city": "Delhi", "course": "B.Plan", "careers": ["urban-planner"], "entrance": "JEE Main Paper 2B + JoSAA", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "spa-bhopal-bplan", "name": "School of Planning and Architecture, Bhopal", "city": "Bhopal", "course": "B.Plan", "careers": ["urban-planner"], "entrance": "JEE Main Paper 2B + JoSAA", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "spa-vijayawada-bplan", "name": "School of Planning and Architecture, Vijayawada", "city": "Vijayawada", "course": "B.Plan", "careers": ["urban-planner"], "entrance": "JEE Main Paper 2B + JoSAA", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
+    {
+      "id": "spa-delhi-bplan", "name": "School of Planning and Architecture, Delhi", "city": "Delhi", "course": "B.Plan", "careers": ["urban-planner"], "entrance": "JEE Main Paper 2B + JoSAA",
+      "feesPerYearINR": null, "feesNote": "About ₹1.1–1.9 lakh/yr (₹4.3–7.7 lakh total; sources differ)",
+      "cutoff": "JoSAA closing rank 227–233 (General, final rounds 2026)",
+      "nirfRank": "#8 Architecture & Planning (NIRF 2025)",
+      "source": "https://collegedunia.com/college/25469-school-of-planning-and-architecture-spa-new-delhi", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "spa-bhopal-bplan", "name": "School of Planning and Architecture, Bhopal", "city": "Bhopal", "course": "B.Plan", "careers": ["urban-planner"], "entrance": "JEE Main Paper 2B + JoSAA",
+      "feesPerYearINR": null, "feesNote": "Check the official SPA Bhopal fee notice",
+      "cutoff": "JoSAA closing rank 471 (General, final round 2026)",
+      "nirfRank": null,
+      "source": "https://www.shiksha.com/college/spa-bhopal-school-of-planning-and-architecture-39575/cutoff", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "spa-vijayawada-bplan", "name": "School of Planning and Architecture, Vijayawada", "city": "Vijayawada", "course": "B.Plan", "careers": ["urban-planner"], "entrance": "JEE Main Paper 2B + JoSAA",
+      "feesPerYearINR": null, "feesNote": "Check the official SPA Vijayawada fee notice",
+      "cutoff": "JoSAA closing rank about 506 (General, 2026; sources differ)",
+      "nirfRank": null,
+      "source": "https://www.jeeinfo.in/colleges/spa-vijayawada/", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
 
-    { "id": "spa-delhi-barch", "name": "School of Planning and Architecture, Delhi", "city": "Delhi", "course": "B.Arch", "careers": ["architect"], "entrance": "JEE Main Paper 2A + JoSAA", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "nit-trichy-barch", "name": "NIT Tiruchirappalli", "city": "Tiruchirappalli", "course": "B.Arch", "careers": ["architect"], "entrance": "JEE Main Paper 2A + JoSAA", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null },
-    { "id": "rvca-barch", "name": "RV College of Architecture", "city": "Bengaluru", "course": "B.Arch", "careers": ["architect"], "entrance": "NATA / state counselling", "feesPerYearINR": null, "cutoff": null, "nirfRank": null, "source": null, "lastChecked": null }
+    {
+      "id": "spa-delhi-barch", "name": "School of Planning and Architecture, Delhi", "city": "Delhi", "course": "B.Arch", "careers": ["architect"], "entrance": "JEE Main Paper 2A + JoSAA",
+      "feesPerYearINR": null, "feesNote": "About ₹1–1.5 lakh/yr (₹4–7.7 lakh for 5 years; sources differ)",
+      "cutoff": "JoSAA closing rank 153–207 (General, final rounds 2026; sources differ)",
+      "nirfRank": "#8 Architecture & Planning (NIRF 2025)",
+      "source": "https://collegedunia.com/college/25469-school-of-planning-and-architecture-spa-new-delhi", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "nit-trichy-barch", "name": "NIT Tiruchirappalli", "city": "Tiruchirappalli", "course": "B.Arch", "careers": ["architect"], "entrance": "JEE Main Paper 2A + JoSAA",
+      "feesPerYearINR": 125000, "feesNote": "Tuition ₹62,500 per semester (about ₹7.9–11 lakh for 5 years)",
+      "cutoff": "JoSAA closing rank 151 (other state) to 276 (home state), Round 1 2026",
+      "nirfRank": "#9 Architecture & Planning (NIRF 2025)",
+      "source": "https://www.careers360.com/university/national-institute-of-technology-tiruchirappalli/courses", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "rvca-barch", "name": "RV College of Architecture", "city": "Bengaluru", "course": "B.Arch", "careers": ["architect"], "entrance": "NATA + KEA / COMEDK / management quota",
+      "feesPerYearINR": null, "feesNote": "About ₹59,000/yr (government quota) to ₹6 lakh/yr (management quota)",
+      "cutoff": "Depends on quota: KEA, COMEDK or management",
+      "nirfRank": null,
+      "source": "https://www.getmyuni.com/college/rv-college-of-architecture-rvca-bangalore-courses-fees/barch/ci", "sourceType": "aggregator", "lastChecked": "2026-11-21"
+    }
   ]
 }

@@ -17,7 +17,7 @@ cp .env.example .env      # then paste your free Gemini key into .env (optional)
 npm start
 ```
 
-Open **http://localhost:8787**. The backend serves the web app too.
+Open **http://localhost:4747**. The backend serves the web app too.
 
 On the login page, the **Quick demo** buttons need no account:
 

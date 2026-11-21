@@ -660,11 +660,11 @@ async function reportView() {
       <div class="grid-3">${selected.colleges.map((c) => `<div class="box stack-sm">
         <h4>${esc(c.name)}</h4><p class="small muted">${esc(c.city)} · ${esc(c.course)} · via ${esc(c.entrance)}</p>
         <div class="inset small stack-sm">
-          <div class="spread"><span>Fees / year</span><b class="num">${c.feesPerYearINR ? `₹${Number(c.feesPerYearINR).toLocaleString('en-IN')}` : '—'}</b></div>
-          <div class="spread"><span>Cutoff</span><b>${c.cutoff ? esc(c.cutoff) : '—'}</b></div>
-          <div class="spread"><span>NIRF rank</span><b class="num">${c.nirfRank ?? '—'}</b></div>
+          <div class="stack-sm"><span class="muted">Fees</span><b>${c.feesNote ? esc(c.feesNote) : c.feesPerYearINR ? `₹${Number(c.feesPerYearINR).toLocaleString('en-IN')} / year` : '—'}</b></div>
+          <div class="stack-sm"><span class="muted">Cutoff</span><b>${c.cutoff ? esc(c.cutoff) : '—'}</b></div>
+          <div class="stack-sm"><span class="muted">NIRF</span><b>${c.nirfRank ? esc(c.nirfRank) : 'Not in NIRF list'}</b></div>
         </div>
-        <span class="tag ${c.verified ? 'green' : 'muted'}">${c.verified ? `Verified · ${esc(c.lastChecked)}` : 'Verified figures coming soon'}</span>
+        ${c.verified ? `<span class="tag green">Verified · ${esc(c.lastChecked)}</span>` : c.source ? `<span class="small muted">Unofficial source, checked ${esc(c.lastChecked)}: <a href="${esc(c.source)}" target="_blank" rel="noopener">view</a></span>` : '<span class="tag muted">Figures coming soon</span>'}
         ${c.campusConnectCount ? `<a class="small" href="#" data-act="scroll" data-target="campus">Talk to ${c.campusConnectCount} student${c.campusConnectCount > 1 ? 's' : ''} from here ▶</a>` : ''}
       </div>`).join('')}</div>
     </section>
@@ -693,7 +693,7 @@ function pathSteps(p, rec) {
       ${stream ? `<div class="inset stack-sm"><p class="small eyebrow">Stream fit for you</p>${stream.scores.map((s) => `<div class="fit-row"><span class="small">${esc(s.stream)}</span><div class="bar"><i style="width:${s.fit}%;--c:${s.stream === stream.recommended ? 'var(--green)' : 'var(--line)'}"></i></div><span class="small num">${s.fit}</span></div>`).join('')}</div>` : ''}`)}
     ${step('Class 12: degree and entrance exams', `<ul class="clean">${pw.degrees.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>
       <p class="small"><b>Exams:</b> ${pw.exams.map(esc).join(' · ')}</p>
-      ${pw.examTimeline?.length ? `<ul class="clean small muted">${pw.examTimeline.map((t) => `<li>${esc(t)}</li>`).join('')}</ul><p class="small muted">Dates change every year: check the official exam site.</p>` : ''}`)}
+      ${pw.examTimeline?.length ? `<ul class="clean small muted">${pw.examTimeline.map((t) => `<li>${esc(t)}</li>`).join('')}</ul><p class="small muted">Dates as reported on ${esc(pw.datesCheckedOn || '')}; always confirm on the official exam site.</p>` : ''}`)}
     ${step('College', `<p class="small">${pw.collegeTypes.map(esc).join(' · ')}</p><a class="small" href="#" data-act="scroll" data-target="colleges">See ${p.colleges.length} colleges below ▶</a>`)}
     ${step('After the degree', pw.afterDegree ? `<p class="small"><b>First jobs:</b> ${pw.afterDegree.firstJobs.map(esc).join(' · ')}</p><p class="small"><b>Growth:</b> ${pw.afterDegree.growth.map(esc).join(' · ')}</p>` : '', true)}
   </div>`;

@@ -20,7 +20,7 @@ docs/               Product, API, design and AI setup docs
 ## Commands (run inside `backend/`)
 
 - `npm install`, then `cp .env.example .env` and add `GEMINI_API_KEY`
-- `npm run dev`: API on http://localhost:8787 with auto-reload
+- `npm run dev`: API on http://localhost:4747 with auto-reload
 - `npm test`: all tests; must pass before pushing
 - `npm run check-ai`: proves the AI key works; `npm run models`: lists usable Gemini models
 

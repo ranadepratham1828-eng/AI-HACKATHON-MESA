@@ -118,7 +118,7 @@ export function createApp(store) {
   };
 
   // ---- Basics ----
-  app.get('/api/health', (req, res) => res.json({ ok: true, ai: aiStatus() }));
+  app.get('/api/health', (req, res) => res.json({ ok: true, app: 'disha', ai: aiStatus() }));
 
   app.get('/api/content', (req, res) => res.json({
     questionnaire: content.questionnaire,
