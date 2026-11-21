@@ -1,0 +1,100 @@
+{
+  "_note": "Draft pathways for the demo. Exam timelines are approximate: always check this year's dates on the official sites. Have a working professional check each pathway before showing it to real students.",
+  "pathways": {
+    "ux-designer": {
+      "career": "UX Designer",
+      "streams": ["Science", "Commerce", "Arts"],
+      "streamNote": "Any stream works: design entrance exams like UCEED and NID DAT accept students from all streams.",
+      "subjects": ["English", "Art", "Computer Science", "Psychology"],
+      "exams": ["UCEED (for IIT B.Des)", "NID DAT", "NIFT entrance", "University design entrance tests"],
+      "examTimeline": [
+        "Autumn of Class 12: register for UCEED and NID DAT",
+        "Around December to January: NID DAT prelims and the UCEED exam",
+        "Spring: studio tests, portfolio reviews and interviews"
+      ],
+      "degrees": ["B.Des (Interaction or Communication Design)", "Or any degree plus a strong UX portfolio"],
+      "collegeTypes": ["IITs (via UCEED)", "National Institutes of Design", "NIFT campuses", "Private design schools"],
+      "afterDegree": {
+        "firstJobs": ["UX or UI designer at a startup or product company", "Interaction designer at a design agency"],
+        "growth": ["Senior designer, then design lead, then head of design", "Or move into UX research or product management"]
+      },
+      "tryThisWeek": [
+        "Redesign one screen of an app your family finds confusing, on paper",
+        "Watch a free beginner UX course video online",
+        "Ask a grandparent to use an app while you watch silently and take notes"
+      ],
+      "verified": false
+    },
+    "forensic-accountant": {
+      "career": "Forensic Accountant",
+      "streams": ["Commerce"],
+      "streamNote": "CA is open to any stream, but Commerce (with Maths) makes it much easier.",
+      "subjects": ["Accountancy", "Business Studies", "Economics", "Maths"],
+      "exams": ["CA Foundation, then CA Intermediate and CA Final (ICAI)", "CMA (alternative route)"],
+      "examTimeline": [
+        "After Class 12: register for CA Foundation with ICAI",
+        "CA Foundation is held several times a year, so you can pick your attempt",
+        "Then CA Intermediate, 3 years of articleship, and CA Final"
+      ],
+      "degrees": ["B.Com alongside CA", "Forensic accounting certifications after qualifying"],
+      "collegeTypes": ["Commerce colleges for B.Com", "ICAI coaching and articleship (no college needed for CA)"],
+      "afterDegree": {
+        "firstJobs": ["Auditor or article assistant at a CA firm", "Analyst in a forensic or risk team at an audit firm"],
+        "growth": ["Forensic accountant, then manager, then partner", "Or fraud investigator for banks and regulators"]
+      },
+      "tryThisWeek": [
+        "Track your family's grocery spending for a week and look for surprises",
+        "Read one news story about a company fraud and list the warning signs",
+        "Try a free beginner accounting video online"
+      ],
+      "verified": false
+    },
+    "urban-planner": {
+      "career": "Urban Planner",
+      "streams": ["Science"],
+      "streamNote": "B.Plan usually needs Maths in Class 12, so Science with Maths (PCM) is the safest route.",
+      "subjects": ["Maths", "Geography", "Physics"],
+      "exams": ["JEE Main Paper 2B (B.Planning)", "State and university planning entrance tests"],
+      "examTimeline": [
+        "JEE Main has a January session and an April session; take Paper 2B for B.Planning",
+        "After results: JoSAA counselling for planning seats at SPAs and NITs"
+      ],
+      "degrees": ["B.Plan (Bachelor of Planning)", "Or B.Arch / Civil Engineering, then M.Plan"],
+      "collegeTypes": ["Schools of Planning and Architecture", "NITs offering B.Plan", "Private planning schools"],
+      "afterDegree": {
+        "firstJobs": ["Junior planner at a planning consultancy", "Planner at a city development authority or smart-city project"],
+        "growth": ["Senior planner, then transport or urban design specialist", "Or policy roles with government and NGOs"]
+      },
+      "tryThisWeek": [
+        "Map your route to school and mark every unsafe spot",
+        "Count how many vehicles pass a junction near you in 10 minutes",
+        "Look up your city's master plan or metro map online"
+      ],
+      "verified": false
+    },
+    "architect": {
+      "career": "Architect",
+      "streams": ["Science"],
+      "streamNote": "B.Arch needs Physics, Chemistry and Maths in Class 12.",
+      "subjects": ["Maths", "Physics", "Art"],
+      "exams": ["NATA", "JEE Main Paper 2A (B.Arch, for NITs and SPAs)"],
+      "examTimeline": [
+        "NATA: several attempts in the spring and summer after Class 12",
+        "JEE Main has a January session and an April session; take Paper 2A for B.Arch",
+        "After results: JoSAA counselling for NITs and SPAs, state counselling for other colleges"
+      ],
+      "degrees": ["B.Arch (5 years)"],
+      "collegeTypes": ["Schools of Planning and Architecture", "NITs offering B.Arch", "Private architecture colleges"],
+      "afterDegree": {
+        "firstJobs": ["Junior architect at a design studio", "Site architect with a construction company"],
+        "growth": ["Project architect, then associate, then your own practice", "Or specialise in urban design, interiors or green buildings"]
+      },
+      "tryThisWeek": [
+        "Measure your home and draw its floor plan to scale on squared paper",
+        "Visit one building you love and sketch why it feels good",
+        "Watch a free intro video on sketching floor plans"
+      ],
+      "verified": false
+    }
+  }
+}

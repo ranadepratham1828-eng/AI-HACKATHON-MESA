@@ -1,0 +1,17 @@
+{
+  "_note": "SAMPLE profiles for the demo. These people are made up. In the real product, students and alumni join with a verified college email or ID.",
+  "profiles": [
+    { "id": "cc-1", "collegeId": "iitb-idc", "name": "Meera S.", "type": "current", "year": "3rd year", "course": "B.Des", "about": "Switched from Science to design after Class 12. Ask me about UCEED prep and studio life.", "topics": ["Entrance prep", "Classes", "Hostel life"], "languages": ["English", "Kannada"], "pricePer15MinINR": 199, "sample": true },
+    { "id": "cc-2", "collegeId": "nid-ahmedabad", "name": "Arjun K.", "type": "alumnus", "year": "Graduated 2024", "course": "B.Des", "about": "Now a UX designer at a fintech. Ask me about placements and the first job.", "topics": ["Placements", "Portfolio", "Is it worth it?"], "languages": ["English", "Hindi"], "pricePer15MinINR": 299, "sample": true },
+    { "id": "cc-3", "collegeId": "srishti-bengaluru", "name": "Tanya R.", "type": "current", "year": "2nd year", "course": "B.Des", "about": "From a small town in Karnataka. Happy to talk about fees, scholarships and settling in.", "topics": ["Fees and scholarships", "Culture", "Hostel life"], "languages": ["English", "Kannada"], "pricePer15MinINR": 149, "sample": true },
+
+    { "id": "cc-4", "collegeId": "christ-bcom", "name": "Rohit P.", "type": "current", "year": "3rd year", "course": "B.Com", "about": "Doing CA alongside B.Com. Ask me how to manage both.", "topics": ["CA + degree", "Timetable", "Internships"], "languages": ["English", "Hindi"], "pricePer15MinINR": 149, "sample": true },
+    { "id": "cc-5", "collegeId": "sjcc-bcom", "name": "Divya M.", "type": "alumnus", "year": "Graduated 2023", "course": "B.Com", "about": "Now in a forensic audit team. Ask me what the job is really like.", "topics": ["Placements", "First job", "Is it worth it?"], "languages": ["English", "Kannada"], "pricePer15MinINR": 249, "sample": true },
+
+    { "id": "cc-6", "collegeId": "spa-delhi-bplan", "name": "Kabir N.", "type": "current", "year": "4th year", "course": "B.Plan", "about": "Working on a city transport thesis. Ask me about site visits and studio work.", "topics": ["Classes", "Projects", "Placements"], "languages": ["English", "Hindi"], "pricePer15MinINR": 199, "sample": true },
+    { "id": "cc-7", "collegeId": "spa-bhopal-bplan", "name": "Sneha J.", "type": "alumnus", "year": "Graduated 2023", "course": "B.Plan", "about": "Planner on a smart-city project. Ask me about government jobs in planning.", "topics": ["First job", "Government roles"], "languages": ["English", "Hindi"], "pricePer15MinINR": 249, "sample": true },
+
+    { "id": "cc-8", "collegeId": "rvca-barch", "name": "Nikhil G.", "type": "current", "year": "3rd year", "course": "B.Arch", "about": "Ask me about NATA, all-nighters in studio, and model making.", "topics": ["Entrance prep", "Studio life", "Hostel life"], "languages": ["English", "Kannada"], "pricePer15MinINR": 149, "sample": true },
+    { "id": "cc-9", "collegeId": "nit-trichy-barch", "name": "Aisha F.", "type": "alumnus", "year": "Graduated 2022", "course": "B.Arch", "about": "Architect at a green-building firm. Ask me if architecture is worth 5 years.", "topics": ["Is it worth it?", "Salary growth", "Placements"], "languages": ["English", "Tamil"], "pricePer15MinINR": 299, "sample": true }
+  ]
+}

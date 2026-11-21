@@ -1,0 +1,153 @@
+{
+  "missions": [
+    {
+      "id": "ux-designer",
+      "career": "UX Designer",
+      "tagline": "Make a banking app that grandparents can actually use.",
+      "durationMin": 10,
+      "weights": { "People": 2, "Creativity": 3, "Building": 1, "Investigating": 1 },
+      "senior": {
+        "name": "Priya",
+        "role": "Senior UX Designer at a Bengaluru fintech company",
+        "intro": "Hi! I'm Priya. I design apps that millions of people use every day. Today you're on my team."
+      },
+      "material": {
+        "title": "Support ticket #4471",
+        "intro": "Mrs. Kamala Rao, 71, tried to send ₹2,000 to her grandson using our banking app. She gave up and asked her neighbour to do it, and told him her PIN. Here is what our research found:",
+        "bullets": [
+          "\"Send Money\" is hidden inside a ☰ menu.",
+          "Text is small and light grey.",
+          "The OTP expires in 30 seconds, and she can't type it in time.",
+          "The app is only in English.",
+          "The main button says \"Initiate IMPS transfer\"."
+        ]
+      },
+      "task": "What would you change? Give your top 3 changes and explain how each one helps Mrs. Rao.",
+      "realWorldStep": "On paper, sketch your new \"Send Money\" screen and label the buttons. Upload a photo of your sketch.",
+      "bonus": "Write the exact words the app should show when a transfer fails. Make it calm and clear for a 71-year-old.",
+      "rubric": "Good answers start from Mrs. Rao's needs (eyesight, confidence, language, time pressure) before visuals; give concrete changes (bigger text, Send Money on the home screen, longer OTP time or voice OTP, Kannada/Hindi, plain words); and explain why each helps. Bonus points for safety (never share the PIN).",
+      "fallback": {
+        "praise": "You started from Mrs. Rao's experience instead of colours and buttons. That's exactly how UX designers think.",
+        "proTip": "A professional would test the new screen with 3 to 5 real grandparents before building it. Watching one person struggle teaches more than any opinion.",
+        "imageComment": "Thanks for sketching on paper. Real designers start exactly like this, before touching a computer.",
+        "twist": "The bank's tech team says your changes will take 3 extra months, and the launch is in 4 weeks. You can keep only ONE change. Which one, and why?",
+        "twistReaction": "Good call. Choosing what matters most under a deadline is half of a designer's job."
+      },
+      "qualityKeywords": ["font", "text", "big", "large", "home", "otp", "time", "language", "kannada", "hindi", "simple", "button", "voice", "pin"]
+    },
+    {
+      "id": "forensic-accountant",
+      "career": "Forensic Accountant",
+      "tagline": "One payment in this shop's books is a fraud. Find it.",
+      "durationMin": 10,
+      "weights": { "Numbers": 3, "Investigating": 3, "People": 0.5 },
+      "senior": {
+        "name": "Rahul",
+        "role": "Forensic Accountant at an audit firm in Mumbai",
+        "intro": "Hi, I'm Rahul. Companies call me when money goes missing. Most frauds hide in plain sight."
+      },
+      "material": {
+        "title": "Sri Lakshmi Stores: payments register, first week of March",
+        "intro": "The owner feels money is leaking but can't see where. One payment below is a fraud.",
+        "table": {
+          "columns": ["Day", "Paid to", "Invoice no.", "Amount (₹)"],
+          "rows": [
+            ["Mon", "Ganesh Traders (rice, dal)", "INV-2231", "12,400"],
+            ["Mon", "Electricity bill", "EB-0392", "6,850"],
+            ["Tue", "Nandini Dairy", "ND-7781", "4,320"],
+            ["Wed", "Shop rent", "RENT-MAR", "25,000"],
+            ["Thu", "Ganesh Traders (rice, dal)", "INV-2231", "12,400"],
+            ["Fri", "Ravi (helper) salary", "SAL-03", "9,000"],
+            ["Sat", "Sharma Packaging", "SP-1102", "3,175"]
+          ]
+        },
+        "bullets": [
+          "Cash sales this week: Mon 8,450 · Tue 7,920 · Wed 9,105 · Thu 8,760 · Fri 11,230 · Sat 14,680 · Sun 12,015 (total in the books: ₹72,160)."
+        ]
+      },
+      "task": "Which payment is the fraud? Explain how you spotted it, and what you would check next to be sure.",
+      "realWorldStep": "Add up the week's cash sales by hand on paper and check whether the total in the books is right. Upload a photo of your working.",
+      "bonus": "Write a 2-line note to the shop owner explaining what you found, clearly, without accusing anyone by name.",
+      "rubric": "The fraud is the duplicate payment: invoice INV-2231 to Ganesh Traders was paid twice (Mon and Thu, ₹12,400 each). Good answers name it, explain the clue (same invoice number paid twice), and suggest a next check (ask Ganesh Traders for their statement, check who approved Thursday's payment, check bank records). The cash sales do add up to ₹72,160.",
+      "fallback": {
+        "praise": "You went through the entries line by line. Patience is a forensic accountant's most important tool.",
+        "proTip": "A professional would match every payment against the supplier's own statement. Two payments with one invoice number is a classic red flag.",
+        "imageComment": "Checking totals by hand is exactly what auditors do before trusting any spreadsheet.",
+        "twist": "The shop's accountant says the second payment was an \"advance for next month\". There's no new invoice. What would you ask for to check his story?",
+        "twistReaction": "Asking for proof instead of accepting a story: that's the forensic mindset."
+      },
+      "qualityKeywords": ["2231", "twice", "duplicate", "double", "same invoice", "repeated", "two times", "ganesh"],
+      "correctKeywords": ["2231", "twice", "duplicate", "double", "same invoice", "repeated", "two times"]
+    },
+    {
+      "id": "urban-planner",
+      "career": "Urban Planner",
+      "tagline": "This junction has accidents every week. Fix it.",
+      "durationMin": 10,
+      "weights": { "Building": 2, "Nature": 2, "People": 2, "Creativity": 1, "Investigating": 1 },
+      "senior": {
+        "name": "Farhan",
+        "role": "Urban Planner with a city transport authority",
+        "intro": "Hi, I'm Farhan. I plan streets so people get home safely. A city is a puzzle with millions of pieces."
+      },
+      "material": {
+        "title": "Junction report: Ring Road and Market Street",
+        "intro": "Last 3 months: 14 accidents, mostly two-wheelers turning right, and 3 pedestrians hurt. What we observed:",
+        "bullets": [
+          "Four roads meet. There's no signal, only a traffic police officer from 8 to 11 am.",
+          "Buses stop right at the corner and block the left lane.",
+          "Auto-rickshaws wait for passengers in the turning lane.",
+          "A girls' school is 200 m away; 900 students arrive between 8 and 8:30 am.",
+          "One side has no footpath; on the other side, vendors use the footpath."
+        ]
+      },
+      "task": "How would you fix this junction? Give 3 changes, and say who might be unhappy with each change.",
+      "realWorldStep": "Photograph a busy road or junction near your home, safely from the footpath. Mark or write down 2 problems you see, and upload the photo.",
+      "bonus": "Redesign the crossing for a wheelchair user. What would they need that would help everyone else too?",
+      "rubric": "Good answers address the real causes (bus stop at the corner, autos in the turning lane, no safe crossing near the school, right turns), give concrete fixes (move the bus stop 50 m back, auto stand away from the turn, zebra crossing or signal, footpath, school-hour wardens), and think about who is affected (vendors, auto drivers, shop owners).",
+      "fallback": {
+        "praise": "You thought about everyone who uses the junction, not just the cars. Planners call that designing for all road users.",
+        "proTip": "A professional would count traffic and watch the junction at the busiest hour before deciding. Data first, then design.",
+        "imageComment": "Looking at real streets near you is exactly how planners train their eye.",
+        "twist": "Shop owners on Market Street are angry: your plan removes their parking, and they say sales will drop. They're meeting the city commissioner tomorrow. What do you offer them?",
+        "twistReaction": "Planning is about people as much as roads. Finding a deal everyone can live with is the real skill."
+      },
+      "qualityKeywords": ["bus stop", "signal", "zebra", "crossing", "footpath", "school", "auto", "speed", "move", "lane", "vendor", "warden"]
+    },
+    {
+      "id": "architect",
+      "career": "Architect",
+      "tagline": "Design a home for three generations, then measure your own room.",
+      "durationMin": 12,
+      "weights": { "Building": 3, "Creativity": 2, "Numbers": 1, "People": 0.5, "Nature": 0.5 },
+      "senior": {
+        "name": "Arun",
+        "role": "Architect at a small Bengaluru studio",
+        "intro": "Hi, I'm Arun. I design homes people live in for 30 years. Every line I draw changes someone's daily life."
+      },
+      "material": {
+        "title": "Client brief: the Sharma family",
+        "intro": "The Sharmas bought a 30 ft × 40 ft plot. They want a one-floor home. Here's what they told us:",
+        "bullets": [
+          "Family: two parents, two kids (9 and 14), and a grandmother who uses a walker.",
+          "Two bedrooms, plus a room for the grandmother close to a bathroom.",
+          "Lots of daylight; the kitchen should not be dark.",
+          "A small garden the grandmother can see from her room.",
+          "The road is on the north side of the plot."
+        ]
+      },
+      "task": "Plan the house: where would you put each room, and why? Mention at least one decision you made for the grandmother and one for daylight.",
+      "realWorldStep": "Draw your house plan on paper. Then measure your own room (with a tape, or count your footsteps) and write its length and width beside your plan. Upload a photo.",
+      "bonus": "How many 2 ft × 2 ft floor tiles would cover your own room? Show your working.",
+      "rubric": "Good answers place the grandmother's room next to a bathroom with no steps and wide doors for the walker, give her a view of the garden, use windows and open spaces for daylight and cross-ventilation, keep the kitchen near the dining area with a window, and fit the rooms inside 30 ft × 40 ft with realistic sizes. Measuring their own room shows a sense of scale.",
+      "fallback": {
+        "praise": "You designed around the people who will live there, not just the rooms. That's what separates architects from draughtsmen.",
+        "proTip": "A professional would sketch three different layouts quickly before picking one. The first idea is rarely the best.",
+        "imageComment": "Measuring your own room is exactly how architects build a sense of scale.",
+        "twist": "The family's budget just dropped by 20%, so you must remove about 150 sq ft. What do you cut, and what do you protect?",
+        "twistReaction": "Knowing what to protect when money runs short is a real architect's skill."
+      },
+      "qualityKeywords": ["grandmother", "bathroom", "ramp", "step", "light", "window", "kitchen", "garden", "ventilation", "door", "wide", "sun", "north", "feet", "ft"]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "games": [
+    {
+      "id": "number-series",
+      "trait": "Numbers",
+      "type": "mcq",
+      "title": "Number pattern",
+      "question": "What comes next? 2, 6, 12, 20, 30, …",
+      "options": ["40", "42", "44", "36"],
+      "answer": 1,
+      "fastMs": 20000,
+      "explanation": "The gaps grow by 2 each time: +4, +6, +8, +10, so the next gap is +12."
+    },
+    {
+      "id": "height-logic",
+      "trait": "Investigating",
+      "type": "mcq",
+      "title": "Who's who",
+      "question": "Riya is taller than Sam. Sam is taller than Tara. Tara is taller than Vik. Who is the second shortest?",
+      "options": ["Sam", "Tara", "Vik", "Riya"],
+      "answer": 1,
+      "fastMs": 25000,
+      "explanation": "From tallest to shortest: Riya, Sam, Tara, Vik. Second shortest is Tara."
+    },
+    {
+      "id": "painted-cube",
+      "trait": "Building",
+      "type": "mcq",
+      "title": "Painted cube",
+      "question": "A wooden cube is painted red on every side, then cut into 27 equal small cubes. How many small cubes have exactly 2 red faces?",
+      "options": ["8", "6", "12", "24"],
+      "answer": 2,
+      "fastMs": 40000,
+      "explanation": "Cubes with 2 painted faces sit on the edges (not corners). A cube has 12 edges with 1 such cube each: 12."
+    },
+    {
+      "id": "team-conflict",
+      "trait": "People",
+      "type": "mcq",
+      "title": "Team trouble",
+      "question": "Your project partner hasn't done their part, and the deadline is tomorrow. What do you do first?",
+      "options": [
+        "Do their part yourself and say nothing",
+        "Tell the teacher right away",
+        "Message them privately to ask what's going on and plan together",
+        "Post about it in the class group"
+      ],
+      "answer": 2,
+      "fastMs": 25000,
+      "explanation": "Talking privately first solves the problem and keeps the relationship."
+    },
+    {
+      "id": "bottle-uses",
+      "trait": "Creativity",
+      "type": "uses",
+      "title": "One bottle, many ideas",
+      "question": "How many different uses for an empty plastic bottle can you think of? You have 45 seconds. One idea per line.",
+      "seconds": 45,
+      "target": 8,
+      "explanation": "There's no right answer. More different ideas means more creative thinking."
+    }
+  ]
+}

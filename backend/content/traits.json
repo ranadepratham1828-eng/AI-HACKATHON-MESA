@@ -1,0 +1,39 @@
+{
+  "traits": [
+    { "id": "People", "label": "People", "description": "Understanding, helping and working with people", "strengthName": "Empathy" },
+    { "id": "Numbers", "label": "Numbers", "description": "Working carefully with numbers and data", "strengthName": "Number sense" },
+    { "id": "Creativity", "label": "Creativity", "description": "Imagining and designing new things", "strengthName": "Creative thinking" },
+    { "id": "Building", "label": "Building", "description": "Making things and understanding how systems work", "strengthName": "Systems thinking" },
+    { "id": "Investigating", "label": "Investigating", "description": "Spotting patterns and solving puzzles", "strengthName": "Detective eye" },
+    { "id": "Nature", "label": "Nature", "description": "Caring about the environment and the places people live in", "strengthName": "Care for places" }
+  ],
+  "newCareersByTrait": {
+    "People": [
+      { "name": "Counselling psychologist", "why": "Helps people through hard decisions, using empathy every day." },
+      { "name": "Product manager", "why": "Works out what users need and leads a team to build it." },
+      { "name": "Special educator", "why": "Designs learning for children who learn differently." }
+    ],
+    "Numbers": [
+      { "name": "Data analyst", "why": "Finds the story hidden in numbers for companies and governments." },
+      { "name": "Actuary", "why": "Uses maths to price risk for insurance and pensions." }
+    ],
+    "Creativity": [
+      { "name": "Game designer", "why": "Invents the rules, levels and stories of games." },
+      { "name": "Industrial designer", "why": "Designs everyday objects, from chairs to medical devices." },
+      { "name": "Animator", "why": "Brings characters to life for films, ads and games." }
+    ],
+    "Building": [
+      { "name": "Robotics engineer", "why": "Builds machines that sense and move on their own." },
+      { "name": "Civil engineer", "why": "Builds the bridges, metros and buildings cities run on." }
+    ],
+    "Investigating": [
+      { "name": "Cybersecurity analyst", "why": "Hunts for hackers and the weak spots they use." },
+      { "name": "Forensic scientist", "why": "Uses lab evidence to solve crimes." },
+      { "name": "Research scientist", "why": "Asks questions nobody has answered yet and tests them." }
+    ],
+    "Nature": [
+      { "name": "Environmental consultant", "why": "Helps companies and cities cut pollution and waste." },
+      { "name": "Wildlife biologist", "why": "Studies animals and protects their habitats." }
+    ]
+  }
+}

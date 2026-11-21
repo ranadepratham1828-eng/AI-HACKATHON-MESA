@@ -1,0 +1,30 @@
+{
+  "classes": ["9", "10", "11", "12"],
+  "subjects": [
+    "Maths", "Science", "Physics", "Chemistry", "Biology", "Computer Science",
+    "Accountancy", "Economics", "Business Studies",
+    "History", "Geography", "Political Science", "Psychology", "Sociology",
+    "English", "Hindi", "Kannada", "Art", "Music", "Sports"
+  ],
+  "goals": [
+    "Choose my stream after Class 10",
+    "Get into a good college",
+    "Crack an entrance exam",
+    "Find a career I'll enjoy",
+    "Not sure yet"
+  ],
+  "budgets": [
+    { "id": "tight", "label": "Tight: we need low-cost options and scholarships" },
+    { "id": "medium", "label": "Medium: we can spend on the right course" },
+    { "id": "flexible", "label": "Flexible: cost is not the main concern" }
+  ],
+  "statedQuestions": [
+    { "trait": "People", "question": "I enjoy understanding and helping people." },
+    { "trait": "Numbers", "question": "I'm good with numbers and calculations." },
+    { "trait": "Creativity", "question": "I like imagining and designing new things." },
+    { "trait": "Building", "question": "I like figuring out how things work and making them." },
+    { "trait": "Investigating", "question": "I enjoy puzzles and finding out why something happened." },
+    { "trait": "Nature", "question": "I care about the environment and the places around me." }
+  ],
+  "scale": { "min": 1, "max": 5, "minLabel": "Not me", "maxLabel": "Totally me" }
+}

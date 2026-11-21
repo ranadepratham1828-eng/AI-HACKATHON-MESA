@@ -1,0 +1,23 @@
+{
+  "name": "disha-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend API for Disha: career missions, Interest Fingerprint, reports, parent and school views.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test test/*.test.js",
+    "models": "node scripts/list-models.js",
+    "check-ai": "node scripts/check-ai.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
