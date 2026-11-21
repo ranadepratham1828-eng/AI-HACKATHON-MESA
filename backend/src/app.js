@@ -9,7 +9,7 @@ import { missionFeedback, twistReaction, curiosityAnswer } from './logic/mission
 import { careerReport, parentReport, campusConnect } from './logic/report.js';
 import { scoreAssessment } from './logic/assessment.js';
 import { matchScholarships } from './logic/scholarships.js';
-import { coachState, coachReply, buildPlan } from './logic/coach.js';
+import { coachState, coachReply, buildPlan, coachSuggestions } from './logic/coach.js';
 import { classDashboard } from './logic/school.js';
 import { ananyaData } from './demo.js';
 import { hashPassword, checkPassword, publicUser, canSeeStudent, canEditStudent, bearerToken } from './auth.js';
@@ -363,7 +363,7 @@ export function createApp(store) {
     const s = getStudent(req);
     const coach = coachState(s);
     store.saveStudent(s);
-    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan) });
+    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan), suggestions: coachSuggestions(s) });
   }));
 
   app.post('/api/students/:id/coach', wrap(async (req, res) => {
@@ -372,7 +372,7 @@ export function createApp(store) {
     if (!message) throw new HttpError(400, 'message is required');
     const coach = await coachReply(s, message);
     store.saveStudent(s);
-    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan) });
+    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan), suggestions: coachSuggestions(s) });
   }));
 
   app.post('/api/students/:id/plan', wrap(async (req, res) => {

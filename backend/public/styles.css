@@ -337,3 +337,7 @@ tr.live td { background: var(--gold-50); }
   .game .px-label { font-size: 9px; }
   .game .pbar { min-width: 0; }
 }
+
+.quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px 0; background: var(--surface); border-top: 1px solid var(--line); }
+.quick .chip { font-size: 13.5px; padding: 6px 12px; }
+.coach { grid-template-rows: auto 1fr auto auto; }

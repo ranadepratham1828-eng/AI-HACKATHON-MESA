@@ -618,6 +618,7 @@ function coachHTML(typing = false) {
     <section class="card coach">
       <div class="coach-head"><img src="logo-mark.png" alt="" width="45" height="30"><div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
       <div class="msgs" id="msgs">${c.messages.map((m) => `<div class="msg ${m.role}">${esc(m.content)}</div>`).join('')}${typing ? '<div class="msg assistant typing"><span></span><span></span><span></span></div>' : ''}</div>
+      ${c.suggestions?.length && !typing ? `<div class="quick">${c.suggestions.map((t) => `<button class="chip" data-act="coach-suggest" data-text="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
       <form id="coach-form" class="coach-input"><input id="coach-msg" autocomplete="off" placeholder="Type your answer…" ${typing ? 'disabled' : ''}><button class="btn" type="submit" ${typing ? 'disabled' : ''}>Send</button></form>
     </section>
     <aside class="stack">

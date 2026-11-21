@@ -53,19 +53,85 @@ export function coachState(student) {
   return student.coach;
 }
 
+const GREETING = /^(hi+|hey+|hello+|hii+|yo|hola|namaste|good (morning|afternoon|evening)|sup|hlo|helo)[!. ]*$/i;
+const UNSURE = /(not sure|unsure|idk|i don'?t know|dont know|no idea|confused|help|can'?t decide|cant decide|maybe|anything)/i;
+const YES = /^(y|yes|yeah|yep|yup|sure|ok|okay|haan|ha|correct|right|sounds good|let'?s go|go ahead|do it)\b/i;
+const ORDINALS = { first: 0, '1st': 0, one: 0, second: 1, '2nd': 1, two: 1, third: 2, '3rd': 2, three: 2 };
+const PREFS = [
+  { key: 'a', words: /\b(a|people|help|helping|talk|teach|care)\b/i, label: 'working with people', interests: ['helping', 'health', 'law'] },
+  { key: 'b', words: /\b(b|create|creative|design|art|draw|build|make)\b/i, label: 'creating and designing', interests: ['design', 'building'] },
+  { key: 'c', words: /\b(c|number|numbers|logic|money|business|math|maths|data|tech|computer)\b/i, label: 'numbers, logic and technology', interests: ['tech', 'business', 'puzzles'] },
+  { key: 'd', words: /\b(d|science|health|nature|environment|research|biology)\b/i, label: 'science, health and nature', interests: ['science', 'health', 'nature'] },
+];
+
+/** Rule-based coach used when the AI is not connected. Never repeats itself. */
 function scriptedReply(student, coach, message) {
-  const userTurns = coach.messages.filter((m) => m.role === 'user').length;
-  const found = findCareerIn(message);
-  if (found) coach.goal = found.id;
+  const results = computeResults(student);
+  const tops = results.careers.slice(0, 3);
+  const name = student.profile?.name || 'there';
+  const msg = String(message || '').trim();
+  const lower = msg.toLowerCase();
+  const list = tops.map((c, i) => `${i + 1}) ${c.name}`).join(', ');
+  const pickFromTops = () => {
+    const n = lower.match(/^\s*([1-3])\b/);
+    if (n) return tops[Number(n[1]) - 1] || null;
+    for (const [w, i] of Object.entries(ORDINALS)) if (new RegExp(`\\b${w}\\b`).test(lower)) return tops[i] || null;
+    return null;
+  };
+
+  // 1. Confirming a suggestion we made
+  if (coach.suggested && YES.test(lower)) { coach.goal = coach.suggested; coach.suggested = null; }
+  // 2. A number, an ordinal or a career name
+  const picked = pickFromTops() || findCareerIn(msg);
+  if (picked) { coach.goal = picked.id; coach.suggested = null; coach.awaitingPref = false; }
+
   const goal = coach.goal ? careerById(coach.goal) : null;
   if (!goal) {
-    return { reply: `That's helpful. To build a good plan I need one goal to aim for. Which career should we plan for? You can pick one of your matches or name any career, like ${content.careers.slice(0, 3).map((c) => c.name).join(', ')}.`, readyForPlan: false };
+    if (coach.awaitingPref) {
+      const pref = PREFS.find((p) => p.words.test(lower));
+      if (pref) {
+        coach.awaitingPref = false;
+        const suggestion = results.careers.find((c) => careerById(c.id).interests.some((i) => pref.interests.includes(i))) || tops[0];
+        coach.suggested = suggestion.id;
+        return { reply: `Since you enjoy ${pref.label}, I'd suggest ${suggestion.name} (${suggestion.fit}% match for you). ${careerById(suggestion.id).summary} Shall we plan for ${suggestion.name}? Reply "yes", or pick another: ${list}.`, readyForPlan: false };
+      }
+      return { reply: 'Just reply with a letter: (a) working with people, (b) creating and designing, (c) numbers, logic and technology, or (d) science, health and nature.', readyForPlan: false };
+    }
+    if (UNSURE.test(lower)) {
+      coach.awaitingPref = true;
+      return { reply: `That's completely normal, ${name}. Let's narrow it down. What do you enjoy most: (a) working with people, (b) creating and designing, (c) numbers, logic and technology, or (d) science, health and nature?`, readyForPlan: false };
+    }
+    if (GREETING.test(msg)) {
+      return { reply: `Hi ${name}! Let's find the career to plan for. Your top matches are ${list}. Reply with a number or a career name, or say "not sure" and I'll help you choose.`, readyForPlan: false };
+    }
+    const options = [
+      `I'd love to help with that. First, which career should we plan for? Your top matches are ${list}. Reply with a number, any career name, or "not sure".`,
+      `Got it. To build your plan I need one goal. You can reply 1, 2 or 3 for ${list}, or name another career you're curious about.`,
+      `Thanks, ${name}. If you're unsure, just say "not sure" and I'll ask you a quick question to help you choose. Otherwise pick one of ${list}.`,
+    ];
+    coach.nudge = ((coach.nudge ?? -1) + 1) % options.length;
+    return { reply: options[coach.nudge], readyForPlan: false };
   }
-  if (userTurns <= 2 && !coach.askedWhy) {
+  if (!coach.askedWhy) {
     coach.askedWhy = true;
-    return { reply: `${goal.name} is a great choice. ${goal.summary} What matters most to you in your future job: earning well, helping people, being creative, or stability? And is there anything worrying you about this path?`, readyForPlan: false };
+    return { reply: `${goal.name} it is! ${goal.summary} One more question: what matters most to you in your future job: earning well, helping people, being creative, or stability? And is anything worrying you about this path?`, readyForPlan: false };
   }
-  return { reply: `Thanks, I have what I need. I can now build your ${goal.name} plan: the stream and subjects, entrance exams, colleges that fit your budget, scholarships you may qualify for, and what to do in the next 30 days. Tap "Build my career plan" when you're ready.`, readyForPlan: true };
+  const ready = [
+    `Thanks, I have what I need. I can now build your ${goal.name} plan: the stream and subjects, entrance exams, colleges that fit your budget, scholarships you may qualify for, and what to do in the next 30 days. Tap "Build my career plan" when you're ready.`,
+    `You're all set for ${goal.name}. Tap "Build my career plan" on the right, or name a different career if you've changed your mind.`,
+    `Whenever you're ready, tap "Build my career plan". If you'd like to compare, just type another career name.`,
+  ];
+  coach.readyNudge = ((coach.readyNudge ?? -1) + 1) % ready.length;
+  return { reply: ready[coach.readyNudge], readyForPlan: true };
+}
+
+/** Quick replies shown under the chat. */
+export function coachSuggestions(student) {
+  const coach = student.coach || {};
+  if (coach.goal) return coach.readyForPlan ? [] : ['Earning well', 'Helping people', 'Being creative', 'Stability'];
+  if (coach.suggested) return ['Yes', ...computeResults(student).careers.slice(0, 3).map((c) => c.name)];
+  if (coach.awaitingPref) return ['(a) People', '(b) Creating and designing', '(c) Numbers and tech', '(d) Science and health'];
+  return [...computeResults(student).careers.slice(0, 3).map((c) => c.name), 'Not sure yet'];
 }
 
 export async function coachReply(student, message) {
@@ -106,6 +172,8 @@ Reply with only JSON:
     }
   }
   if (!out) out = scriptedReply(student, coach, message);
+  const last = [...coach.messages].reverse().find((m) => m.role === 'assistant');
+  if (last && last.content === out.reply) out = scriptedReply(student, coach, `__repeat__ ${message}`);
   coach.readyForPlan = out.readyForPlan;
   coach.messages.push({ role: 'assistant', content: out.reply, source, at: new Date().toISOString() });
   return coach;
