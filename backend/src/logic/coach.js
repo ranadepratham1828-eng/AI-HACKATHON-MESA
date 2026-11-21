@@ -159,7 +159,7 @@ Reply with only JSON:
  "goalCareer": "the career name they've chosen, or null if not decided yet",
  "readyForPlan": true or false}`;
     try {
-      const o = await generate({ prompt, temperature: 0.6 });
+      const o = await generate({ prompt, temperature: 0.6, timeoutMs: 20000 }); // keep chat snappy; fall back if the AI is slow
       if (typeof o?.reply === 'string' && o.reply.trim()) {
         const goal = typeof o.goalCareer === 'string' ? findCareerIn(o.goalCareer) : null;
         if (goal) coach.goal = goal.id;
