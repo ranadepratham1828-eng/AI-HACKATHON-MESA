@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
 
-const FRONTEND_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'frontend');
+const FRONTEND_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
@@ -375,7 +375,7 @@ export function createApp(store) {
   // ---- Errors ----
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
-  // ---- The web app (frontend/) is served from the same server ----
+  // ---- The web app (backend/public) is served from the same server ----
   if (existsSync(FRONTEND_DIR)) {
     app.use(express.static(FRONTEND_DIR));
     app.get('*', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));

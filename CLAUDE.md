@@ -7,7 +7,7 @@ Product docs: `docs/PRODUCT.md` (what we're building), `docs/API.md` (backend co
 ## Repo layout
 
 ```
-backend/            Node.js + Express API (no build step)
+backend/            Node.js + Express API and the web app (public/), no build step
   content/          Editable JSON: missions, games, pathways, colleges, Campus Connect, questionnaire, traits
   src/app.js        All API routes
   src/ai/           provider.js (Gemini / OpenAI-compatible), prompts.js (every prompt), ask.js (AI + scripted fallback)

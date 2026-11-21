@@ -32,9 +32,9 @@ Without an AI key, everything still works on scripted demo answers (the top bar 
 
 ## Hosting on Vercel
 
-The repo is ready for Vercel: `vercel.json` serves the web app from `frontend/` and runs the API from `api/index.js` as a serverless function. Every push to the default branch redeploys.
+The repo is ready for Vercel and works with Root Directory set to either the repo root or `backend`: `vercel.json` serves the web app from `backend/public/` and runs the API as a serverless function (`api/index.js` or `backend/api/index.js`). Every push to the default branch redeploys.
 
-1. **Project settings → General:** Root Directory = the repo root (leave it empty), Framework Preset = **Other**.
+1. **Project settings → Build and Deployment:** Framework Preset = **Other** (Root Directory can be empty or `backend`).
 2. **Settings → Environment Variables:** add `GEMINI_API_KEY` (your key). Optional: `GEMINI_MODEL`.
 3. **Storage → Create Database → Upstash (Redis), free plan → Connect to this project.** It adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically. Without it, accounts and progress reset whenever Vercel restarts the function (you'd be logged out and need to tap a demo button again).
 4. **Deployments → Redeploy** so the new variables are picked up.
@@ -67,7 +67,7 @@ The free tier has low daily limits: test a few times, don't loop. If the limit i
 
 ```
 backend/   Node.js + Express API, content files, tests  (npm test)
-frontend/  Pixel-art web app: plain HTML, CSS and JS, no build step
+backend/public/  Pixel-art web app: plain HTML, CSS and JS, no build step
 docs/      Product summary
 ```
 
