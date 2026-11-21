@@ -186,7 +186,7 @@ export function createApp(store) {
     const want = Buffer.from(ADMIN_KEY);
     if (given.length !== want.length || !timingSafeEqual(given, want)) throw new HttpError(401, 'Wrong admin key');
   };
-  const loginUrlFor = (req) => `${(process.env.APP_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '')}/app`;
+  const loginUrlFor = (req) => `${(process.env.APP_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '')}/product`;
   const PW_CHARS = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const tempPassword = () => Array.from(randomBytes(10), (b) => PW_CHARS[b % PW_CHARS.length]).join('');
 
@@ -276,6 +276,7 @@ export function createApp(store) {
 
   app.post('/api/auth/password', wrap(async (req, res) => {
     const user = requireUser(req);
+    if (user.demoAccount) throw new HttpError(403, "The shared demo account's password can't be changed");
     const current = String(req.body?.current || '');
     const next = String(req.body?.next || '');
     if (!checkPassword(current, user)) throw new HttpError(400, 'Your current password is wrong');
@@ -286,7 +287,31 @@ export function createApp(store) {
     res.json({ ok: true, user: publicUser(user) });
   }));
 
+  // ---- Shared demo account: /demo logs straight in; also works with email + password ----
+  const DEMO_EMAIL = (process.env.DEMO_EMAIL || 'ranadepratham1828@gmail.com').toLowerCase();
+  const DEMO_PASSWORD = process.env.DEMO_PASSWORD || '123456';
+  function ensureDemoAccount() {
+    let user = store.getUserByEmail(DEMO_EMAIL);
+    if (user && user.studentId && store.getStudent(user.studentId)) return user;
+    const data = ananyaData('finished');
+    data.profile.name = 'Ananya (Demo)';
+    const student = store.createStudent({ ...data, demoAccount: true });
+    if (user) {
+      user.studentId = student.id;
+      return store.saveUser(user);
+    }
+    return store.createUser({ role: 'student', name: 'Ananya (Demo)', email: DEMO_EMAIL, studentId: student.id, demoAccount: true, ...hashPassword(DEMO_PASSWORD) });
+  }
+
+  app.post('/api/auth/demo-login', wrap(async (req, res) => {
+    const user = ensureDemoAccount();
+    user.lastLoginAt = new Date().toISOString();
+    store.saveUser(user);
+    session(user)(res);
+  }));
+
   app.post('/api/auth/login', wrap(async (req, res) => {
+    if (String(req.body?.email || '').trim().toLowerCase() === DEMO_EMAIL) ensureDemoAccount();
     const user = store.getUserByEmail(req.body?.email);
     if (!user || !checkPassword(String(req.body?.password || ''), user)) throw new HttpError(401, 'Email or password is wrong');
     user.lastLoginAt = new Date().toISOString();
@@ -554,7 +579,8 @@ export function createApp(store) {
   // ---- The web app (backend/public) is served from the same server ----
   if (existsSync(FRONTEND_DIR)) {
     app.use(express.static(FRONTEND_DIR, { extensions: ['html'] }));
-    app.get(['/app', '/app/*'], (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'app.html')));
+    app.get(['/app', '/app/*'], (req, res) => res.redirect(302, '/product'));
+    app.get(['/product', '/product/*', '/demo'], (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'product.html')));
     app.get('*', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));
   }
   // eslint-disable-next-line no-unused-vars

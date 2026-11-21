@@ -979,6 +979,11 @@ async function boot() {
   $('#app').innerHTML = '<p class="loading">Loading…</p>';
   try {
     [S.content, S.health] = await Promise.all([api('/content'), api('/health')]);
+    // /demo: log straight into the shared demo account
+    if (location.pathname.replace(/\/$/, '') === '/demo') {
+      signIn(await api('/auth/demo-login', { method: 'POST' }));
+      history.replaceState(null, '', '/product#report');
+    }
     if (S.token) {
       try { await refreshMe(); } catch { S.token = null; store.set('disha-token', null); }
     }

@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 
 process.env.AI_PROVIDER = 'none';
 process.env.ADMIN_KEY = 'test-admin-key';
+process.env.DEMO_EMAIL = 'demo@example.com';
+process.env.DEMO_PASSWORD = 'demo-pass';
 delete process.env.RESEND_API_KEY;
 const { createApp } = await import('../src/app.js');
 const { createStore } = await import('../src/store.js');
@@ -92,6 +94,17 @@ test('no public sign-up; admin creates accounts with emailed (or shown) logins',
 
   await call('POST', '/auth/logout', null, t);
   assert.equal((await call('GET', '/auth/me', null, t)).status, 401);
+});
+
+test('shared demo account: one-click login and email + password', async () => {
+  const one = await call('POST', '/auth/demo-login');
+  assert.equal(one.status, 200);
+  const me = await call('GET', '/auth/me', null, one.body.token);
+  assert.equal(me.body.student.progress.questDone, true, 'demo account has a finished assessment');
+  const two = await call('POST', '/auth/login', { email: 'Demo@Example.com', password: 'demo-pass' });
+  assert.equal(two.status, 200);
+  assert.equal(two.body.user.studentId, one.body.user.studentId, 'same account every time');
+  assert.equal((await call('POST', '/auth/password', { current: 'demo-pass', next: 'something-new' }, two.body.token)).status, 403, 'demo password stays fixed');
 });
 
 test('landing page leads', async () => {

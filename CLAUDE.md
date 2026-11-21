@@ -33,6 +33,6 @@ docs/               Product, API, design and AI setup docs
 - **Sample data is labelled** (`sample: true`) and never presented as real people.
 - **Tone for students:** an explorer, not a judge. Never say a student can't do something.
 - **No public sign-up (paid model).** Accounts are created via `/api/admin/accounts` (ADMIN_KEY) and logins are emailed (`src/email.js`, Resend). Temporary passwords must be changed on first login.
-- The landing page is `public/index.html`; the app is `public/app.html` (served at `/app`).
+- The landing page is `public/index.html`; the product is `public/product.html` (served at `/product`; `/demo` logs into the shared demo account; `/app` redirects to `/product`).
 - Students are minors: no real personal data in demos, and don't commit `.env` or `backend/data/`.
 - Work on your own branch and open a pull request into `main`.
