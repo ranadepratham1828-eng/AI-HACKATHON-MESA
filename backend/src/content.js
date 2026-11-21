@@ -13,12 +13,25 @@ const { pathways } = read('pathways.json');
 const questionnaire = read('questionnaire.json');
 const { colleges } = read('colleges.json');
 const { profiles: campusProfiles } = read('campus-connect.json');
+const assessment = read('assessment.json');
+const { careers, interests } = read('careers.json');
+const { scholarships } = read('scholarships.json');
 
-export const content = { missions, games, traits, newCareersByTrait, pathways, questionnaire, colleges, campusProfiles };
+// Flat list of Disha Quest items, each tagged with its zone and ability.
+const assessmentItems = assessment.zones.flatMap((z) => z.items.map((it) => ({ ...it, zoneId: z.id, ability: z.ability })));
+
+questionnaire.interests = interests;
+
+export const content = {
+  missions, games, traits, newCareersByTrait, pathways, questionnaire, colleges, campusProfiles,
+  assessment, assessmentItems, careers, interests, scholarships,
+};
 
 export const TRAIT_IDS = traits.map((t) => t.id);
+export const ABILITY_IDS = assessment.abilities.map((a) => a.id);
 export const missionById = (id) => missions.find((m) => m.id === id);
 export const gameById = (id) => games.find((g) => g.id === id);
+export const assessmentItemById = (id) => assessmentItems.find((i) => i.id === id);
 
 /** Mission data safe to send to the app (no answers, rubric or scripted replies). */
 export function publicMission(m) {
@@ -30,4 +43,15 @@ export function publicMission(m) {
 export function publicGame(g) {
   const { answer, explanation, fastMs, ...rest } = g;
   return rest;
+}
+
+/** Disha Quest as sent to the app: no answers or explanations. */
+export function publicAssessment() {
+  return {
+    abilities: assessment.abilities.map(({ growthTip, ...a }) => a),
+    zones: assessment.zones.map((z) => ({
+      ...z,
+      items: z.items.map(({ answer, explanation, fastMs, ...it }) => it),
+    })),
+  };
 }

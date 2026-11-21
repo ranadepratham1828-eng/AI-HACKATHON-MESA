@@ -33,15 +33,15 @@ export function aiEnabled() {
  * @param {boolean} [opts.json=true]   Ask for and parse JSON.
  * @param {number} [opts.temperature=0.7]
  */
-export async function generate({ prompt, images = [], json = true, temperature = 0.7 }) {
+export async function generate({ prompt, images = [], json = true, temperature = 0.7, timeoutMs }) {
   if (!aiEnabled()) throw new AIError('AI is not configured', { code: 'not_configured' });
   const text = config.ai.provider === 'gemini'
-    ? await geminiGenerate({ prompt, images, json, temperature })
-    : await openaiCompatGenerate({ prompt, images, json, temperature });
+    ? await geminiGenerate({ prompt, images, json, temperature, timeoutMs })
+    : await openaiCompatGenerate({ prompt, images, json, temperature, timeoutMs });
   return json ? parseJSON(text) : text.trim();
 }
 
-async function geminiGenerate({ prompt, images, json, temperature }) {
+async function geminiGenerate({ prompt, images, json, temperature, timeoutMs }) {
   const { apiKey, model, fallbackModel, baseUrl } = config.ai.gemini;
   const body = {
     contents: [{
@@ -59,7 +59,7 @@ async function geminiGenerate({ prompt, images, json, temperature }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
         body: JSON.stringify(body),
-      });
+      }, timeoutMs);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new AIError(data?.error?.message || `Gemini error ${res.status}`, { status: res.status, code: data?.error?.status });
@@ -77,7 +77,7 @@ async function geminiGenerate({ prompt, images, json, temperature }) {
   throw lastError;
 }
 
-async function openaiCompatGenerate({ prompt, images, json, temperature }) {
+async function openaiCompatGenerate({ prompt, images, json, temperature, timeoutMs }) {
   const { apiKey, baseUrl, model } = config.ai.openaiCompat;
   const content = images.length
     ? [{ type: 'text', text: prompt }, ...images.map((img) => ({ type: 'image_url', image_url: { url: `data:${img.mimeType};base64,${img.data}` } }))]
@@ -86,7 +86,7 @@ async function openaiCompatGenerate({ prompt, images, json, temperature }) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({ model, temperature, messages: [{ role: 'user', content }], ...(json ? { response_format: { type: 'json_object' } } : {}) }),
-  });
+  }, timeoutMs);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new AIError(data?.error?.message || `AI error ${res.status}`, { status: res.status });
   const text = data.choices?.[0]?.message?.content || '';
@@ -94,9 +94,9 @@ async function openaiCompatGenerate({ prompt, images, json, temperature }) {
   return text;
 }
 
-async function timedFetch(url, options) {
+async function timedFetch(url, options, timeoutMs) {
   const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), config.ai.timeoutMs);
+  const timer = setTimeout(() => ctl.abort(), timeoutMs || config.ai.timeoutMs);
   try {
     return await fetch(url, { ...options, signal: ctl.signal });
   } catch (err) {

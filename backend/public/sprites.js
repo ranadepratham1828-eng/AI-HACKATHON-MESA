@@ -71,6 +71,19 @@ export const star = (on = true, size = 4) => sprite(
   { y: on ? '#ffcb47' : '#4b5190' }, size,
 );
 
+/** A pixel grid from rows like ['.##', '##.'], used for the Shape Shift puzzles. */
+export const gridSprite = (rows, color = '#f2b23a', size = 22, label = '') => sprite(
+  rows.map((r) => r.replace(/#/g, 'x')),
+  { x: color },
+  size,
+  label,
+);
+
+export const gem = (color = '#8a5cf0', size = 5) => sprite(
+  ['..xxx..', '.xxwxx.', 'xxwxxxx', 'xxxxxxx', '.xxxxx.', '..xxx..', '...x...'],
+  { x: color, w: '#ffffff' }, size,
+);
+
 export const trophy = (size = 5) => sprite(
   ['yyyyyyy', 'y.yyy.y', 'y.yyy.y', '.yyyyy.', '..yyy..', '...y...', '..ddd..', '.ddddd.'],
   { y: '#ffcb47', d: '#a0612e' }, size, 'Trophy',

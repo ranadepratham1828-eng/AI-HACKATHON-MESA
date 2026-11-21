@@ -1,0 +1,83 @@
+{
+  "_note": "Disha Quest: the first game every new student plays. 8 zones, one per ability, about 10-12 minutes. 'answer' and 'explanation' are never sent to the app.",
+  "abilities": [
+    { "id": "logical", "label": "Logical reasoning", "short": "Logic", "description": "Spotting rules and patterns, and following them step by step", "growthTip": "Try number and letter puzzles, or Sudoku, for 10 minutes a day." },
+    { "id": "numerical", "label": "Numerical ability", "short": "Numbers", "description": "Working quickly and accurately with numbers, percentages and data", "growthTip": "Practise everyday maths: discounts, bills, speed and time." },
+    { "id": "verbal", "label": "Verbal reasoning", "short": "Verbal", "description": "Understanding words, meanings and what a passage really says", "growthTip": "Read one news article a day and summarise it in two lines." },
+    { "id": "spatial", "label": "Spatial reasoning", "short": "Spatial", "description": "Picturing shapes, rotations and how things fit in space", "growthTip": "Try tangrams, origami, LEGO or drawing objects from different angles." },
+    { "id": "memory", "label": "Working memory", "short": "Memory", "description": "Holding information in mind and recalling it accurately", "growthTip": "Play memory card games, or recall your day in order before bed." },
+    { "id": "critical", "label": "Critical thinking", "short": "Critical", "description": "Questioning claims, finding weak points and judging evidence", "growthTip": "When you see an ad or a forward, ask: what evidence is missing?" },
+    { "id": "creative", "label": "Creative thinking", "short": "Creative", "description": "Coming up with many different, original ideas", "growthTip": "Every day, list 5 new uses for an ordinary object." },
+    { "id": "social", "label": "People skills", "short": "People", "description": "Understanding others and handling situations with care", "growthTip": "In group work, try leading one discussion and listening first." }
+  ],
+  "zones": [
+    {
+      "id": "pattern-peaks", "name": "Pattern Peaks", "ability": "logical", "color": "#ffcb47",
+      "intro": "Every pattern hides a rule. Find it.",
+      "items": [
+        { "id": "l1", "type": "mcq", "question": "What comes next? 3, 6, 11, 18, 27, …", "options": ["36", "38", "39", "40"], "answer": 1, "fastMs": 25000, "explanation": "The gaps grow by 2: +3, +5, +7, +9, so next is +11 = 38." },
+        { "id": "l2", "type": "mcq", "question": "Which letter comes next? B, E, I, N, …", "options": ["R", "S", "T", "U"], "answer": 2, "fastMs": 30000, "explanation": "The gaps grow by 1: +3, +4, +5, +6, so N + 6 = T." },
+        { "id": "l3", "type": "mcq", "question": "All painters in the club are left-handed. Some left-handed people play chess. Which statement MUST be true?", "options": ["Some painters play chess", "All chess players are painters", "No painters play chess", "None of these must be true"], "answer": 3, "fastMs": 40000, "explanation": "The chess players who are left-handed may or may not include painters, so nothing is certain." }
+      ]
+    },
+    {
+      "id": "number-nexus", "name": "Number Nexus", "ability": "numerical", "color": "#52c7ea",
+      "intro": "Quick maths from real life.",
+      "items": [
+        { "id": "n1", "type": "mcq", "question": "A school bag costs ₹800 and has a 25% discount. How much do you pay?", "options": ["₹550", "₹600", "₹625", "₹650"], "answer": 1, "fastMs": 25000, "explanation": "25% of 800 is 200, so you pay ₹600." },
+        { "id": "n2", "type": "mcq", "question": "Riya scored 18 out of 25 in Maths and 34 out of 50 in Science. In which subject did she do better?", "options": ["Maths", "Science", "Both the same", "Can't tell"], "answer": 0, "fastMs": 35000, "explanation": "Maths is 72% and Science is 68%." },
+        { "id": "n3", "type": "mcq", "question": "A train covers 180 km in 2 hours 30 minutes. What is its average speed?", "options": ["60 km/h", "72 km/h", "75 km/h", "90 km/h"], "answer": 1, "fastMs": 35000, "explanation": "180 ÷ 2.5 = 72 km/h." }
+      ]
+    },
+    {
+      "id": "word-woods", "name": "Word Woods", "ability": "verbal", "color": "#5ed68f",
+      "intro": "Words carry meaning. Read closely.",
+      "items": [
+        { "id": "v1", "type": "mcq", "question": "Pilot is to aircraft as captain is to …", "options": ["crew", "ship", "sea", "port"], "answer": 1, "fastMs": 20000, "explanation": "A pilot commands an aircraft; a captain commands a ship." },
+        { "id": "v2", "type": "mcq", "question": "Which word does NOT belong?", "options": ["Brave", "Bold", "Fearless", "Timid"], "answer": 3, "fastMs": 20000, "explanation": "Timid means shy or fearful; the others mean courageous." },
+        { "id": "v3", "type": "mcq", "question": "Arjun's phone battery lasts a full day in winter but only half a day in summer. He uses it the same way all year. Which conclusion is best supported?", "options": ["Arjun uses his phone more in summer", "Heat may be reducing his battery life", "His phone is broken", "Phones are better in winter"], "answer": 1, "fastMs": 40000, "explanation": "Usage is the same, so the change in season (heat) is the likely cause." }
+      ]
+    },
+    {
+      "id": "shape-shift", "name": "Shape Shift", "ability": "spatial", "color": "#ff9f43",
+      "intro": "Turn shapes in your mind. No flipping allowed!",
+      "items": [
+        { "id": "s1", "type": "rotate", "question": "Which option is the same shape, only rotated (not flipped)?", "shape": [".##", "##.", ".#."], "optionGrids": [["##.", ".##", ".#."], [".#.", "###", "..#"], ["..#", "###", ".#."], [".#.", "##.", ".##"]], "answer": 1, "fastMs": 30000, "explanation": "Option B is the shape turned 90° clockwise. The others are mirror images." },
+        { "id": "s2", "type": "rotate", "question": "Which option is the same shape, only rotated (not flipped)?", "shape": ["#..", "#..", "##."], "optionGrids": [["###", "..#", "..."], ["...", "#..", "###"], [".##", "..#", "..#"], ["..#", "..#", ".##"]], "answer": 2, "fastMs": 30000, "explanation": "Option C is the shape turned upside down (180°). The others are mirror images." },
+        { "id": "s3", "type": "mcq", "question": "A wooden cube is painted red on every side, then cut into 27 equal small cubes. How many small cubes have exactly 2 red faces?", "options": ["8", "6", "12", "24"], "answer": 2, "fastMs": 45000, "explanation": "Cubes with 2 painted faces sit in the middle of each of the 12 edges." }
+      ]
+    },
+    {
+      "id": "memory-vault", "name": "Memory Vault", "ability": "memory", "color": "#ff6f91",
+      "intro": "Watch the lights, then tap them back from memory.",
+      "items": [
+        { "id": "m1", "type": "memory", "question": "Remember which squares light up.", "size": 5, "cells": [[0, 1], [1, 3], [2, 0], [3, 4], [4, 2]], "showMs": 3000 },
+        { "id": "m2", "type": "memory", "question": "Harder: more squares, same time.", "size": 5, "cells": [[0, 0], [0, 4], [1, 2], [2, 1], [3, 3], [4, 0], [4, 4]], "showMs": 3500 }
+      ]
+    },
+    {
+      "id": "truth-tower", "name": "Truth Tower", "ability": "critical", "color": "#b28dff",
+      "intro": "Not every claim is true. Find the weak spot.",
+      "items": [
+        { "id": "c1", "type": "mcq", "question": "Students who eat breakfast get better marks, so a school says breakfast makes students smarter. What's the biggest problem with this reasoning?", "options": ["Breakfast is expensive", "Something else, like more sleep or support at home, could explain both", "Some students don't like breakfast", "Marks don't matter"], "answer": 1, "fastMs": 40000, "explanation": "Two things happening together doesn't prove one causes the other." },
+        { "id": "c2", "type": "mcq", "question": "An ad says: \"9 out of 10 users love our app!\" Which question matters most before you believe it?", "options": ["What colour is the app?", "How many users were asked, and how were they chosen?", "Who designed the app?", "Is the app free?"], "answer": 1, "fastMs": 30000, "explanation": "If only 10 happy users were asked, the claim means very little." },
+        { "id": "c3", "type": "mcq", "question": "Claim: \"Our town needs a new flyover because traffic is bad.\" Which fact would WEAKEN this argument the most?", "options": ["Traffic is worst near the market", "Most jams are caused by trucks parked on the road, which a flyover won't fix", "Flyovers take two years to build", "Many towns have flyovers"], "answer": 1, "fastMs": 40000, "explanation": "If the cause is parked trucks, a flyover doesn't solve the real problem." }
+      ]
+    },
+    {
+      "id": "idea-forge", "name": "Idea Forge", "ability": "creative", "color": "#ffcb47",
+      "intro": "There are no wrong answers here. Only more ideas.",
+      "items": [
+        { "id": "k1", "type": "uses", "question": "How many different uses for an empty plastic bottle can you think of? One idea per line.", "seconds": 45, "target": 8 }
+      ]
+    },
+    {
+      "id": "people-plaza", "name": "People Plaza", "ability": "social", "color": "#5ed68f",
+      "intro": "Real situations. What would you do first?",
+      "items": [
+        { "id": "p1", "type": "mcq", "question": "Your project partner hasn't done their part, and the deadline is tomorrow. What do you do first?", "options": ["Do their part yourself and say nothing", "Tell the teacher right away", "Message them privately to ask what's going on and plan together", "Complain in the class group"], "answer": 2, "fastMs": 30000, "explanation": "Talking privately first solves the problem and keeps the relationship." },
+        { "id": "p2", "type": "mcq", "question": "A new student sits alone at lunch every day and looks upset. What's the best first step?", "options": ["Leave them alone; it's not your business", "Invite them to sit with your group", "Ask others why they're always alone", "Post about it to raise awareness"], "answer": 1, "fastMs": 30000, "explanation": "A friendly invitation helps directly and respects their privacy." }
+      ]
+    }
+  ]
+}

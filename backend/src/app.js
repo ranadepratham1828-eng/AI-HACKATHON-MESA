@@ -2,11 +2,14 @@
 import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
-import { content, missionById, gameById, publicMission, publicGame } from './content.js';
+import { content, missionById, gameById, publicMission, publicGame, publicAssessment, assessmentItemById } from './content.js';
 import { aiStatus } from './ai/provider.js';
 import { scoreGame, missionPicks } from './logic/scoring.js';
 import { missionFeedback, twistReaction, curiosityAnswer } from './logic/missions.js';
-import { careerReport, parentReport, recommendations, campusConnect } from './logic/report.js';
+import { careerReport, parentReport, campusConnect } from './logic/report.js';
+import { scoreAssessment } from './logic/assessment.js';
+import { matchScholarships } from './logic/scholarships.js';
+import { coachState, coachReply, buildPlan } from './logic/coach.js';
 import { classDashboard } from './logic/school.js';
 import { ananyaData } from './demo.js';
 import { hashPassword, checkPassword, publicUser, canSeeStudent, canEditStudent, bearerToken } from './auth.js';
@@ -39,10 +42,31 @@ function cleanProfile(body = {}, existing = {}) {
   if ('dream' in body) out.dream = text(body.dream, 300);
   if ('parentExpect' in body) out.parentExpect = text(body.parentExpect, 60);
   if ('parentReason' in body) out.parentReason = text(body.parentReason, 300);
-  if ('budget' in body) out.budget = ['tight', 'medium', 'flexible'].includes(body.budget) ? body.budget : 'medium';
+  const pick = (key, allowed) => { if (key in body) out[key] = allowed.includes(body[key]) ? body[key] : null; };
+  const qn = content.questionnaire;
+  pick('budget', qn.collegeBudgets.map((b) => b.id));
+  pick('familyIncome', qn.incomeBands.map((b) => b.id));
+  pick('category', qn.categories);
+  pick('gender', qn.genders.map((g) => g.id));
+  pick('relocate', qn.relocate.map((r) => r.id));
+  pick('board', qn.boards);
+  if ('schoolName' in body) out.schoolName = text(body.schoolName, 120);
+  if ('subjects' in body) out.subjects = list(body.subjects);
+  if ('openToLoan' in body) out.openToLoan = Boolean(body.openToLoan);
+  if ('marks' in body && body.marks && typeof body.marks === 'object') {
+    out.marks = {};
+    for (const k of ['class9', 'class10', 'class11', 'class12']) {
+      const v = Number(body.marks[k]);
+      if (body.marks[k] !== '' && body.marks[k] != null && Number.isFinite(v) && v >= 0 && v <= 100) out.marks[k] = Math.round(v * 10) / 10;
+    }
+  }
+  if ('interests' in body) {
+    const valid = new Set(content.interests.map((i) => i.id));
+    out.interests = list(body.interests).filter((i) => valid.has(i));
+  }
   if ('stated' in body && body.stated && typeof body.stated === 'object') {
     out.stated = Object.fromEntries(
-      content.traits.map((t) => [t.id, Math.max(1, Math.min(5, Math.round(Number(body.stated[t.id]) || 3)))]),
+      content.assessment.abilities.map((a) => [a.id, Math.max(1, Math.min(5, Math.round(Number(body.stated[a.id]) || 3)))]),
     );
   }
   return out;
@@ -73,12 +97,13 @@ function view(student) {
   return {
     ...rest,
     progress: {
-      questionnaireDone: Boolean(student.profile?.stated),
-      gamesPlayed: Object.keys(student.games?.scores || {}).length,
-      gamesTotal: content.games.length,
+      questAnswered: Object.keys(student.assessment?.answers || {}).length,
+      questTotal: content.assessmentItems.length,
+      questDone: Boolean(student.assessment?.completedAt),
+      questionnaireDone: Boolean(student.profile?.interests?.length && student.profile?.subjects?.length),
+      reportReady: Boolean(student.assessment?.completedAt),
       missionsDone,
       missionsTotal: content.missions.length,
-      reportReady: missionsDone > 0,
     },
   };
 }
@@ -141,6 +166,9 @@ export function createApp(store) {
   app.get('/api/content', (req, res) => res.json({
     questionnaire: content.questionnaire,
     traits: content.traits,
+    assessment: publicAssessment(),
+    interests: content.interests,
+    careers: content.careers.map(({ id, name }) => ({ id, name })),
     games: content.games.map(publicGame),
     missions: content.missions.map(publicMission),
   }));
@@ -182,7 +210,7 @@ export function createApp(store) {
     const as = String(req.body?.as || 'student');
     const tag = Date.now().toString(36);
     if (as === 'student' || as === 'student-finished') {
-      const student = store.createStudent(ananyaData(as === 'student' ? 'questionnaire' : 'finished'));
+      const student = store.createStudent(ananyaData(as === 'student' ? 'new' : 'finished'));
       const user = store.createUser({ role: 'student', name: 'Ananya', email: `ananya-${tag}@demo.disha`, studentId: student.id, demo: true });
       return session(user, 201)(res);
     }
@@ -324,12 +352,71 @@ export function createApp(store) {
     const s = getStudent(req);
     const report = await careerReport(s);
     const { cacheEntry, ...out } = report;
+    out.scholarships = matchScholarships(s, report.careers.slice(0, 3).map((c) => c.id));
+    out.hasPlan = Boolean(s.plan);
     if (cacheEntry) { s.cache.report = cacheEntry; store.saveStudent(s); }
     res.json(out);
   }));
 
-  app.get('/api/students/:id/recommendations', wrap(async (req, res) => {
-    res.json(recommendations(getStudent(req)));
+  // ---- Dishaa Coach: chat to find the goal, then build the career plan (P0) ----
+  app.get('/api/students/:id/coach', wrap(async (req, res) => {
+    const s = getStudent(req);
+    const coach = coachState(s);
+    store.saveStudent(s);
+    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan) });
+  }));
+
+  app.post('/api/students/:id/coach', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    const message = text(req.body?.message, 1000);
+    if (!message) throw new HttpError(400, 'message is required');
+    const coach = await coachReply(s, message);
+    store.saveStudent(s);
+    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan) });
+  }));
+
+  app.post('/api/students/:id/plan', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    if (!s.assessment?.answers || !Object.keys(s.assessment.answers).length) throw new HttpError(409, 'Play Disha Quest first');
+    if (req.body?.goal) {
+      const g = content.careers.find((c) => c.id === req.body.goal);
+      if (!g) throw new HttpError(400, 'Unknown career');
+      coachState(s).goal = g.id;
+    }
+    s.plan = await buildPlan(s);
+    store.saveStudent(s);
+    res.json(s.plan);
+  }));
+
+  app.get('/api/students/:id/plan', wrap(async (req, res) => {
+    const s = getStudent(req);
+    if (!s.plan) throw new HttpError(404, 'No career plan yet');
+    res.json(s.plan);
+  }));
+
+  // ---- Disha Quest: the aptitude game every new student plays first (P0) ----
+  app.post('/api/students/:id/assessment/answers', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    const item = assessmentItemById(String(req.body?.itemId || ''));
+    if (!item) throw new HttpError(404, 'Question not found');
+    let answer = req.body?.answer;
+    if (item.type === 'uses') answer = text(String(answer ?? ''), 3000);
+    else if (item.type === 'memory') answer = Array.isArray(answer) ? answer.slice(0, 25).map((p) => [Number(p?.[0]), Number(p?.[1])]) : [];
+    else answer = Number(answer);
+    s.assessment ||= { answers: {} };
+    s.assessment.answers[item.id] = { answer, ms: Math.max(0, Math.min(Number(req.body?.ms) || 0, 10 * 60 * 1000)) };
+    const quest = scoreAssessment(s, content);
+    if (quest.complete && !s.assessment.completedAt) s.assessment.completedAt = new Date().toISOString();
+    store.saveStudent(s);
+    const zone = quest.zones.find((z) => z.id === item.zoneId);
+    res.json({ saved: true, zone, answered: quest.answered, total: quest.total, complete: quest.complete });
+  }));
+
+  app.post('/api/students/:id/assessment/restart', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    s.assessment = { answers: {} };
+    s.cache = {};
+    res.json(view(store.saveStudent(s)));
   }));
 
   app.get('/api/students/:id/parent-report', wrap(async (req, res) => {

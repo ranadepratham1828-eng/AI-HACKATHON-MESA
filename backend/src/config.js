@@ -18,7 +18,7 @@ export const config = {
   dataFile: env.DATA_FILE || 'data/db.json',
   ai: {
     provider: pickProvider(),
-    timeoutMs: (Number(env.AI_TIMEOUT_SECONDS) || 30) * 1000,
+    timeoutMs: (Number(env.AI_TIMEOUT_SECONDS) || 45) * 1000,
     gemini: {
       apiKey: env.GEMINI_API_KEY || '',
       model: env.GEMINI_MODEL || 'gemini-flash-latest',

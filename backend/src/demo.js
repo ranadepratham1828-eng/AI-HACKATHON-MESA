@@ -8,14 +8,38 @@ export const ANANYA_PROFILE = {
   name: 'Ananya',
   cls: '10',
   city: 'Bengaluru',
-  likes: ['Biology', 'Art'],
+  likes: ['Biology', 'Art', 'English'],
   dislikes: ['Accountancy', 'Maths'],
   hobbies: 'Sketching, helping my grandmother use her phone',
   goal: 'Choose my stream after Class 10',
   parentExpect: 'Doctor',
   parentReason: "It's a safe and respected career",
-  budget: 'medium',
-  stated: { People: 3, Numbers: 1, Creativity: 4, Building: 2, Investigating: 2, Nature: 3 },
+  budget: '1-3l',
+  board: 'CBSE',
+  schoolName: 'Demo Public School',
+  subjects: ['Maths', 'Science', 'Social Science', 'English', 'Kannada', 'Art'],
+  marks: { class9: 86, class10: 88 },
+  familyIncome: '4.5-8l',
+  gender: 'female',
+  category: 'prefer-not',
+  relocate: 'state',
+  openToLoan: true,
+  dream: 'Something creative where I help people',
+  interests: ['design', 'helping', 'health', 'writing'],
+  stated: { logical: 3, numerical: 1, verbal: 4, spatial: 3, memory: 4, critical: 2, creative: 4, social: 4 },
+};
+
+// Ananya's Disha Quest answers: strong creative, people and spatial; numbers better than she thinks.
+const QUEST_ANSWERS = {
+  l1: { answer: 1, ms: 21000 }, l2: { answer: 1, ms: 34000 }, l3: { answer: 3, ms: 38000 },
+  n1: { answer: 1, ms: 15000 }, n2: { answer: 0, ms: 26000 }, n3: { answer: 2, ms: 41000 },
+  v1: { answer: 1, ms: 9000 }, v2: { answer: 3, ms: 7000 }, v3: { answer: 1, ms: 24000 },
+  s1: { answer: 1, ms: 14000 }, s2: { answer: 2, ms: 19000 }, s3: { answer: 0, ms: 52000 },
+  m1: { answer: [[0, 1], [1, 3], [2, 0], [3, 4], [4, 2]], ms: 9000 },
+  m2: { answer: [[0, 0], [0, 4], [1, 2], [2, 1], [3, 3], [4, 4], [4, 1]], ms: 14000 },
+  c1: { answer: 1, ms: 27000 }, c2: { answer: 1, ms: 12000 }, c3: { answer: 0, ms: 36000 },
+  k1: { answer: 'plant pot\npencil stand\nbird feeder\npiggy bank\nlamp shade\nwatering can\nrolling pin\nsandbox scoop', ms: 45000 },
+  p1: { answer: 2, ms: 11000 }, p2: { answer: 1, ms: 8000 },
 };
 
 const min = (m) => m * 60 * 1000;
@@ -105,6 +129,12 @@ const FINISHED = {
 
 export function ananyaData(stage = 'finished') {
   const base = { profile: structuredClone(ANANYA_PROFILE), demo: true };
+  if (stage === 'new') {
+    // Live demo: only name, class and city; she plays the quest and fills the rest.
+    const { name, cls, city } = ANANYA_PROFILE;
+    return { profile: { name, cls, city, board: 'CBSE' }, demo: true };
+  }
+  base.assessment = { answers: structuredClone(QUEST_ANSWERS), completedAt: new Date().toISOString() };
   if (stage === 'questionnaire') return base;
   const data = structuredClone(FINISHED);
   data.games.scores = Object.fromEntries(

@@ -1,186 +1,13 @@
-// Career Report, Parent Alignment Report and recommendations.
-// Numbers come from scoring.js (explainable); the AI only writes the words.
+// Student report, parent report, colleges and Campus Connect.
+// Numbers come from assessment.js (explainable); the AI only writes the words.
 import { content } from '../content.js';
 import { askWithFallback, str, strList } from '../ai/ask.js';
 import { reportPrompt, parentReportPrompt, SUPPORTED_LANGS } from '../ai/prompts.js';
-import {
-  revealedTraits, statedVsRevealed, careerFits, streamFit, reportSignature,
-} from './scoring.js';
+import { scoreAssessment, statedVsMeasured, matchCareers, streamHint } from './assessment.js';
 
-const traitInfo = Object.fromEntries(content.traits.map((t) => [t.id, t]));
-
-/** Everything the report needs that doesn't use AI. */
-export function computeResults(student) {
-  const fingerprint = revealedTraits(student, content);
-  const svr = statedVsRevealed(student.profile?.stated, fingerprint);
-  const fits = careerFits(student, content);
-  const stream = streamFit(student, content, fingerprint, fits);
-  const doneMissions = content.missions.filter((m) => student.missions?.[m.id]?.status === 'done');
-  const topTraits = Object.entries(fingerprint)
-    .filter(([, v]) => v != null)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([t]) => t);
-  return {
-    fingerprint,
-    stated: student.profile?.stated || {},
-    statedVsRevealed: svr,
-    fits,
-    topMatch: fits[0] || null,
-    topTraits,
-    stream,
-    missionsDone: doneMissions.length,
-    gamesPlayed: Object.keys(student.games?.scores || {}).length,
-    signature: reportSignature(student),
-  };
-}
-
-/** A short quote: the first sentence (ignoring Mr./Mrs./Dr.), clipped at a word boundary. */
-function firstSentence(text, max = 120) {
-  const t = String(text || '').trim();
-  const m = t.match(/^.*?(?<!\b(?:Mr|Mrs|Ms|Dr|St|vs|e\.g|i\.e))[.!?](?=\s|$)/s);
-  const s = (m ? m[0] : t).trim();
-  if (s.length <= max) return s;
-  const cut = s.slice(0, max);
-  return `${cut.slice(0, cut.lastIndexOf(' ') > 40 ? cut.lastIndexOf(' ') : max).trim()}…`;
-}
-
-/** Report text without AI: built from the student's own answers and the content files. */
-export function scriptedNarrative(student, computed) {
-  const done = content.missions.filter((m) => student.missions?.[m.id]?.status === 'done');
-  const strengths = computed.topTraits.map((trait) => {
-    const best = [...done].sort((a, b) => (b.weights[trait] || 0) - (a.weights[trait] || 0))[0];
-    const quote = best ? firstSentence(student.missions[best.id].answer) : '';
-    return {
-      name: traitInfo[trait].strengthName,
-      evidence: best && quote ? `In the ${best.career} mission you wrote: "${quote}"` : `Your games showed strong ${trait.toLowerCase()} skills.`,
-      whyItMatters: `${traitInfo[trait].description} is a core skill in many careers.`,
-    };
-  });
-  const tried = new Set(done.map((m) => m.career));
-  const newCareers = computed.topTraits
-    .flatMap((t) => content.newCareersByTrait[t] || [])
-    .filter((c) => !tried.has(c.name))
-    .slice(0, 3);
-  const top = computed.topMatch ? content.pathways[computed.topMatch.missionId] : null;
-  const s = computed.statedVsRevealed.biggestSurprise;
-  return {
-    headline: computed.topMatch
-      ? `You came most alive in the ${computed.topMatch.career} mission, and your actions showed real ${computed.topTraits.map((t) => traitInfo[t].strengthName.toLowerCase()).join(', ')}.`
-      : 'Play at least one mission to see what your actions reveal.',
-    strengths,
-    surprise: s
-      ? `You rated yourself ${s.stated}/5 for ${s.trait}, but your actions showed ${s.revealed}/5.`
-      : '',
-    newCareers,
-    next7Days: top?.tryThisWeek?.slice(0, 3) || ['Try one more mission on Disha', 'Talk to someone who works in a job you are curious about', 'Write down one thing you enjoyed this week and why'],
-  };
-}
-
-export async function careerReport(student) {
-  const computed = computeResults(student);
-  if (!computed.missionsDone) {
-    return { ...computed, narrative: scriptedNarrative(student, computed), narrativeSource: 'scripted' };
-  }
-  const cached = student.cache?.report;
-  if (cached && cached.signature === computed.signature) {
-    return { ...computed, narrative: cached.narrative, narrativeSource: cached.source };
-  }
-  const missions = content.missions.filter((m) => student.missions?.[m.id]?.status === 'done');
-  const result = await askWithFallback({
-    label: 'report',
-    prompt: reportPrompt({ student, computed, missions }),
-    validate: (o) => {
-      const headline = str(o?.headline);
-      const strengths = Array.isArray(o?.strengths)
-        ? o.strengths.map((s) => ({ name: str(s?.name, 60), evidence: str(s?.evidence), whyItMatters: str(s?.whyItMatters) })).filter((s) => s.name && s.evidence).slice(0, 3)
-        : [];
-      const newCareers = Array.isArray(o?.newCareers)
-        ? o.newCareers.map((c) => ({ name: str(c?.name, 60), why: str(c?.why) })).filter((c) => c.name).slice(0, 3)
-        : [];
-      const next7Days = strList(o?.next7Days, 3);
-      if (!headline || strengths.length < 2 || !newCareers.length || !next7Days.length) return null;
-      return { headline, strengths, surprise: str(o.surprise) || '', newCareers, next7Days };
-    },
-    fallback: () => scriptedNarrative(student, computed),
-  });
-  const { source, aiError, ...narrative } = result;
-  // Only cache AI text, so a scripted fallback is retried next time.
-  const cacheEntry = source === 'ai' ? { signature: computed.signature, narrative, source } : undefined;
-  return { ...computed, narrative, narrativeSource: source, cacheEntry };
-}
-
-export function scriptedParentReport(student, computed) {
-  const name = student.profile?.name || 'Your child';
-  const top = computed.topMatch?.career;
-  const traits = computed.topTraits.map((t) => traitInfo[t].strengthName.toLowerCase());
-  const expect = student.profile?.parentExpect;
-  return {
-    summary: top
-      ? `${name} tried ${computed.missionsDone} real career missions on Disha. ${name} was most engaged in the ${top} mission. Their actions showed strong ${traits.join(', ')}.`
-      : `${name} hasn't finished a career mission yet.`,
-    match: expect
-      ? `Your hope for ${name} to become a ${expect} fits their ${traits[0] || 'strengths'}: many strengths carry across careers.`
-      : `${name}'s strengths are a good base for many careers.`,
-    differ: top && expect && !top.toLowerCase().includes(expect.toLowerCase())
-      ? `${name}'s strongest signals pointed towards ${top}, which is different from ${expect}. It's worth exploring together.`
-      : `${name}'s results and your expectations point in a similar direction.`,
-    starters: [
-      `Which mission did you enjoy most, and what made it fun?`,
-      `What did the results say that surprised you?`,
-      `If you could try one career for a day, which would it be and why?`,
-    ],
-  };
-}
-
-export async function parentReport(student, lang = 'en') {
-  const language = SUPPORTED_LANGS.includes(lang) ? lang : 'en';
-  const report = await careerReport(student);
-  const computed = report;
-  const sig = `${computed.signature}#${language}`;
-  const cached = student.cache?.parent?.[language];
-  const base = {
-    childName: student.profile?.name || '',
-    parentExpect: student.profile?.parentExpect || '',
-    parentReason: student.profile?.parentReason || '',
-    topMatch: computed.topMatch,
-    topTraits: computed.topTraits,
-    fingerprint: computed.fingerprint,
-    language,
-  };
-  if (cached && cached.signature === sig) {
-    return { ...base, ...cached.text, language: cached.language || language, requestedLanguage: language, source: cached.source, reportCacheEntry: report.cacheEntry };
-  }
-  if (!computed.missionsDone) return { ...base, ...scriptedParentReport(student, computed), source: 'scripted' };
-
-  const result = await askWithFallback({
-    label: `parent:${language}`,
-    prompt: parentReportPrompt({ student, computed, lang: language }),
-    validate: (o) => {
-      const summary = str(o?.summary, 800);
-      const match = str(o?.match);
-      const differ = str(o?.differ);
-      const starters = strList(o?.starters, 3);
-      return summary && match && differ && starters.length ? { summary, match, differ, starters } : null;
-    },
-    fallback: () => scriptedParentReport(student, computed),
-  });
-  const { source, aiError, ...text } = result;
-  // Scripted text is English only, so say so when another language was asked for.
-  const translated = source === 'ai' || language === 'en';
-  return {
-    ...base,
-    ...text,
-    language: translated ? language : 'en',
-    requestedLanguage: language,
-    source,
-    cacheEntry: source === 'ai' ? { signature: sig, text, source, language } : undefined,
-    reportCacheEntry: report.cacheEntry,
-  };
-}
-
-/** Colleges for a career, each with Campus Connect count and whether its figures are verified. */
+/** Colleges for a career simulation, with Campus Connect counts. */
 export function collegesFor(missionId) {
+  if (!missionId) return [];
   return content.colleges
     .filter((c) => c.careers.includes(missionId))
     .map((c) => ({
@@ -200,30 +27,146 @@ export function campusConnect({ missionId, collegeId }) {
     .map((p) => ({ ...p, college: { id: p.collegeId, name: byId[p.collegeId]?.name, city: byId[p.collegeId]?.city } }));
 }
 
-/** Career Path Recommendations + India Pathway Cards + Stream Decision Helper. */
-export function recommendations(student) {
-  const computed = computeResults(student);
-  const traitWords = computed.topTraits.map((t) => traitInfo[t].strengthName.toLowerCase());
-  const careerPaths = computed.fits.map((f) => {
-    const mission = content.missions.find((m) => m.id === f.missionId);
-    const matching = computed.topTraits.filter((t) => mission.weights[t]);
-    return {
-      missionId: f.missionId,
-      career: f.career,
-      fit: f.fit,
-      why: matching.length
-        ? `Uses your ${matching.map((t) => traitInfo[t].strengthName.toLowerCase()).join(' and ')}, and you ${f.behaviour.bonusTaken ? 'took the bonus challenge' : 'finished the mission'}${f.behaviour.questionsAsked ? ` and asked ${f.behaviour.questionsAsked} curious question${f.behaviour.questionsAsked > 1 ? 's' : ''}` : ''}.`
-        : `You finished this mission with a fit of ${f.fit}.`,
-      pathway: content.pathways[f.missionId] || null,
-      colleges: collegesFor(f.missionId),
-    };
-  });
-  const cls = Number(student.profile?.cls) || 10;
+/** Everything the report needs that doesn't use AI. */
+export function computeResults(student) {
+  const quest = scoreAssessment(student, content);
+  const careers = matchCareers(student, content, quest.abilities).map((c) => ({
+    ...c,
+    pathway: c.missionId ? content.pathways[c.missionId] || null : null,
+    colleges: collegesFor(c.missionId),
+  }));
+  const top = careers.slice(0, 5);
+  const signature = JSON.stringify([student.assessment?.answers || {}, student.profile?.interests, student.profile?.stated, student.profile?.parentExpect]);
   return {
-    stage: cls >= 11 ? 'class12' : 'class10',
-    careerPaths,
-    stream: computed.stream,
-    strengthsUsed: traitWords,
-    note: 'Pathways are drafts for the demo and should be checked by working professionals.',
+    quest,
+    statedVsMeasured: statedVsMeasured(student.profile?.stated, quest.abilities),
+    careers: top,
+    stream: streamHint(top.slice(0, 3)),
+    questionnaireDone: Boolean(student.profile?.interests?.length || student.profile?.stated),
+    signature,
+  };
+}
+
+const labelOf = (id) => content.assessment.abilities.find((a) => a.id === id)?.label || id;
+
+/** Report text without AI, built from the student's own results. */
+export function scriptedNarrative(student, c) {
+  const byId = Object.fromEntries(c.quest.abilities.map((a) => [a.id, a]));
+  const name = student.profile?.name || 'You';
+  const top = c.careers[0];
+  return {
+    headline: c.quest.strengths.length
+      ? `${name}'s strongest areas are ${c.quest.strengths.slice(0, 2).map((id) => labelOf(id).toLowerCase()).join(' and ')}${top ? `, a great fit for careers like ${top.name}` : ''}.`
+      : 'Finish Disha Quest to see your strengths.',
+    strengths: c.quest.strengths.map((id) => ({
+      name: byId[id].label,
+      evidence: byId[id].evidence || '',
+      whyItMatters: `${byId[id].description}.`,
+    })),
+    growth: c.quest.growth.map((id) => ({ name: byId[id].label, tip: byId[id].growthTip })),
+    surprise: c.statedVsMeasured.biggestSurprise
+      ? `You rated your ${c.statedVsMeasured.biggestSurprise.label.toLowerCase()} ${c.statedVsMeasured.biggestSurprise.stated}/5, but the game measured ${c.statedVsMeasured.biggestSurprise.measured}/5.`
+      : '',
+    next7Days: [
+      top ? `Read about a day in the life of a ${top.name}, and note what excites you` : 'Talk to someone whose job you find interesting',
+      c.quest.growth[0] ? byId[c.quest.growth[0]].growthTip : 'Pick one puzzle a day to keep your mind sharp',
+      'Share this report with your parents and discuss your top 3 careers',
+    ],
+  };
+}
+
+export async function careerReport(student) {
+  const c = computeResults(student);
+  if (!c.quest.answered) return { ...c, narrative: scriptedNarrative(student, c), narrativeSource: 'scripted' };
+
+  const cached = student.cache?.report;
+  if (cached && cached.signature === c.signature) return { ...c, narrative: cached.narrative, narrativeSource: cached.source };
+
+  const result = await askWithFallback({
+    label: 'report',
+    prompt: reportPrompt({ student, computed: c }),
+    validate: (o) => {
+      const headline = str(o?.headline);
+      const strengths = Array.isArray(o?.strengths)
+        ? o.strengths.map((s) => ({ name: str(s?.name, 60), evidence: str(s?.evidence), whyItMatters: str(s?.whyItMatters) })).filter((s) => s.name && s.evidence).slice(0, 3)
+        : [];
+      const growth = Array.isArray(o?.growth)
+        ? o.growth.map((g) => ({ name: str(g?.name, 60), tip: str(g?.tip) })).filter((g) => g.name && g.tip).slice(0, 2)
+        : [];
+      const next7Days = strList(o?.next7Days, 3);
+      if (!headline || strengths.length < 2 || !next7Days.length) return null;
+      return { headline, strengths, growth, surprise: str(o.surprise) || '', next7Days };
+    },
+    fallback: () => scriptedNarrative(student, c),
+  });
+  const { source, aiError, ...narrative } = result;
+  const cacheEntry = source === 'ai' ? { signature: c.signature, narrative, source } : undefined;
+  return { ...c, narrative, narrativeSource: source, cacheEntry };
+}
+
+export function scriptedParentReport(student, c) {
+  const name = student.profile?.name || 'Your child';
+  const strengths = c.quest.strengths.map((id) => labelOf(id).toLowerCase());
+  const expect = student.profile?.parentExpect;
+  const careerNames = c.careers.map((x) => x.name);
+  const expectMatch = expect && careerNames.find((n) => n.toLowerCase().includes(expect.toLowerCase()));
+  return {
+    summary: c.quest.answered
+      ? `${name} completed Disha Quest, a 10-minute aptitude game. ${name}'s strongest areas are ${strengths.join(', ')}. The best-matching careers are ${careerNames.slice(0, 3).join(', ')}.`
+      : `${name} hasn't played Disha Quest yet.`,
+    match: expectMatch
+      ? `${expect} appears in ${name}'s top career matches, which supports your hope.`
+      : `${name}'s ${strengths[0] || 'strengths'} are valuable in many careers, including the one you hope for.`,
+    differ: expect && !expectMatch
+      ? `${expect} isn't in ${name}'s top matches right now; careers like ${careerNames[0] || 'others'} fit their results more closely. It's worth exploring together.`
+      : `${name}'s results and your expectations point in a similar direction.`,
+    starters: [
+      'Which part of the game did you enjoy most, and why?',
+      'Which of your top careers surprised you?',
+      'What would a perfect day at work look like for you?',
+    ],
+  };
+}
+
+export async function parentReport(student, lang = 'en') {
+  const language = SUPPORTED_LANGS.includes(lang) ? lang : 'en';
+  const report = await careerReport(student);
+  const sig = `${report.signature}#${language}`;
+  const base = {
+    childName: student.profile?.name || '',
+    parentExpect: student.profile?.parentExpect || '',
+    parentReason: student.profile?.parentReason || '',
+    strengths: report.quest.strengths.map(labelOf),
+    topCareers: report.careers.slice(0, 3).map((x) => ({ name: x.name, fit: x.fit })),
+    language,
+    requestedLanguage: language,
+  };
+  const cached = student.cache?.parent?.[language];
+  if (cached && cached.signature === sig) {
+    return { ...base, ...cached.text, language: cached.language || language, source: cached.source, reportCacheEntry: report.cacheEntry };
+  }
+  if (!report.quest.answered) return { ...base, ...scriptedParentReport(student, report), source: 'scripted' };
+
+  const result = await askWithFallback({
+    label: `parent:${language}`,
+    prompt: parentReportPrompt({ student, computed: report, lang: language }),
+    validate: (o) => {
+      const summary = str(o?.summary, 800);
+      const match = str(o?.match);
+      const differ = str(o?.differ);
+      const starters = strList(o?.starters, 3);
+      return summary && match && differ && starters.length ? { summary, match, differ, starters } : null;
+    },
+    fallback: () => scriptedParentReport(student, report),
+  });
+  const { source, aiError, ...text } = result;
+  const translated = source === 'ai' || language === 'en';
+  return {
+    ...base,
+    ...text,
+    language: translated ? language : 'en',
+    source,
+    cacheEntry: source === 'ai' ? { signature: sig, text, source, language } : undefined,
+    reportCacheEntry: report.cacheEntry,
   };
 }

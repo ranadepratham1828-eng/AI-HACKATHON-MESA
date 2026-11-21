@@ -77,44 +77,45 @@ If the question is unsafe or unrelated to careers, gently steer back to the job.
 Reply with only JSON: {"answer": "..."}`;
 }
 
-export function reportPrompt({ student, computed, missions }) {
-  const work = missions
-    .map((m) => {
-      const s = student.missions[m.id];
-      return `- ${m.career}: answer """${String(s.answer || '').slice(0, 600)}"""${s.bonusAnswer ? ` | bonus """${String(s.bonusAnswer).slice(0, 300)}"""` : ''}${s.twistReply ? ` | twist reply """${String(s.twistReply).slice(0, 300)}"""` : ''}`;
-    })
-    .join('\n');
+const abilityLines = (computed) => computed.quest.abilities
+  .filter((a) => a.score != null)
+  .map((a) => `- ${a.label}: ${a.score}/100 (${a.band})${a.evidence ? `; evidence: ${a.evidence}` : ''}`)
+  .join('\n');
+
+export function reportPrompt({ student, computed }) {
+  const p = student.profile || {};
   return `${VOICE}
 
-Write the career report for ${student.profile.name || 'the student'}, Class ${student.profile.cls || '10'}, ${student.profile.city || 'India'}.
+Write the report for ${p.name || 'the student'}, Class ${p.cls || '10'}, ${p.city || 'India'}, after they played Disha Quest, a 10-minute aptitude game.
 
-WHAT THEY SAID (questionnaire, 1-5): ${JSON.stringify(student.profile.stated || {})}
-Likes: ${(student.profile.likes || []).join(', ') || 'not given'}. Dislikes: ${(student.profile.dislikes || []).join(', ') || 'not given'}.
-WHAT THEY SHOWED (Interest Fingerprint from behaviour, 1-5): ${JSON.stringify(computed.fingerprint)}
-CAREER FITS (from behaviour): ${JSON.stringify(computed.fits.map((f) => ({ career: f.career, fit: f.fit, ...f.behaviour })))}
-BIGGEST STATED VS REVEALED GAP: ${JSON.stringify(computed.statedVsRevealed.biggestSurprise)}
-THEIR OWN WORDS IN MISSIONS:
-${work || '- none yet'}
+MEASURED ABILITIES (from the game):
+${abilityLines(computed)}
+Overall: ${computed.quest.stats.accuracy}% accuracy, about ${computed.quest.stats.avgSeconds}s per puzzle.
+STRENGTHS (top 3): ${computed.quest.strengths.join(', ')}. GROWTH AREAS: ${computed.quest.growth.join(', ') || 'none below 70'}.
+SELF-RATING vs MEASURED (1-5): ${JSON.stringify(computed.statedVsMeasured.rows.map((r) => [r.label, r.stated, r.measured]))}
+INTERESTS: ${(p.interests || []).join(', ') || 'not given'}. Likes: ${(p.likes || []).join(', ') || 'not given'}. Dislikes: ${(p.dislikes || []).join(', ') || 'not given'}.
+TOP CAREER MATCHES: ${computed.careers.map((c) => `${c.name} (${c.fit}%)`).join(', ')}
 
-Rules: every strength must be proven with the student's own words or actions above (quote a short phrase). New careers must be outside the usual 7 (doctor, engineer, CA, lawyer, teacher, IAS, MBA) and not the careers already tried. Next steps must be free or cheap and doable in 7 days by a 15-year-old in India.
+Rules: every strength must cite the evidence above. Growth areas are framed as skills to build, never weaknesses that block a career. Next steps must be free or cheap and doable in 7 days by a 15-year-old in India.
 
 Reply with only JSON:
-{"headline": "one encouraging sentence summarising what they showed",
- "strengths": [{"name": "2-3 words", "evidence": "what they did or wrote, with a short quote", "whyItMatters": "one sentence"}],
- "surprise": "one sentence about the biggest gap between what they said and what they showed, or \\"\\"",
- "newCareers": [{"name": "career", "why": "one sentence linking it to their strengths"}],
+{"headline": "one encouraging sentence summarising their profile",
+ "strengths": [{"name": "ability name", "evidence": "what they did in the game", "whyItMatters": "one sentence on where this helps"}],
+ "growth": [{"name": "ability name", "tip": "one practical way to build it"}],
+ "surprise": "one sentence on the biggest gap between self-rating and measured, or \\"\\"",
  "next7Days": ["action 1", "action 2", "action 3"]}
-Give exactly 3 strengths, 3 newCareers and 3 next7Days.`;
+Give exactly 3 strengths, up to 2 growth areas and 3 next7Days.`;
 }
 
 export function parentReportPrompt({ student, computed, lang }) {
+  const p = student.profile || {};
   return `${VOICE}
 
-Write a short note for the PARENT of ${student.profile.name || 'a student'} (Class ${student.profile.cls || '10'}), in ${LANGS[lang] || LANGS.en}.
-The parent expects their child to become: "${student.profile.parentExpect || 'not given'}". Their reason: "${student.profile.parentReason || 'not given'}".
-What the child showed in Disha's career missions (Interest Fingerprint, 1-5): ${JSON.stringify(computed.fingerprint)}
-Career fits from behaviour: ${JSON.stringify(computed.fits.map((f) => ({ career: f.career, fit: f.fit })))}
-Strengths found: ${JSON.stringify((computed.narrative?.strengths || []).map((s) => s.name))}
+Write a short note for the PARENT of ${p.name || 'a student'} (Class ${p.cls || '10'}), in ${LANGS[lang] || LANGS.en}.
+The parent expects their child to become: "${p.parentExpect || 'not given'}". Their reason: "${p.parentReason || 'not given'}".
+The child played Disha Quest, a 10-minute aptitude game. Measured abilities:
+${abilityLines(computed)}
+Top career matches: ${computed.careers.map((c) => `${c.name} (${c.fit}%)`).join(', ')}
 
 Be respectful of the parent's hopes. Never say the parent is wrong. Show where their expectation and the child's strengths match, where they differ, and help them start a calm conversation at home.
 

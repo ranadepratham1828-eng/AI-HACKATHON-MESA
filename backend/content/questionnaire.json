@@ -1,10 +1,33 @@
 {
-  "classes": ["9", "10", "11", "12"],
+  "classes": [
+    "9",
+    "10",
+    "11",
+    "12"
+  ],
   "subjects": [
-    "Maths", "Science", "Physics", "Chemistry", "Biology", "Computer Science",
-    "Accountancy", "Economics", "Business Studies",
-    "History", "Geography", "Political Science", "Psychology", "Sociology",
-    "English", "Hindi", "Kannada", "Art", "Music", "Sports"
+    "Maths",
+    "Science",
+    "Social Science",
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Computer Science",
+    "Accountancy",
+    "Economics",
+    "Business Studies",
+    "History",
+    "Geography",
+    "Political Science",
+    "Psychology",
+    "Sociology",
+    "English",
+    "Hindi",
+    "Kannada",
+    "Sanskrit",
+    "Art",
+    "Music",
+    "Physical Education"
   ],
   "goals": [
     "Choose my stream after Class 10",
@@ -13,18 +36,131 @@
     "Find a career I'll enjoy",
     "Not sure yet"
   ],
-  "budgets": [
-    { "id": "tight", "label": "Tight: we need low-cost options and scholarships" },
-    { "id": "medium", "label": "Medium: we can spend on the right course" },
-    { "id": "flexible", "label": "Flexible: cost is not the main concern" }
-  ],
   "statedQuestions": [
-    { "trait": "People", "question": "I enjoy understanding and helping people." },
-    { "trait": "Numbers", "question": "I'm good with numbers and calculations." },
-    { "trait": "Creativity", "question": "I like imagining and designing new things." },
-    { "trait": "Building", "question": "I like figuring out how things work and making them." },
-    { "trait": "Investigating", "question": "I enjoy puzzles and finding out why something happened." },
-    { "trait": "Nature", "question": "I care about the environment and the places around me." }
+    {
+      "ability": "logical",
+      "question": "I'm good at spotting patterns and solving logic puzzles."
+    },
+    {
+      "ability": "numerical",
+      "question": "I'm quick and accurate with numbers."
+    },
+    {
+      "ability": "verbal",
+      "question": "I understand and use words well."
+    },
+    {
+      "ability": "spatial",
+      "question": "I can easily picture shapes and how things fit together."
+    },
+    {
+      "ability": "memory",
+      "question": "I remember things easily."
+    },
+    {
+      "ability": "critical",
+      "question": "I question claims and look for evidence."
+    },
+    {
+      "ability": "creative",
+      "question": "I come up with lots of original ideas."
+    },
+    {
+      "ability": "social",
+      "question": "I understand people and handle tricky situations well."
+    }
   ],
-  "scale": { "min": 1, "max": 5, "minLabel": "Not me", "maxLabel": "Totally me" }
+  "scale": {
+    "min": 1,
+    "max": 5,
+    "minLabel": "Not like me",
+    "maxLabel": "Very like me"
+  },
+  "boards": [
+    "CBSE",
+    "ICSE / ISC",
+    "State board",
+    "IB / IGCSE",
+    "Other"
+  ],
+  "collegeBudgets": [
+    {
+      "id": "under-1l",
+      "label": "Under ₹1 lakh a year"
+    },
+    {
+      "id": "1-3l",
+      "label": "₹1–3 lakh a year"
+    },
+    {
+      "id": "3-6l",
+      "label": "₹3–6 lakh a year"
+    },
+    {
+      "id": "over-6l",
+      "label": "More than ₹6 lakh a year"
+    }
+  ],
+  "incomeBands": [
+    {
+      "id": "under-2.5l",
+      "label": "Under ₹2.5 lakh"
+    },
+    {
+      "id": "2.5-4.5l",
+      "label": "₹2.5–4.5 lakh"
+    },
+    {
+      "id": "4.5-8l",
+      "label": "₹4.5–8 lakh"
+    },
+    {
+      "id": "over-8l",
+      "label": "More than ₹8 lakh"
+    },
+    {
+      "id": "prefer-not",
+      "label": "Prefer not to say"
+    }
+  ],
+  "categories": [
+    "General",
+    "EWS",
+    "OBC",
+    "SC",
+    "ST",
+    "prefer-not"
+  ],
+  "genders": [
+    {
+      "id": "female",
+      "label": "Female"
+    },
+    {
+      "id": "male",
+      "label": "Male"
+    },
+    {
+      "id": "other",
+      "label": "Other"
+    },
+    {
+      "id": "prefer-not",
+      "label": "Prefer not to say"
+    }
+  ],
+  "relocate": [
+    {
+      "id": "anywhere",
+      "label": "Anywhere in India"
+    },
+    {
+      "id": "state",
+      "label": "Within my state"
+    },
+    {
+      "id": "city",
+      "label": "Only my city"
+    }
+  ]
 }

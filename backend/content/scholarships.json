@@ -1,0 +1,61 @@
+{
+  "_note": "Researched 2026-11-21 from scholarship news and listing sites (not official notices). Amounts, limits and deadlines change every year: always verify on the official portal before applying. Never show amounts as guaranteed.",
+  "scholarships": [
+    {
+      "id": "nsp-central-sector", "name": "Central Sector Scheme of Scholarships", "provider": "Government of India (National Scholarship Portal)",
+      "for": "Top scorers in the Class 12 board exam who join a regular college degree",
+      "amountNote": "About ₹12,000 a year for the first 3 years, more for later years of professional courses (as reported)",
+      "rules": { "incomeMaxINR": 450000, "minMarks12": 80, "levels": ["ug"] },
+      "eligibilityNote": "Top percentile of your board's Class 12 results; family income limit applies",
+      "applyAt": "https://scholarships.gov.in", "source": "https://www.shiksha.com/college/articles/graduation-scholarship-2026-27-scholarships-for-ug-students-after-12th-eligibility-amount-and-how-to-apply-blogId-243533", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "aicte-pragati", "name": "AICTE Pragati Scholarship for Girls", "provider": "AICTE (National Scholarship Portal)",
+      "for": "Girls in the first year of an AICTE-approved technical degree or diploma (e.g. engineering)",
+      "amountNote": "₹50,000 a year (as reported)",
+      "rules": { "incomeMaxINR": 800000, "gender": "female", "courseTypes": ["technical"], "levels": ["ug"] },
+      "eligibilityNote": "Family income up to ₹8 lakh a year; at most two girls per family",
+      "applyAt": "https://scholarships.gov.in", "source": "https://www.buddy4study.com/article/pragati-scholarship", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "pm-yasasvi", "name": "PM YASASVI Post-Matric Scholarship", "provider": "Government of India, via your state",
+      "for": "OBC, EBC and DNT students in Class 11 onwards",
+      "amountNote": "₹5,000 to ₹20,000 a year depending on the course (as reported)",
+      "rules": { "incomeMaxINR": 250000, "categories": ["OBC", "EBC", "DNT"], "levels": ["class11", "ug"] },
+      "eligibilityNote": "Family income up to ₹2.5 lakh a year in most states; some states use a lower limit",
+      "applyAt": "https://scholarships.gov.in", "source": "https://www.pw.live/upsc/exams/pm-yasasvi-scheme", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "post-matric-sc-st", "name": "Post-Matric Scholarship for SC / ST students", "provider": "Government of India, via your state",
+      "for": "SC and ST students from Class 11 onwards",
+      "amountNote": "Covers fees and a maintenance allowance; amounts set by each state",
+      "rules": { "categories": ["SC", "ST"], "levels": ["class11", "ug"] },
+      "eligibilityNote": "Income limits and amounts depend on your state",
+      "applyAt": "https://scholarships.gov.in", "source": "https://www.buddy4study.com/article/scholarships-for-class-10-12-passed-students", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "hdfc-parivartan-ecss", "name": "HDFC Bank Parivartan ECSS Scholarship", "provider": "HDFC Bank Parivartan (via Buddy4Study)",
+      "for": "Students whose family faces financial difficulty or a crisis",
+      "amountNote": "₹30,000 (general degree) or ₹50,000 (professional degree) for undergraduates (as reported)",
+      "rules": { "incomeMaxINR": 250000, "minMarksLatest": 55, "levels": ["school", "class11", "ug"] },
+      "eligibilityNote": "Family income up to ₹2.5 lakh a year and at least 55% in your last exam",
+      "applyAt": "https://www.buddy4study.com/page/hdfc-bank-parivartans-ecss-programme", "source": "https://www.buddy4study.com/article/parivartan-ecss-programme", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "inspire-she", "name": "INSPIRE Scholarship for Higher Education (SHE)", "provider": "Department of Science and Technology",
+      "for": "Top Class 12 board performers who study natural or basic sciences at college",
+      "amountNote": "Check the INSPIRE portal for the current amount",
+      "rules": { "minMarks12": 85, "courseTypes": ["science"], "levels": ["ug"] },
+      "eligibilityNote": "Based on Class 12 board rank; science degree courses only",
+      "applyAt": "https://online-inspire.gov.in", "source": "https://www.aninews.in/news/business/scholarships-after-class-12-in-2026-complete-guide-to-government-schemes-private-exams-and-how-to-secure-funding-fast20260506182609/", "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "reliance-ug", "name": "Reliance Foundation Undergraduate Scholarship", "provider": "Reliance Foundation",
+      "for": "First-year undergraduates in any stream",
+      "amountNote": "Check the Reliance Foundation portal for the current amount",
+      "rules": { "levels": ["ug"] },
+      "eligibilityNote": "Merit and family income based; selection includes an aptitude test",
+      "applyAt": "https://www.scholarships.reliancefoundation.org", "source": "https://www.aninews.in/news/business/scholarships-after-class-12-in-2026-complete-guide-to-government-schemes-private-exams-and-how-to-secure-funding-fast20260506182609/", "lastChecked": "2026-11-21"
+    }
+  ]
+}
