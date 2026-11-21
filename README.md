@@ -6,9 +6,21 @@ Our team's project for the **MESA AI Hackathon**: building an **AI-powered produ
 
 ## The Challenge
 
-Build an AI product that solves a real problem in the field of education.
+**Weekend at Mesa · AI Hackathon · Theme 02: Education & Careers**
 
-_Full problem statement, judging criteria, and deadlines will be added here once we have the official brief._
+Education, careers, and money shape how people grow, work, make decisions, and navigate everyday life. From learning new skills and preparing for opportunities to managing finances, staying organized, running businesses, making purchases, or planning for the future, most people today rely on systems that are **fragmented, overwhelming, manual, or difficult to navigate**.
+
+Problems can come from anywhere in: learning, productivity, career planning, finance tracking, insurance, local businesses & everyday workflows.
+
+> **Start with one user, identify one real frustration they face & build a workflow that genuinely makes their life easier.**
+
+### 3 spaces worth exploring (prompts, not limits)
+
+1. **Students overwhelmed by fragmented learning.** Assignments, lectures, notes, PDFs, recordings, deadlines, exams: students constantly switch between platforms and information, yet still struggle to stay organized, prepared, and consistent.
+2. **Opportunity discovery still runs on guesswork.** Jobs, clients, grants, investors, partnerships, admissions: people spend hours navigating fragmented systems without knowing what they actually qualify for or should pursue.
+3. **Skills without a clear path to opportunity.** People learn continuously but lack visibility into how their skills translate into real opportunities, making career progression feel random rather than structured.
+
+> **Pick one user & one problem. Be specific & deep. Broad ideas won't translate into strong products.**
 
 ## Our Idea
 
@@ -46,7 +58,7 @@ We both use Claude Code on this repo, so to avoid stepping on each other:
 
 ## Roadmap
 
-- [ ] Get the official hackathon brief and add it above
+- [x] Get the official hackathon brief and add it above
 - [ ] Brainstorm and pick an idea
 - [ ] Choose the tech stack
 - [ ] Build the MVP
