@@ -9,7 +9,7 @@
     },
     {
       "source": "/demo",
-      "destination": "/product.html"
+      "destination": "/product"
     }
   ],
   "functions": {
