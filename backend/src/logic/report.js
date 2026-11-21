@@ -35,9 +35,14 @@ export function computeResults(student) {
   };
 }
 
-function firstSentence(text, max = 110) {
-  const s = String(text || '').trim().split(/(?<=[.!?])\s/)[0] || '';
-  return s.length > max ? `${s.slice(0, max - 1)}…` : s;
+/** A short quote: the first sentence (ignoring Mr./Mrs./Dr.), clipped at a word boundary. */
+function firstSentence(text, max = 120) {
+  const t = String(text || '').trim();
+  const m = t.match(/^.*?(?<!\b(?:Mr|Mrs|Ms|Dr|St|vs|e\.g|i\.e))[.!?](?=\s|$)/s);
+  const s = (m ? m[0] : t).trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  return `${cut.slice(0, cut.lastIndexOf(' ') > 40 ? cut.lastIndexOf(' ') : max).trim()}…`;
 }
 
 /** Report text without AI: built from the student's own answers and the content files. */

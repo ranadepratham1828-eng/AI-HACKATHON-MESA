@@ -1,65 +1,68 @@
-# AI Hackathon – MESA
+# Disha: try a career before you choose it
 
-Our team's project for the **MESA AI Hackathon**: building an **AI-powered product for education**.
+Our project for the **Weekend at Mesa AI Hackathon** (Theme 02: Education & Careers).
 
-> 🚧 Status: early setup. The idea, scope, and tech stack are still being decided.
+Disha lets Class 10 and Class 12 students **try real careers through short missions** with an AI "senior", then shows what they're genuinely good at based on what they **did**, not what they **said**. It then gives the full path (stream → degree and exams → colleges → first jobs) and connects them with students and alumni from that exact college.
 
-## The Challenge
+Product summary: [`docs/PRODUCT.md`](docs/PRODUCT.md) · Notes for Claude Code: [`CLAUDE.md`](CLAUDE.md)
 
-**Weekend at Mesa · AI Hackathon · Theme 02: Education & Careers**
+## Run the demo (one command)
 
-Education, careers, and money shape how people grow, work, make decisions, and navigate everyday life. From learning new skills and preparing for opportunities to managing finances, staying organized, running businesses, making purchases, or planning for the future, most people today rely on systems that are **fragmented, overwhelming, manual, or difficult to navigate**.
+You need [Node.js 20+](https://nodejs.org).
 
-Problems can come from anywhere in: learning, productivity, career planning, finance tracking, insurance, local businesses & everyday workflows.
+```bash
+cd backend
+npm install
+cp .env.example .env      # then paste your free Gemini key into .env (optional)
+npm start
+```
 
-> **Start with one user, identify one real frustration they face & build a workflow that genuinely makes their life easier.**
+Open **http://localhost:8787**. The backend serves the web app too.
 
-### 3 spaces worth exploring (prompts, not limits)
+On the login page, the **Quick demo** buttons need no account:
 
-1. **Students overwhelmed by fragmented learning.** Assignments, lectures, notes, PDFs, recordings, deadlines, exams: students constantly switch between platforms and information, yet still struggle to stay organized, prepared, and consistent.
-2. **Opportunity discovery still runs on guesswork.** Jobs, clients, grants, investors, partnerships, admissions: people spend hours navigating fragmented systems without knowing what they actually qualify for or should pursue.
-3. **Skills without a clear path to opportunity.** People learn continuously but lack visibility into how their skills translate into real opportunities, making career progression feel random rather than structured.
+| Button | What it shows |
+|---|---|
+| ▶ Play live as Ananya | Questionnaire → games → a mission with photo upload → report |
+| ★ Ananya's finished report | Interest Fingerprint, Stated vs Revealed, career path, colleges, Campus Connect |
+| Parent view | Expectation vs strengths, conversation starters in English / ಕನ್ನಡ / हिन्दी |
+| School counsellor dashboard | Class heatmap, readiness, who needs a conversation first |
 
-> **Pick one user & one problem. Be specific & deep. Broad ideas won't translate into strong products.**
+Without an AI key, everything still works on scripted demo answers (the top bar shows **DEMO AI**). With a key it shows **AI ON**.
 
-## Our Idea
+## Free AI key (Google Gemini)
 
-_TBD_. Fill in once decided:
+1. Go to <https://aistudio.google.com/apikey>, sign in, and click **Create API key**.
+2. Paste it into `backend/.env` as `GEMINI_API_KEY=...`
+3. Run `npm run check-ai`. If it says the model isn't found, run `npm run models` and copy a name into `GEMINI_MODEL`.
 
-- **Problem:** who is struggling, and with what?
-- **Solution:** what our product does, in one sentence.
-- **Why AI:** what AI makes possible here that wasn't before.
-- **Target users:** students / teachers / parents / institutions.
+The free tier has low daily limits: test a few times, don't loop. If the limit is hit during the demo, Disha falls back to scripted answers instead of breaking. Free-tier data may be used by Google, so demo with the Ananya profile, not real students.
 
-## Team
+## What's built (P0)
 
-| Name | Role | GitHub |
-|------|------|--------|
-| _Your name_ | _TBD_ | [@ranadepratham1828-eng](https://github.com/ranadepratham1828-eng) |
-| _Teammate_ | _TBD_ | _TBD_ |
+- **Accounts:** student, parent (linked by family code) and school counsellor logins, plus one-tap demo accounts
+- **Questionnaire:** subjects, goals, dream, family expectation, budget, 1-5 self-ratings
+- **Games:** 5 quick puzzles, one per trait
+- **Missions:** UX Designer, Forensic Accountant, Urban Planner, Architect, picked from the questionnaire, with photo upload, AI senior feedback, twist, bonus chest and Curiosity Box
+- **Report:** Interest Fingerprint radar, Stated vs Revealed, career fits from behaviour, 3 proven strengths, new careers, next 7 days
+- **Career path:** stream fit, subjects, degrees, entrance exams and timelines, colleges, first jobs and growth
+- **Campus Connect:** talk to current students and alumni of that college (sample profiles)
+- **Parent view** and **School dashboard**
 
-## Tech Stack
+## Before the demo: add real college data
 
-_TBD._
+`backend/content/colleges.json` has fees, cutoffs and NIRF ranks set to `null` on purpose. Fill 2-3 colleges from **official sources** (nirfindia.org, the college website), with the link in `source` and the date in `lastChecked`. The app then shows them as verified.
 
-## Getting Started
+## Project layout
 
-_Setup and run instructions will go here once the project skeleton exists._
+```
+backend/   Node.js + Express API, content files, tests  (npm test)
+frontend/  Pixel-art web app: plain HTML, CSS and JS, no build step
+docs/      Product summary
+```
 
-## How We Work Together
+## How we work together
 
-We both use Claude Code on this repo, so to avoid stepping on each other:
-
-1. **Never push directly to `main`.** Work on your own branch (e.g. `feature/quiz-generator`).
-2. **Open a pull request** to merge into `main`; the other person gives it a quick look.
-3. **Pull/merge `main` often** so branches don't drift.
-4. **Split work by area** (e.g. frontend vs. backend/AI) to minimize conflicts.
-5. **Never commit secrets.** API keys go in a local `.env` file, which is git-ignored.
-
-## Roadmap
-
-- [x] Get the official hackathon brief and add it above
-- [ ] Brainstorm and pick an idea
-- [ ] Choose the tech stack
-- [ ] Build the MVP
-- [ ] Polish, demo video, and pitch
+1. **Never push directly to `main`.** Work on your own branch and open a pull request.
+2. **Pull or merge `main` often.**
+3. **Never commit secrets.** Keys go in `backend/.env`, which is git-ignored.

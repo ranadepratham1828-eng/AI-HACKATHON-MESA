@@ -9,6 +9,13 @@ import { missionFeedback, twistReaction, curiosityAnswer } from './logic/mission
 import { careerReport, parentReport, recommendations, campusConnect } from './logic/report.js';
 import { classDashboard } from './logic/school.js';
 import { ananyaData } from './demo.js';
+import { hashPassword, checkPassword, publicUser, canSeeStudent, canEditStudent, bearerToken } from './auth.js';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import { existsSync } from 'node:fs';
+
+const FRONTEND_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'frontend');
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -81,11 +88,25 @@ export function createApp(store) {
   app.use(cors({ origin: config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map((s) => s.trim()) }));
   app.use(express.json({ limit: '12mb' }));
 
-  const getStudent = (req) => {
+  // Every request: who is calling? (null when not logged in)
+  app.use('/api', (req, res, next) => {
+    req.token = bearerToken(req);
+    req.user = store.getSessionUser(req.token);
+    next();
+  });
+  const requireUser = (req) => {
+    if (!req.user) throw new HttpError(401, 'Please log in');
+    return req.user;
+  };
+  const getStudent = (req, { edit = false } = {}) => {
+    const user = requireUser(req);
     const s = store.getStudent(req.params.id);
     if (!s) throw new HttpError(404, 'Student not found');
+    if (!canSeeStudent(user, s)) throw new HttpError(403, "You don't have access to this student");
+    if (edit && !canEditStudent(user, s)) throw new HttpError(403, 'Only the student can do this');
     return s;
   };
+  const session = (user, status = 200) => (res) => res.status(status).json({ token: store.createSession(user.id), user: publicUser(user) });
   const getMission = (req) => {
     const m = missionById(req.params.missionId);
     if (!m) throw new HttpError(404, 'Mission not found');
@@ -106,24 +127,79 @@ export function createApp(store) {
     missions: content.missions.map(publicMission),
   }));
 
-  // ---- Students and questionnaire (P0) ----
-  app.post('/api/students', wrap(async (req, res) => {
-    const student = store.createStudent({ profile: cleanProfile(req.body) });
-    res.status(201).json(view(student));
+  // ---- Accounts (P0) ----
+  app.post('/api/auth/signup', wrap(async (req, res) => {
+    const role = ['student', 'parent', 'school'].includes(req.body?.role) ? req.body.role : null;
+    const name = text(req.body?.name, 60);
+    const email = text(req.body?.email, 120).toLowerCase();
+    const password = typeof req.body?.password === 'string' ? req.body.password : '';
+    if (!role) throw new HttpError(400, 'Choose student, parent or school');
+    if (!name) throw new HttpError(400, 'Name is required');
+    if (!EMAIL_RE.test(email)) throw new HttpError(400, 'Enter a valid email');
+    if (password.length < 6) throw new HttpError(400, 'Password must be at least 6 characters');
+    if (store.getUserByEmail(email)) throw new HttpError(409, 'An account with this email already exists. Log in instead.');
+
+    const user = { role, name, email, ...hashPassword(password) };
+    if (role === 'student') {
+      const student = store.createStudent({ profile: cleanProfile({ name, cls: req.body?.cls }) });
+      user.studentId = student.id;
+    } else if (role === 'parent') {
+      const child = store.findStudentByFamilyCode(req.body?.familyCode);
+      if (!child) throw new HttpError(400, "Family code not found. Ask your child for the code on their Disha home screen.");
+      user.linkedStudentId = child.id;
+    } else {
+      user.classId = (text(req.body?.classId, 10) || '10B').toUpperCase();
+    }
+    session(store.createUser(user), 201)(res);
   }));
 
+  app.post('/api/auth/login', wrap(async (req, res) => {
+    const user = store.getUserByEmail(req.body?.email);
+    if (!user || !checkPassword(String(req.body?.password || ''), user)) throw new HttpError(401, 'Email or password is wrong');
+    session(user)(res);
+  }));
+
+  // One-tap demo accounts for the pitch. Each call makes a fresh account.
+  app.post('/api/auth/demo', wrap(async (req, res) => {
+    const as = String(req.body?.as || 'student');
+    const tag = Date.now().toString(36);
+    if (as === 'student' || as === 'student-finished') {
+      const student = store.createStudent(ananyaData(as === 'student' ? 'questionnaire' : 'finished'));
+      const user = store.createUser({ role: 'student', name: 'Ananya', email: `ananya-${tag}@demo.disha`, studentId: student.id, demo: true });
+      return session(user, 201)(res);
+    }
+    if (as === 'parent') {
+      const child = store.latestDemoStudent() || store.createStudent(ananyaData('finished'));
+      const user = store.createUser({ role: 'parent', name: "Ananya's mother", email: `parent-${tag}@demo.disha`, linkedStudentId: child.id, demo: true });
+      return session(user, 201)(res);
+    }
+    if (as === 'school') {
+      if (!store.latestDemoStudent()) store.createStudent(ananyaData('finished'));
+      const user = store.createUser({ role: 'school', name: 'Ms. Rekha (Counsellor)', email: `counsellor-${tag}@demo.disha`, classId: '10B', demo: true });
+      return session(user, 201)(res);
+    }
+    throw new HttpError(400, 'as must be student, student-finished, parent or school');
+  }));
+
+  app.get('/api/auth/me', wrap(async (req, res) => {
+    const user = requireUser(req);
+    const studentId = user.studentId || user.linkedStudentId || null;
+    const student = studentId ? store.getStudent(studentId) : null;
+    res.json({ user: publicUser(user), student: student ? view(student) : null });
+  }));
+
+  app.post('/api/auth/logout', wrap(async (req, res) => {
+    if (req.token) store.deleteSession(req.token);
+    res.json({ ok: true });
+  }));
+
+  // ---- Students and questionnaire (P0) ----
   app.get('/api/students/:id', wrap(async (req, res) => res.json(view(getStudent(req)))));
 
   app.patch('/api/students/:id', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     s.profile = cleanProfile(req.body, s.profile);
     res.json(view(store.saveStudent(s)));
-  }));
-
-  app.post('/api/demo/ananya', wrap(async (req, res) => {
-    const stage = req.query.stage === 'questionnaire' ? 'questionnaire' : 'finished';
-    const student = store.createStudent(ananyaData(stage));
-    res.status(201).json(view(student));
   }));
 
   app.get('/api/students/:id/mission-picks', wrap(async (req, res) => {
@@ -132,7 +208,7 @@ export function createApp(store) {
 
   // ---- Games (P0) ----
   app.post('/api/students/:id/games', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     const results = req.body?.results || {};
     const feedback = [];
     for (const [gameId, r] of Object.entries(results)) {
@@ -156,7 +232,7 @@ export function createApp(store) {
 
   // ---- Missions (P0) ----
   app.post('/api/students/:id/missions/:missionId/start', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     const mission = getMission(req);
     const m = missionState(s, mission);
     if (m.status === 'done') Object.assign(m, { status: 'in_progress', startedAt: new Date().toISOString() });
@@ -165,7 +241,7 @@ export function createApp(store) {
   }));
 
   app.post('/api/students/:id/missions/:missionId/submit', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     const mission = getMission(req);
     const answer = text(req.body?.answer);
     if (answer.length < 10) throw new HttpError(400, 'answer is too short');
@@ -178,7 +254,7 @@ export function createApp(store) {
   }));
 
   app.post('/api/students/:id/missions/:missionId/twist', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     const mission = getMission(req);
     const m = missionState(s, mission);
     if (!m.feedback?.twist) throw new HttpError(409, 'Submit the mission answer first to get a twist');
@@ -191,7 +267,7 @@ export function createApp(store) {
   }));
 
   app.post('/api/students/:id/missions/:missionId/bonus', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     const mission = getMission(req);
     const m = missionState(s, mission);
     m.bonusTaken = true;
@@ -201,7 +277,7 @@ export function createApp(store) {
   }));
 
   app.post('/api/students/:id/missions/:missionId/ask', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     const mission = getMission(req);
     const question = text(req.body?.question, 500);
     if (!question) throw new HttpError(400, 'question is required');
@@ -213,7 +289,7 @@ export function createApp(store) {
   }));
 
   app.post('/api/students/:id/missions/:missionId/finish', wrap(async (req, res) => {
-    const s = getStudent(req);
+    const s = getStudent(req, { edit: true });
     const mission = getMission(req);
     const m = missionState(s, mission);
     if (!m.answer) throw new HttpError(409, 'Submit the mission answer before finishing');
@@ -259,8 +335,9 @@ export function createApp(store) {
   });
 
   app.post('/api/campus-connect/requests', wrap(async (req, res) => {
-    const s = store.getStudent(String(req.body?.studentId || ''));
-    if (!s) throw new HttpError(404, 'Student not found');
+    const user = requireUser(req);
+    const s = store.getStudent(user.studentId || user.linkedStudentId || '');
+    if (!s) throw new HttpError(403, 'Only students and parents can request a chat');
     const profile = content.campusProfiles.find((p) => p.id === req.body?.profileId);
     if (!profile) throw new HttpError(404, 'Profile not found');
     const request = { id: `req-${Date.now()}`, profileId: profile.id, message: text(req.body?.message, 500), status: 'requested', createdAt: new Date().toISOString() };
@@ -271,12 +348,20 @@ export function createApp(store) {
 
   // ---- School (P0) ----
   app.get('/api/schools/classes/:classId/dashboard', wrap(async (req, res) => {
+    const user = requireUser(req);
     const classId = String(req.params.classId).toUpperCase();
+    if (user.role !== 'school' || user.classId !== classId) throw new HttpError(403, 'Only the counsellor for this class can see its dashboard');
     res.json(classDashboard(classId, store.listStudents({ classId })));
   }));
 
   // ---- Errors ----
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
+
+  // ---- The web app (frontend/) is served from the same server ----
+  if (existsSync(FRONTEND_DIR)) {
+    app.use(express.static(FRONTEND_DIR));
+    app.get('*', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'index.html')));
+  }
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     const status = err.status || (err.type === 'entity.too.large' ? 413 : 500);
