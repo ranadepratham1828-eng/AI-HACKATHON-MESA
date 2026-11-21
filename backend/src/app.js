@@ -561,7 +561,7 @@ export function createApp(store) {
   app.use((err, req, res, next) => {
     const status = err.status || (err.type === 'entity.too.large' ? 413 : 500);
     if (status >= 500) console.error(err);
-    res.status(status).json({ error: status >= 500 ? 'Something went wrong on the server' : err.message });
+    res.status(status).json({ error: status >= 500 && !(err instanceof HttpError) ? 'Something went wrong on the server' : err.message });
   });
 
   return app;
