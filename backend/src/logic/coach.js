@@ -132,6 +132,7 @@ function scriptedPlan(student, f) {
   if (cls <= 10) timeline.push({ when: `Class ${cls} (now)`, title: 'Build your base', actions: ['Do well in your board exams', `Choose ${g.stream} for Class 11`, 'Explore the career: talk to someone who works in it'] });
   if (cls <= 11) timeline.push({ when: 'Class 11', title: 'Start preparing', actions: [`Focus on ${(f.pathway?.subjects || ['your core subjects']).join(', ')}`, `Learn about ${g.exams[0]}`, 'Start a small project or portfolio related to the career'] });
   timeline.push({ when: 'Class 12', title: 'Entrance exams', actions: [`Register for ${g.exams.join(', ')} on time`, 'Take mock tests every month', 'Shortlist colleges and keep documents ready'] });
+  if (student.profile?.relocate === 'abroad') timeline.splice(timeline.length - 1, 0, { when: 'Class 11-12', title: 'Prepare to study abroad', actions: ['Take an English test such as IELTS or TOEFL', 'Check if the SAT is needed for the countries you like', 'Build a portfolio or profile, and research scholarships for international students'] });
   timeline.push({ when: 'College', title: g.degrees[0], actions: ['Do internships from the second year', 'Build skills and a portfolio', 'Apply for scholarships every year'] });
   timeline.push({ when: 'After college', title: 'First job', actions: f.pathway?.afterDegree?.firstJobs || [`Start as a junior ${g.name.toLowerCase()}`] });
   return {
@@ -140,7 +141,9 @@ function scriptedPlan(student, f) {
     timeline,
     examPrep: g.exams.map((e) => ({ exam: e, when: 'Usually in Class 12; check the official site for dates', how: 'Learn the syllabus, practise past papers and take monthly mock tests' })),
     collegeAdvice: f.colleges.slice(0, 3).map((c, i) => ({ name: c.name, tier: i === 0 ? 'dream' : 'target', why: `${c.course} via ${c.entrance}` })),
-    budgetAdvice: 'Compare total course cost with your budget, apply for every scholarship you may qualify for, and consider government colleges, which usually cost less.',
+    budgetAdvice: student.profile?.relocate === 'abroad'
+      ? 'Studying abroad usually costs much more than in India, so compare total costs carefully, look for international scholarships and education loans, and keep strong Indian colleges as options too.'
+      : 'Compare total course cost with your budget, apply for every scholarship you may qualify for, and consider government colleges, which usually cost less.',
     next30Days: ['Read about a typical day in this career', `Find the official website for ${g.exams[0]} and note the dates`, 'Discuss this plan with your parents this weekend'],
   };
 }
@@ -167,7 +170,8 @@ ${scholarshipFacts || '(none)'}
 CONVERSATION WITH THE STUDENT (their priorities):
 ${(student.coach?.messages || []).filter((m) => m.role === 'user').map((m) => `- ${m.content}`).join('\n') || '(none)'}
 
-Build a personalised career plan from their current class until their first job. Tailor it to their marks, budget and whether they can relocate.
+Build a personalised career plan from their current class until their first job. Tailor it to their marks, budget and whether they can relocate.${student.profile?.relocate === 'abroad' ? `
+The student is open to studying ABROAD as well as in India. Add timeline actions to prepare for that (for example English tests like IELTS or TOEFL, the SAT where relevant, a strong portfolio or profile, and applying in Class 12), mention abroad options and costs honestly in budgetAdvice (abroad is usually far more expensive; scholarships and loans matter), but do NOT name specific foreign universities, fees, ranks or deadlines.` : ''}
 
 Reply with only JSON:
 {"summary": "2 sentences",

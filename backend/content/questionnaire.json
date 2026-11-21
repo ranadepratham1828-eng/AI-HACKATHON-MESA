@@ -151,6 +151,10 @@
   ],
   "relocate": [
     {
+      "id": "abroad",
+      "label": "In India or abroad"
+    },
+    {
       "id": "anywhere",
       "label": "Anywhere in India"
     },
