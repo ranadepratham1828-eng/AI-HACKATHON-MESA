@@ -474,9 +474,22 @@ table.weeks td { vertical-align: middle; }
 }
 
 /* ---------- Dishaa Coach chat ---------- */
-.coach-layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 20px; align-items: start; }
+.pc-line { display: inline-flex; gap: 8px; align-items: baseline; }
+.pc-line i { font: 700 13px var(--f-mono); font-style: normal; flex: none; }
+.pc-line.pro i { color: var(--aqua-ink); }
+.pc-line.con i { color: var(--marigold-ink); }
+.weigh .opt { display: grid; gap: 8px; padding: 14px; border-radius: 14px; background: var(--bg-sub); }
+.weigh .opt.goal { background: var(--marigold-soft); }
+.weigh .opt b { font: 700 16px var(--f-display); }
+.pcl { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; font-size: 13px; line-height: 1.4; }
+.pcl li { padding-left: 18px; position: relative; }
+.pcl li::before { position: absolute; left: 0; font: 700 13px/1.4 var(--f-mono); }
+.pcl li.pro::before { content: '+'; color: var(--aqua-ink); }
+.pcl li.con::before { content: '−'; color: var(--marigold-ink); }
+
+.coach-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
 @media (max-width: 860px) { .coach-layout { grid-template-columns: 1fr; } }
-.coach { padding: 0; display: grid; grid-template-rows: auto 1fr auto auto; height: min(72vh, 700px); min-height: 460px; overflow: hidden; }
+.coach { position: sticky; top: 84px; padding: 0; display: grid; grid-template-rows: auto 1fr auto auto; height: min(72vh, 700px); min-height: 460px; overflow: hidden; }
 .coach-head { display: flex; gap: 12px; align-items: center; padding: 14px 18px; background: var(--night); color: var(--moon); }
 .coach-head h3 { color: var(--moon); }
 .coach-head .muted { color: var(--haze); }

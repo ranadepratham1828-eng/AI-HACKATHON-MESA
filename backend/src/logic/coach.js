@@ -37,6 +37,87 @@ function findCareerIn(text) {
   return content.careers.find((c) => t.includes(c.name.toLowerCase()) || t.includes(c.id.replace(/-/g, ' '))) || null;
 }
 
+const uniq = (xs) => [...new Set(xs.filter(Boolean))];
+const interestLabel = (id) => (content.interests.find((x) => x.id === id)?.label || id).toLowerCase();
+
+// Words a student might type, mapped to our interest ids (stems, so "creating" and "designing" count).
+const INTEREST_WORDS = [
+  ['design', /\b(creat\w*|design\w*|art\b|arts\b|artist\w*|draw\w*|paint\w*|sketch\w*|fashion|aesthetic\w*)/i],
+  ['tech', /\b(tech\w*|cod(e|ing)|program\w*|comput\w*|software|apps?\b|gam(e|es|ing)\b|ai\b|robot\w*|data)/i],
+  ['health', /\b(health\w*|medic\w*|doctor\w*|hospital\w*|patient\w*|nurs\w*|biolog\w*|body|fitness)/i],
+  ['nature', /\b(nature|environment\w*|animal\w*|plants?\b|outdoor\w*|climate|forest\w*|wildlife|earth|ocean\w*)/i],
+  ['helping', /\b(help(ing)? (people|others)|people|teach\w*|car(e|ing) for|counsel\w*|social work|kids|children|volunteer\w*)/i],
+  ['business', /\b(business\w*|money|financ\w*|market\w*|sell\w*|startup\w*|entrepreneur\w*|commerce)/i],
+  ['science', /\b(scien\w*|research\w*|lab\b|experiment\w*|physics|chemistry|space)/i],
+  ['building', /\b(build\w*|engineer\w*|machin\w*|construct\w*|mechanic\w*)/i],
+  ['puzzles', /\b(puzzl\w*|logic\w*|maths?\b|mathematics|numbers?|problem.solv\w*)/i],
+  ['writing', /\b(writ\w*|stor(y|ies)|journal\w*|media|reading|speak\w*)/i],
+  ['law', /\b(law\b|laws\b|legal|justice|rights|argu\w*|debat\w*|government|politic\w*)/i],
+];
+const interestsIn = (text) => INTEREST_WORDS.filter(([, re]) => re.test(text)).map(([id]) => id);
+const findCareersIn = (text) => {
+  const t = String(text || '').toLowerCase();
+  return content.careers.filter((c) => t.includes(c.name.toLowerCase()) || t.includes(c.id.replace(/-/g, ' ')) || t.includes(c.name.toLowerCase().replace(/ \(.*\)/, '')));
+};
+
+const PRIORITY_TEXT = {
+  earning: ['pay', 'Pays well, and earning well matters to you', 'Lower early pay than you said you want'],
+  security: ['stability', 'A stable job market, which you value', 'Less job security than you said you want'],
+  balance: ['workLife', 'Good work-life balance, which you value', 'Long or irregular hours, and you value balance'],
+  respect: ['prestige', 'Well respected, which matters to you', 'Less social prestige than you might want'],
+};
+
+/** Pros and cons of one career for THIS student: their measured abilities, interests, priorities, subjects and family. */
+export function personalCase(student, results, careerId) {
+  const c = careerById(careerId);
+  if (!c) return null;
+  const m = results.allCareers.find((x) => x.id === c.id);
+  const p = student.profile || {};
+  const score = Object.fromEntries(results.quest.abilities.map((a) => [a.id, a.score]));
+  const weighted = Object.entries(c.abilities).sort((a, b) => b[1] - a[1]);
+  const forYou = [];
+  const watchOut = [];
+  const strong = weighted.filter(([id]) => score[id] != null && score[id] >= 70).slice(0, 2).map(([id]) => `${labelOf(id).toLowerCase()} (${score[id]}/100)`);
+  if (strong.length) forYou.push(`Uses your ${strong.join(' and ')}`);
+  const weak = weighted.find(([id, w]) => w >= 2 && score[id] != null && score[id] < 60);
+  if (weak) watchOut.push(`Leans on ${labelOf(weak[0]).toLowerCase()}, where you scored ${score[weak[0]]}/100 (very learnable with practice)`);
+  const shared = c.interests.filter((i) => (p.interests || []).includes(i));
+  if (shared.length) forYou.push(shared.length === 1 ? `Matches your interest in ${interestLabel(shared[0])}` : `Matches your interests: ${shared.map(interestLabel).join(', ')}`);
+  for (const pr of p.priorities || []) {
+    const t = PRIORITY_TEXT[pr];
+    if (t) { const v = c[t[0]] ?? 3; if (v >= 4) forYou.push(t[1]); else if (v <= 2) watchOut.push(t[2]); }
+    if (pr === 'helping' && String(c.riasec).includes('S')) forYou.push('Helping people is at the heart of the work, which you care about');
+  }
+  const subj = (p.subjects || []).join(' ');
+  if (Number(p.cls) >= 11) {
+    if (/PCB|Biology/.test(c.stream) && !/Biology/.test(subj)) watchOut.push("Usually needs Biology in Class 11-12, which isn't in your subjects");
+    else if (/PCM|Maths/.test(c.stream) && !/Maths/.test(subj)) watchOut.push("Usually needs Maths in Class 11-12, which isn't in your subjects");
+  }
+  if (p.parentExpect && c.name.toLowerCase().includes(p.parentExpect.toLowerCase())) forYou.push('It is also what your family hopes for');
+  if (forYou.length < 3 && c.pros[0]) forYou.push(c.pros[0]);
+  if (c.cons[0]) watchOut.push(c.cons[0]);
+  return {
+    id: c.id, name: c.name, fit: m?.fit ?? null, considering: Boolean(m?.considering),
+    forYou: uniq(forYou).slice(0, 3), watchOut: uniq(watchOut).slice(0, 3),
+    route: `${c.stream} → ${c.degrees[0]}`, salary: c.salary, exams: c.exams,
+  };
+}
+
+const caseText = (k) => `${k.name}${k.fit != null ? ` (${k.fit}% fit)` : ''}\n${k.forYou.map((x) => `+ ${x}`).join('\n')}\n${k.watchOut.map((x) => `− ${x}`).join('\n')}`;
+
+function shortlistOf(student, results) {
+  const coach = student.coach;
+  if (!coach.shortlist?.length) coach.shortlist = uniq([...(student.profile?.considering || []), ...results.careers.map((c) => c.id)]).slice(0, 3);
+  return coach.shortlist;
+}
+
+/** The careers being weighed in the chat, with this student's pros and cons. */
+export function coachOptions(student) {
+  const results = computeResults(student);
+  coachState(student);
+  return shortlistOf(student, results).map((id) => personalCase(student, results, id)).filter(Boolean);
+}
+
 export function coachState(student) {
   student.coach ||= { messages: [], goal: null, readyForPlan: false };
   if (!student.coach.messages.length) {
@@ -46,8 +127,8 @@ export function coachState(student) {
     student.coach.messages.push({
       role: 'assistant',
       content: r.quest.answered
-        ? `Hi ${name}! I'm your Dishaa Coach. I've looked at your aptitude assessment results: your strongest areas are ${r.quest.strengths.map((id) => labelOf(id).toLowerCase()).join(', ')}. Your top career matches are ${tops.join(', ')}. Which of these feels closest to what you want, or is there another goal on your mind?`
-        : `Hi ${name}! I'm your Dishaa Coach. Complete the aptitude assessment first so I can see your strengths, then we'll find your goal together.`,
+        ? `Hi ${name}! I'm your Dishaa Coach. There's no rush here: let's look at your options properly before you choose. Your assessment shows you're strongest at ${r.quest.strengths.slice(0, 2).map((id) => labelOf(id).toLowerCase()).join(' and ')}, and careers like ${tops.join(', ')} fit you well. I've put what each would mean for you on the right. To start: what kind of work do you enjoy, or what are you curious about?`
+        : `Hi ${name}! I'm your Dishaa Coach. Complete the aptitude assessment first so I can see your strengths, then we'll explore your options together.`,
       at: new Date().toISOString(),
     });
   }
@@ -55,117 +136,140 @@ export function coachState(student) {
 }
 
 const GREETING = /^(hi+|hey+|hello+|hii+|yo|hola|namaste|good (morning|afternoon|evening)|sup|hlo|helo)[!. ]*$/i;
-const UNSURE = /(not sure|unsure|idk|i don'?t know|dont know|no idea|confused|help|can'?t decide|cant decide|maybe|anything)/i;
-const YES = /^(y|yes|yeah|yep|yup|sure|ok|okay|haan|ha|correct|right|sounds good|let'?s go|go ahead|do it)\b/i;
+const UNSURE = /(not sure|unsure|idk|i don'?t know|dont know|no idea|confused|can'?t decide|cant decide|anything)/i;
+const YES = /^(y|yes+|yeah|yep|yup|sure|ok|okay|haan|ha|correct|right|sounds good|let'?s go|go ahead|do it)\b/i;
+const PLAN_IT = /\b(plan for|build (my|the|a) plan|make (my|the|a) plan|let'?s plan|i('?m| am) (sure|going with|choosing)|i (choose|pick|want to be|wanna be|will go with|'ll go with)|go(ing)? with|lock (it )?in|decided|final answer)\b/i;
+const COMPARE = /\b(compare|comparison|vs\.?|versus|difference|better (for me|option)|which (one|is better))\b/i;
+const MORE = /\b(other (options|careers|ideas)|something else|more options|show me more|anything else|others)\b/i;
 const ORDINALS = { first: 0, '1st': 0, one: 0, second: 1, '2nd': 1, two: 1, third: 2, '3rd': 2, three: 2 };
-const PREFS = [
-  { key: 'a', words: /\b(a|people|help|helping|talk|teach|care)\b/i, label: 'working with people', interests: ['helping', 'health', 'law'] },
-  { key: 'b', words: /\b(b|create|creative|design|art|draw|build|make)\b/i, label: 'creating and designing', interests: ['design', 'building'] },
-  { key: 'c', words: /\b(c|number|numbers|logic|money|business|math|maths|data|tech|computer)\b/i, label: 'numbers, logic and technology', interests: ['tech', 'business', 'puzzles'] },
-  { key: 'd', words: /\b(d|science|health|nature|environment|research|biology)\b/i, label: 'science, health and nature', interests: ['science', 'health', 'nature'] },
-];
 
 // Questions the rule-based coach can answer straight from our career data.
 const lc = (s) => s.charAt(0).toLowerCase() + s.slice(1);
 const INTENTS = [
-  { re: /\b(pros?|cons?|advantages?|disadvantages?|downsides?|good and bad|good things|bad things|benefits?|drawbacks?)\b/i,
-    say: (c) => `Here's ${c.name} in India, honestly. Pros: ${c.pros.map(lc).join('; ')}. Cons: ${c.cons.map(lc).join('; ')}.` },
-  { re: /\b(salary|salaries|pay|paid|earn|earning|income|money|package|lpa|ctc)\b/i,
+  { id: 'proscons', re: /\b(pros?|cons?|advantages?|disadvantages?|downsides?|good and bad|benefits?|drawbacks?|weigh)\b/i },
+  { re: /\b(salary|salaries|pay|paid|earn|earning|income|package|lpa|ctc)\b/i,
     say: (c) => `${c.name}: early salary is ${lc(c.salary)}. Job demand in India: ${c.demand}.` },
   { re: /\b(exams?|entrance|jee|neet|cuet|clat|uceed|nid|nift|nata)\b/i,
     say: (c) => `For ${c.name}, the main entrance ${c.exams.length === 1 ? `exam is ${c.exams[0]}` : `exams are ${c.exams.join(', ')}`}. Your study planner can count down to ${c.exams.length === 1 ? 'it' : 'them'}.` },
-  { re: /\b(colleges?|universit(y|ies)|institutes?|iit|nit|nid)\b/i,
+  { re: /\b(colleges?|universit(y|ies)|institutes?|iit|nit)\b/i,
     say: (c) => { const cs = c.missionId ? content.colleges.filter((x) => x.careers.includes(c.missionId)).map((x) => x.name).slice(0, 3) : [];
-      return cs.length ? `Good colleges for ${c.name} include ${cs.join(', ')}. Your career plan shows fees, cutoffs and which fit your budget.` : `I don't have verified college data for ${c.name} yet. The degrees to look for are ${c.degrees.join('; ')}, and your career plan lists the entrance exams.`; } },
-  { re: /\b(stream|subjects?|pcm|pcb|commerce|arts|humanities|after class 10|after 10th)\b/i,
+      return cs.length ? `Good colleges for ${c.name} include ${cs.join(', ')}. Your career plan shows fees, cutoffs and which fit your budget.` : `I don't have verified college data for ${c.name} yet. The degrees to look for are ${c.degrees.join('; ')}.`; } },
+  { re: /\b(stream|pcm|pcb|after class 10|after 10th)\b/i,
     say: (c) => `For ${c.name}, the usual route after Class 10 is ${c.stream}. Then: ${c.degrees.join('; ')}.` },
-  { re: /\b(degree|course|study what|what to study)\b/i,
+  { re: /\b(degree|course|what to study)\b/i,
     say: (c) => `To become a ${c.name}, the usual degrees are ${c.degrees.join('; ')}.` },
-  { re: /\b(what (do|does) (they|a|an)|day in the life|what is|tell me about|explain)\b/i,
+  { re: /\b(what (do|does) (they|a|an)|day in the life|what is (a|an)|tell me about|explain)\b/i,
     say: (c) => `${c.name}: ${c.summary} Early salary is ${lc(c.salary)}, and demand in India is ${lc(c.demand)}.` },
 ];
 
-/** Rule-based coach used when the AI is not connected. Never repeats itself. */
+/** Rule-based coach used when the AI is unavailable. Explores and compares; never rushes a decision. */
 function scriptedReply(student, coach, message) {
   const results = computeResults(student);
-  const tops = results.careers.slice(0, 3);
   const name = student.profile?.name || 'there';
-  const msg = String(message || '').trim();
+  const msg = String(message || '').replace(/^__repeat__ /, '').trim();
+  const repeat = String(message || '').startsWith('__repeat__');
   const lower = msg.toLowerCase();
-  const list = tops.map((c, i) => `${i + 1}) ${c.name}`).join(', ');
+  const short = shortlistOf(student, results);
+  const pc = (id) => personalCase(student, results, id);
+  const named = findCareersIn(msg);
+  const n = lower.match(/^\s*([1-3])\b/);
+  const ordinal = n ? Number(n[1]) - 1 : Object.entries(ORDINALS).find(([w]) => new RegExp(`\\b${w}\\b`).test(lower))?.[1];
+  const byOrder = ordinal != null ? careerById(short[ordinal]) : null;
+  const subject = named[0] || byOrder || (coach.focus && careerById(coach.focus)) || (coach.goal && careerById(coach.goal)) || careerById(short[0]);
+  if (named[0] || byOrder) coach.focus = (named[0] || byOrder).id;
 
-  // A question about a career (pros, salary, exams...): answer it from our data.
+  // 1. Deciding: "plan for X", or "yes" to a career we were weighing
+  if (PLAN_IT.test(lower) || (YES.test(lower) && coach.suggested)) {
+    const g = named[0] || byOrder || (coach.suggested && careerById(coach.suggested)) || careerById(short[0]);
+    if (g) {
+      coach.goal = g.id; coach.suggested = null;
+      coach.shortlist = uniq([g.id, ...short]).slice(0, 3);
+      const k = pc(g.id);
+      return { reply: `Good choice to plan for, ${name}. ${g.name} suits you because: ${k.forYou.map(lc).join('; ')}. The things to keep an eye on: ${k.watchOut.map(lc).join('; ')}. Tap "Build my career plan" and I'll lay out the stream, exams, colleges within your budget and scholarships. You can still ask me anything first.`, readyForPlan: true };
+    }
+  }
+  // 1b. "yes" while a career is in focus: confirm what they're agreeing to
+  if (YES.test(lower) && !coach.suggested && coach.focus && !coach.readyForPlan) {
+    const f = careerById(coach.focus);
+    coach.suggested = f.id;
+    return { reply: `Sounds like ${f.name} appeals to you. Shall I build your plan for ${f.name}? Say "yes" again, or tell me what's still holding you back and we'll weigh it.`, readyForPlan: false };
+  }
+  // 2. Comparing careers
+  if (COMPARE.test(lower)) {
+    coach.suggested = null;
+    const pair = uniq([...named.map((c) => c.id), ...short]).slice(0, 2);
+    coach.shortlist = uniq([...pair, ...short]).slice(0, 3);
+    return { reply: `Let's weigh them side by side, for you specifically:\n\n${pair.map((id) => caseText(pc(id))).join('\n\n')}\n\nWhich of these points matters most to you? That usually tells you more than the fit score.`, readyForPlan: Boolean(coach.readyForPlan) };
+  }
+  // 3. A question about a career (pros, salary, exams...)
   const intent = INTENTS.find((x) => x.re.test(lower));
-  if (intent && !msg.startsWith('__repeat__')) {
-    const subj = findCareerIn(msg) || (coach.goal && careerById(coach.goal)) || careerById(tops[0]?.id);
-    if (subj) {
-      const fit = results.allCareers.find((c) => c.id === subj.id)?.fit;
-      const next = coach.goal === subj.id
-        ? (coach.readyForPlan ? ' Ask me anything else, or tap "Build my career plan".' : ' What matters most to you in a job: earning well, helping people, being creative, or stability?')
-        : ` It's a ${fit}% match for you. Want to plan for ${subj.name}? Just say "${subj.name}".`;
-      return { reply: intent.say(subj) + next, readyForPlan: Boolean(coach.readyForPlan) };
-    }
+  if (intent && subject && !repeat) {
+    if (!short.includes(subject.id)) coach.shortlist = uniq([subject.id, ...short]).slice(0, 3);
+    coach.suggested = null;
+    const body = intent.id === 'proscons' ? `Here's ${subject.name}, weighed for you:\n${caseText(pc(subject.id)).split('\n').slice(1).join('\n')}\n\n` : `${intent.say(subject)} `;
+    const next = coach.goal === subject.id && coach.readyForPlan ? 'Anything else you want to know before you build your plan?' : `Want to compare it with ${careerById(short.find((id) => id !== subject.id))?.name || 'another option'}, or ask something else?`;
+    return { reply: body + next, readyForPlan: Boolean(coach.readyForPlan) };
   }
-  const pickFromTops = () => {
-    const n = lower.match(/^\s*([1-3])\b/);
-    if (n) return tops[Number(n[1]) - 1] || null;
-    for (const [w, i] of Object.entries(ORDINALS)) if (new RegExp(`\\b${w}\\b`).test(lower)) return tops[i] || null;
-    return null;
-  };
-
-  // 1. Confirming a suggestion we made
-  if (coach.suggested && YES.test(lower)) { coach.goal = coach.suggested; coach.suggested = null; }
-  // 2. A number, an ordinal or a career name
-  const picked = pickFromTops() || findCareerIn(msg);
-  if (picked) { coach.goal = picked.id; coach.suggested = null; coach.awaitingPref = false; }
-
-  const goal = coach.goal ? careerById(coach.goal) : null;
-  if (!goal) {
-    if (coach.awaitingPref) {
-      const pref = PREFS.find((p) => p.words.test(lower));
-      if (pref) {
-        coach.awaitingPref = false;
-        const suggestion = results.careers.find((c) => careerById(c.id).interests.some((i) => pref.interests.includes(i))) || tops[0];
-        coach.suggested = suggestion.id;
-        return { reply: `Since you enjoy ${pref.label}, I'd suggest ${suggestion.name} (${suggestion.fit}% match for you). ${careerById(suggestion.id).summary} Shall we plan for ${suggestion.name}? Reply "yes", or pick another: ${list}.`, readyForPlan: false };
+  // 4. Naming a career: weigh it against their best alternative, don't lock it in yet
+  if (named.length || byOrder) {
+    const c = named[0] || byOrder;
+    coach.suggested = c.id;
+    const alt = uniq([...short, ...results.careers.map((x) => x.id)]).find((id) => id !== c.id);
+    coach.shortlist = uniq([c.id, alt, ...short]).slice(0, 3);
+    return { reply: `${c.name} is worth a proper look. Here's what it would mean for you:\n${caseText(pc(c.id)).split('\n').slice(1).join('\n')}\n\nFor comparison, ${careerById(alt).name} (${pc(alt).fit}% fit) ${pc(alt).forYou[0] ? lc(pc(alt).forYou[0]) : 'also fits you well'}. What draws you to ${c.name}? When you feel sure, say "plan for ${c.name}".`, readyForPlan: false };
+  }
+  // 5. Describing interests: find careers that bring them together
+  const ints = interestsIn(lower);
+  if (ints.length) {
+    // Greedy: each pick covers interests the earlier picks didn't, so a mixed answer gets a mixed shortlist.
+    const pool = results.allCareers.map((c) => ({ id: c.id, fit: c.fit + (ints.includes(careerById(c.id).interests[0]) ? 25 : 0), ints: careerById(c.id).interests.filter((i) => ints.includes(i)) })).filter((x) => x.ints.length);
+    const covered = new Set(); const pick = [];
+    while (pick.length < 3 && pool.length) {
+      pool.sort((a, b) => (b.ints.filter((i) => !covered.has(i)).length * 30 + b.ints.length * 10 + b.fit) - (a.ints.filter((i) => !covered.has(i)).length * 30 + a.ints.length * 10 + a.fit));
+      const best = pool.shift(); pick.push(best.id); best.ints.forEach((i) => covered.add(i));
+    }
+    if (pick.length) {
+      const keepGoal = coach.goal && coach.readyForPlan;
+      coach.shortlist = keepGoal ? uniq([coach.goal, ...pick]).slice(0, 3) : pick; coach.suggested = null;
+      if (keepGoal) {
+        const g = careerById(coach.goal);
+        return { reply: `Good to know: ${ints.map(interestLabel).join(', ')}. ${g.name} fits that: ${pc(g.id).forYou.map(lc).join('; ')}. If you'd like to explore alternatives, I'd also look at ${pick.filter((id) => id !== g.id).slice(0, 2).map((id) => careerById(id).name).join(' and ')}. Otherwise, tap "Build my career plan".`, readyForPlan: true };
       }
-      return { reply: 'Just reply with a letter: (a) working with people, (b) creating and designing, (c) numbers, logic and technology, or (d) science, health and nature.', readyForPlan: false };
+      return { reply: `I love that mix: ${ints.map(interestLabel).join(', ')}. Here are careers that bring those together, weighed for you:\n\n${pick.map((id, i) => `${i + 1}) ${caseText(pc(id))}`).join('\n\n')}\n\nWhich of these sounds most like you, and what puts you off the others?`, readyForPlan: false };
     }
-    if (UNSURE.test(lower)) {
-      coach.awaitingPref = true;
-      return { reply: `That's completely normal, ${name}. Let's narrow it down. What do you enjoy most: (a) working with people, (b) creating and designing, (c) numbers, logic and technology, or (d) science, health and nature?`, readyForPlan: false };
-    }
-    if (GREETING.test(msg)) {
-      return { reply: `Hi ${name}! Let's find the career to plan for. Your top matches are ${list}. Reply with a number or a career name, or say "not sure" and I'll help you choose.`, readyForPlan: false };
-    }
-    const options = [
-      `I'd love to help with that. First, which career should we plan for? Your top matches are ${list}. Reply with a number, any career name, or "not sure".`,
-      `Got it. To build your plan I need one goal. You can reply 1, 2 or 3 for ${list}, or name another career you're curious about.`,
-      `Thanks, ${name}. If you're unsure, just say "not sure" and I'll ask you a quick question to help you choose. Otherwise pick one of ${list}.`,
-    ];
-    coach.nudge = ((coach.nudge ?? -1) + 1) % options.length;
-    return { reply: options[coach.nudge], readyForPlan: false };
   }
-  if (!coach.askedWhy) {
-    coach.askedWhy = true;
-    return { reply: `${goal.name} it is! ${goal.summary} One more question: what matters most to you in your future job: earning well, helping people, being creative, or stability? And is anything worrying you about this path?`, readyForPlan: false };
+  // 6. More options
+  if (MORE.test(lower)) {
+    const fresh = results.allCareers.filter((c) => !short.includes(c.id)).slice(0, 3).map((c) => c.id);
+    coach.shortlist = fresh; coach.suggested = null;
+    return { reply: `Sure. A few more that fit you well:\n\n${fresh.map((id, i) => `${i + 1}) ${caseText(pc(id))}`).join('\n\n')}\n\nAny of these interesting? You can also tell me what you enjoy and I'll match careers to it.`, readyForPlan: false };
   }
-  const ready = [
-    `Thanks, I have what I need. I can now build your ${goal.name} plan: the stream and subjects, entrance exams, colleges that fit your budget, scholarships you may qualify for, and what to do in the next 30 days. Tap "Build my career plan" when you're ready.`,
-    `You're all set for ${goal.name}. Tap "Build my career plan" on the right, or name a different career if you've changed your mind.`,
-    `Whenever you're ready, tap "Build my career plan". If you'd like to compare, just type another career name.`,
-  ];
-  coach.readyNudge = ((coach.readyNudge ?? -1) + 1) % ready.length;
-  return { reply: ready[coach.readyNudge], readyForPlan: true };
+  // 7. Unsure, greeting or anything else: open questions, never the same twice in a row
+  const open = UNSURE.test(lower)
+    ? [`That's completely normal, ${name}. Most people your age aren't sure yet. Tell me about a time you lost track of time doing something. Was it making things, solving problems, helping someone, or being outdoors?`]
+    : GREETING.test(msg)
+      ? [`Hi ${name}! Let's explore together. What do you enjoy doing, in school or outside it? Mention as many things as you like.`]
+      : [
+        `Tell me a bit more: what do you enjoy doing most, in school or outside? For example designing, building things, helping people, nature, numbers or writing. I'll match careers to it.`,
+        `Here's how your current options compare:\n\n${short.map((id) => caseText(pc(id))).join('\n\n')}\n\nWhat do you like or dislike about these?`,
+        `Another way in: what matters more to you in a job, earning well, helping people, being creative, or stability? That will change which of your options is best.`,
+      ];
+  coach.nudge = ((coach.nudge ?? -1) + 1) % open.length;
+  return { reply: open[coach.nudge], readyForPlan: Boolean(coach.readyForPlan && coach.goal) };
 }
 
 /** Quick replies shown under the chat. */
 export function coachSuggestions(student) {
   const coach = student.coach || {};
-  if (coach.goal) return coach.readyForPlan ? [] : ['Earning well', 'Helping people', 'Being creative', 'Stability'];
-  if (coach.suggested) return ['Yes', ...computeResults(student).careers.slice(0, 3).map((c) => c.name)];
-  if (coach.awaitingPref) return ['(a) People', '(b) Creating and designing', '(c) Numbers and tech', '(d) Science and health'];
-  return [...computeResults(student).careers.slice(0, 3).map((c) => c.name), 'Not sure yet'];
+  const results = computeResults(student);
+  const short = (coach.shortlist?.length ? coach.shortlist : results.careers.slice(0, 3).map((c) => c.id)).map(careerById).filter(Boolean);
+  if (coach.goal && coach.readyForPlan) return [`Pros and cons of ${careerById(coach.goal).name}`, 'Show me other options'];
+  const out = [];
+  if (short.length >= 2) out.push(`Compare ${short[0].name} and ${short[1].name}`);
+  if (short[0]) out.push(`Pros and cons of ${short[0].name}`);
+  out.push('Show me other options', "I'm not sure yet");
+  if (coach.suggested) out.unshift(`Plan for ${careerById(coach.suggested).name}`);
+  return out.slice(0, 4);
 }
 
 export async function coachReply(student, message) {
@@ -175,30 +279,45 @@ export async function coachReply(student, message) {
   let source = 'scripted';
   if (aiEnabled()) {
     const results = computeResults(student);
-    const transcript = coach.messages.slice(-14).map((m) => `${m.role === 'user' ? 'Student' : 'Coach'}: ${m.content}`).join('\n');
+    const short = shortlistOf(student, results);
+    const mentioned = [...findCareersIn(message).map((c) => c.id)];
+    const ints = interestsIn(message);
+    const byInterest = ints.length ? results.allCareers.filter((c) => careerById(c.id).interests.some((i) => ints.includes(i))).slice(0, 5).map((c) => c.id) : [];
+    const candidates = uniq([...mentioned, ...short, ...byInterest, ...(student.profile?.considering || []), ...results.careers.map((c) => c.id)]).slice(0, 12);
+    const cases = candidates.map((id) => { const k = personalCase(student, results, id); return `- ${k.name} (${k.fit}% fit; route: ${k.route}; salary: ${k.salary}). For this student: ${k.forYou.join('; ')}. Watch out: ${k.watchOut.join('; ')}.`; }).join('\n');
+    const transcript = coach.messages.slice(-16).map((m) => `${m.role === 'user' ? 'Student' : 'Coach'}: ${m.content}`).join('\n');
     const prompt = `${VOICE}
 
 FACTS ABOUT THE STUDENT
 ${profileFacts(student, results)}
 
-CAREERS DISHAA KNOWS (use these names when possible): ${content.careers.map((c) => c.name).join(', ')}
+CAREERS TO DRAW ON, WITH PROS AND CONS FOR THIS STUDENT (from their measured abilities, interests, priorities and subjects)
+${cases}
+Other careers Dishaa knows: ${content.careers.map((c) => c.name).join(', ')}
 
 CONVERSATION SO FAR
 ${transcript}
 
-Your job in this chat: in a few short turns, help the student settle on ONE goal career (from their matches or their own idea) and understand what matters to them (money, impact, creativity, stability, location, family). Ask at most one or two questions per reply. Keep replies under 90 words. When you know their goal and priorities, tell them you can build their career plan.
+HOW TO COACH
+- You are a patient counsellor, not a quiz. Do not rush the student to pick a career. Explore first.
+- When the student shares interests, reflect them back and suggest 2-3 careers that combine them (prefer careers that blend several of their interests), each with a short personal pros and cons from the facts above.
+- When they name a career, weigh it honestly for them (pros AND cons, using their scores, subjects and priorities) and compare it with one alternative.
+- Use the student's own data: mention their actual ability scores, subjects or priorities when relevant. Never invent numbers.
+- Ask one open question at the end to keep the conversation going.
+- Only when the student clearly says they want to plan for one career, set goalCareer to it and readyForPlan to true. Otherwise goalCareer is null and readyForPlan is false.
+- Keep it under 160 words. You may use short lines starting with "+" for pros and "−" for cons.
 
 Reply with only JSON:
-{"reply": "your next message to the student",
- "goalCareer": "the career name they've chosen, or null if not decided yet",
- "readyForPlan": true or false}`;
+{"reply": "your next message", "discussing": ["up to 3 career names from the list that you discussed or suggested"], "goalCareer": "career name or null", "readyForPlan": true or false}`;
     try {
-      const o = await generate({ prompt, temperature: 0.6, timeoutMs: 20000 }); // keep chat snappy; fall back if the AI is slow
+      const o = await generate({ prompt, temperature: 0.6, timeoutMs: 22000 });
       if (typeof o?.reply === 'string' && o.reply.trim()) {
-        const goal = typeof o.goalCareer === 'string' ? findCareerIn(o.goalCareer) : null;
-        if (goal) coach.goal = goal.id;
-        else if (typeof o.goalCareer === 'string' && o.goalCareer.trim() && o.goalCareer !== 'null') coach.customGoal = o.goalCareer.trim().slice(0, 60);
-        out = { reply: o.reply.trim().slice(0, 1200), readyForPlan: Boolean(o.readyForPlan) && Boolean(coach.goal || coach.customGoal) };
+        const disc = Array.isArray(o.discussing) ? o.discussing.map((x) => findCareerIn(String(x))).filter(Boolean).map((c) => c.id) : [];
+        if (disc.length) coach.shortlist = uniq(disc).slice(0, 3);
+        const goal = typeof o.goalCareer === 'string' && o.goalCareer !== 'null' ? findCareerIn(o.goalCareer) : null;
+        const ready = Boolean(o.readyForPlan) && Boolean(goal);
+        if (ready) { coach.goal = goal.id; coach.shortlist = uniq([goal.id, ...(coach.shortlist || [])]).slice(0, 3); }
+        out = { reply: o.reply.trim().slice(0, 1600), readyForPlan: ready || Boolean(coach.readyForPlan && coach.goal) };
         source = 'ai';
       }
     } catch (err) {

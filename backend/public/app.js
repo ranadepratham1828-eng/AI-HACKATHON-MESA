@@ -753,23 +753,35 @@ async function coachView() {
   return coachHTML();
 }
 
+// Chat text: escape, then show "+ pro" and "− con" lines with coloured markers.
+const chatText = (t) => esc(t).split('\n').map((l) => (/^\+ /.test(l) ? `<span class="pc-line pro"><i>+</i>${l.slice(2)}</span>` : /^[−-] /.test(l) ? `<span class="pc-line con"><i>−</i>${l.slice(2)}</span>` : l)).join('\n');
+
 function coachHTML(typing = false) {
   const c = coachCache;
   const userTurns = c.messages.filter((m) => m.role === 'user').length;
+  const goalName = S.content.careers?.find?.((x) => x.id === c.goal)?.name;
+  const opts = c.options || [];
   return `<div class="coach-layout">
     <section class="card coach">
-      <div class="coach-head">${COMPASS()}<div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
-      <div class="msgs" id="msgs">${c.messages.map((m) => `<div class="msg ${m.role}">${esc(m.content)}</div>`).join('')}${typing ? '<div class="msg assistant typing"><span></span><span></span><span></span></div>' : ''}</div>
+      <div class="coach-head">${COMPASS()}<div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor · takes it one step at a time</p></div></div>
+      <div class="msgs" id="msgs">${c.messages.map((m) => `<div class="msg ${m.role}">${m.role === 'assistant' ? chatText(m.content) : esc(m.content)}</div>`).join('')}${typing ? '<div class="msg assistant typing"><span></span><span></span><span></span></div>' : ''}</div>
       ${c.suggestions?.length && !typing ? `<div class="quick">${c.suggestions.map((t) => `<button class="chip" data-act="coach-suggest" data-text="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
-      <form id="coach-form" class="coach-input"><input id="coach-msg" autocomplete="off" placeholder="Type your answer…" ${typing ? 'disabled' : ''}><button class="btn" type="submit" ${typing ? 'disabled' : ''}>Send</button></form>
+      <form id="coach-form" class="coach-input"><input id="coach-msg" autocomplete="off" placeholder="Ask anything, or tell me what you enjoy…" ${typing ? 'disabled' : ''}><button class="btn" type="submit" ${typing ? 'disabled' : ''}>Send</button></form>
     </section>
     <aside class="stack">
-      <div class="card stack-sm"><p class="eyebrow">Your goal</p><h3>${esc(S.content.careers?.find?.((x) => x.id === c.goal)?.name || (c.goal ? c.goal : 'Not decided yet'))}</h3>
-        <p class="small muted">${c.readyForPlan ? 'Your coach has what it needs.' : 'Chat for a few turns to settle on a goal.'}</p>
+      ${opts.length ? `<div class="card stack weigh"><div class="stack-sm"><p class="eyebrow">Weighing your options</p><p class="small muted">Pros and cons for you, from your scores, interests and priorities. Updates as you chat.</p></div>
+        ${opts.map((o) => `<div class="opt ${o.id === c.goal ? 'goal' : ''}">
+          <div class="spread"><b>${esc(o.name)}</b>${o.fit != null ? `<span class="tag ${o.fit >= 85 ? 'green' : 'grey'}">${o.fit}% fit</span>` : ''}</div>
+          <ul class="pcl">${o.forYou.map((x) => `<li class="pro">${esc(x)}</li>`).join('')}${o.watchOut.map((x) => `<li class="con">${esc(x)}</li>`).join('')}</ul>
+          <p class="small muted">${esc(o.route)}</p>
+          ${o.id === c.goal ? '<span class="tag gold" style="justify-self:start">Your goal</span>' : `<div class="row" style="gap:6px"><button class="btn outline small" data-act="coach-suggest" data-text="${esc(`Tell me more about ${o.name}`)}">Ask about it</button><button class="btn ghost small" data-act="coach-suggest" data-text="${esc(`Plan for ${o.name}`)}">Plan for this</button></div>`}
+        </div>`).join('')}
+        ${opts.length >= 2 ? `<button class="btn outline small" data-act="coach-suggest" data-text="${esc(`Compare ${opts[0].name} and ${opts[1].name}`)}">Compare the top two</button>` : ''}
+      </div>` : ''}
+      <div class="card stack-sm"><p class="eyebrow">Your goal</p><h3>${esc(goalName || (c.goal ? c.goal : 'Still exploring'))}</h3>
+        <p class="small muted">${c.readyForPlan ? 'When you feel sure, build your plan. You can rebuild it any time.' : "Take your time. Say \"plan for\" a career when you're sure."}</p>
         <button class="btn ${c.readyForPlan ? 'gold' : 'outline'}" data-act="build-plan" ${userTurns ? '' : 'disabled'}>${c.hasPlan ? 'Rebuild my plan' : 'Build my career plan'}</button>
         ${c.hasPlan ? '<button class="btn ghost" data-go="plan">View my plan</button>' : ''}</div>
-      <div class="card stack-sm"><p class="eyebrow">Try asking</p><div class="ask-list">
-        ${['Which of my matches suits me best?', 'My parents want me to be a doctor. What should I do?', 'Which stream should I take after Class 10?'].map((t) => `<button data-act="coach-suggest" data-text="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>
     </aside>
   </div>`;
 }
