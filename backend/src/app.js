@@ -345,6 +345,35 @@ export function createApp(store) {
     session(user)(res);
   }));
 
+  // Parents log in with their child's family code (shown on the student's Overview).
+  // One parent account per student; wrong codes are rate-limited per IP.
+  const codeAttempts = new Map();
+  app.post('/api/auth/parent-code', wrap(async (req, res) => {
+    const ip = req.ip || 'unknown';
+    const now = Date.now();
+    const a = codeAttempts.get(ip) || { n: 0, reset: now + 15 * 60e3 };
+    if (now > a.reset) { a.n = 0; a.reset = now + 15 * 60e3; }
+    if (a.n >= 10) throw new HttpError(429, 'Too many tries. Please wait 15 minutes and try again.');
+    const code = String(req.body?.code || '').replace(/[^a-z0-9]/gi, '').toUpperCase();
+    if (code.length !== 6) throw new HttpError(400, 'The family code has 6 letters and numbers.');
+    const student = store.findStudentByFamilyCode(code);
+    if (!student) {
+      a.n += 1; codeAttempts.set(ip, a);
+      throw new HttpError(401, "That code didn't match. You'll find it on your child's Overview page in Dishaa.");
+    }
+    const given = text(req.body?.name, 60);
+    const email = `parent.${student.id}@family.dishaa`;
+    let user = store.getUserByEmail(email);
+    if (!user) {
+      user = store.createUser({ role: 'parent', name: given || `${String(student.profile?.name || 'Student').replace(/\s*\(.*\)/, '')}'s parent`, email, linkedStudentId: student.id, viaFamilyCode: true, demo: Boolean(student.demo || student.demoAccount) });
+    } else if (given) {
+      user.name = given;
+    }
+    user.lastLoginAt = new Date().toISOString();
+    store.saveUser(user);
+    session(user)(res);
+  }));
+
   // One-tap demo accounts for the pitch. Each call makes a fresh account.
   app.post('/api/auth/demo', wrap(async (req, res) => {
     const as = String(req.body?.as || 'student');

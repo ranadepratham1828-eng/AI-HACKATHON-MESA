@@ -165,14 +165,24 @@ function loginView() {
       </ul>
     </div>
     <div class="auth-form">
-      <div class="stack-sm"><h2>Log in</h2><p class="muted small">Use the email and password we sent you when your school or family subscribed.</p></div>
+      <div class="tabs" role="tablist" aria-label="Who is logging in">
+        <button role="tab" aria-selected="${S.authTab !== 'parent'}" class="${S.authTab !== 'parent' ? 'on' : ''}" data-act="auth-tab" data-tab="login">Student or school</button>
+        <button role="tab" aria-selected="${S.authTab === 'parent'}" class="${S.authTab === 'parent' ? 'on' : ''}" data-act="auth-tab" data-tab="parent">Parent</button>
+      </div>
+      ${S.authTab === 'parent' ? `<div class="stack-sm"><h2>Parent log in</h2><p class="muted small">Enter the 6-character family code from your child's Overview page in Dishaa. No password needed.</p></div>
+      ${S.authError ? `<p class="error">${esc(S.authError)}</p>` : ''}
+      <form id="parent-form" class="stack">
+        <label>Family code<input id="parent-code" name="code" class="code-input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. TGRPKP" required></label>
+        <label><span>Your name <span class="muted small">(optional)</span></span><input id="parent-name" name="name" autocomplete="name" placeholder="e.g. Meena Rao"></label>
+        <button class="btn block" type="submit">See my child's report</button>
+      </form>` : `<div class="stack-sm"><h2>Log in</h2><p class="muted small">Use the email and password we sent you when your school or family subscribed.</p></div>
       ${S.authError ? `<p class="error">${esc(S.authError)}</p>` : ''}
       <form id="login-form" class="stack">
         <label>Email<input id="login-email" name="email" type="email" autocomplete="email" required></label>
         <label>Password<input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
         <button class="btn block" type="submit">Log in</button>
-      </form>
-      <details class="small muted"><summary>Forgot your password or didn't get an email?</summary>
+      </form>`}
+      <details class="small muted" ${S.authTab === 'parent' ? 'hidden' : ''}><summary>Forgot your password or didn't get an email?</summary>
         <p style="margin-top:8px">Ask your school counsellor, or <a href="/#contact">contact the Dishaa team</a> and we'll send you a new one.</p></details>
       <div class="or">Or explore a demo</div>
       <div class="demo-grid">
@@ -197,6 +207,17 @@ function bindLogin() {
       go('');
     } catch (err) { S.authError = err.message; render(); }
   });
+  $('#parent-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    try {
+      signIn(await api('/auth/parent-code', { body: { code: f.get('code'), name: f.get('name') } }));
+      S.authError = '';
+      await refreshMe();
+      go('');
+    } catch (err) { S.authError = err.message; render(); }
+  });
+  $('#parent-code')?.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
   $('#pw-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
@@ -336,7 +357,7 @@ function homeView() {
         <div class="progress"><i style="width:${w}%"></i></div>
       </a>`).join('')}</section>
     <section class="card soft spread">
-      <div class="stack-sm"><h3>Invite your parents</h3><p class="muted small">Share this family code. Your parent signs up with it to see your report.</p></div>
+      <div class="stack-sm"><h3>Invite your parents</h3><p class="muted small">Share this family code. Your parent opens ${esc(location.host)}/product, chooses Parent, and enters the code to see your report.</p></div>
       <div class="row"><span class="code">${esc(st.familyCode)}</span><button class="btn outline small" data-act="copy" data-text="${esc(st.familyCode)}">Copy</button></div>
     </section>
     ${soonTeaser()}
@@ -1375,6 +1396,7 @@ document.addEventListener('click', async (e) => {
   try {
     switch (act) {
       case 'reload': render(); break;
+      case 'auth-tab': S.authTab = el.dataset.tab; S.authError = ''; render(); setTimeout(() => $(S.authTab === 'parent' ? '#parent-code' : '#login-email')?.focus(), 30); break;
       case 'menu': S.menuOpen = true; S.userMenu = false; renderTopbar(); $('.drawer .icon-btn')?.focus(); break;
       case 'menu-close': S.menuOpen = false; renderTopbar(); $('.menu-btn')?.focus(); break;
       case 'user-menu': S.userMenu = !S.userMenu; renderTopbar(); break;

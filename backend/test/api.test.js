@@ -246,3 +246,20 @@ test('coach memory: notes appear, and the student can delete them', async () => 
   const denied = await call('GET', `/students/${id}/memory`, null, parent.body.token);
   assert.ok(denied.status === 403 || denied.status === 404, 'parents cannot read the memory');
 });
+
+test('parents log in with the family code; wrong codes are refused', async () => {
+  const demo = await call('POST', '/auth/demo', { as: 'student-finished' });
+  const me = await call('GET', '/auth/me', null, demo.body.token);
+  const code = me.body.student.familyCode;
+  const bad = await call('POST', '/auth/parent-code', { code: 'ZZZZZ9' });
+  assert.equal(bad.status, 401);
+  const ok = await call('POST', '/auth/parent-code', { code: code.toLowerCase(), name: 'Meena' });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.body.user.role, 'parent');
+  const pme = await call('GET', '/auth/me', null, ok.body.token);
+  assert.equal(pme.body.student.id, me.body.student.id);
+  const again = await call('POST', '/auth/parent-code', { code });
+  assert.equal(again.body.user.id, ok.body.user.id, 'one parent account per student');
+  const report = await call('GET', `/students/${me.body.student.id}/parent-report`, null, ok.body.token);
+  assert.equal(report.status, 200);
+});
