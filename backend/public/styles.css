@@ -203,6 +203,7 @@ body::before { content: ''; position: fixed; inset: 0 0 auto; height: env(safe-a
 .topbar .btn.outline { background: transparent; color: var(--moon); border-color: #3A437A; }
 .topbar .btn.outline:hover { border-color: var(--moon); background: transparent; }
 @media (max-width: 1180px) { .user > span:not(.ai-dot) { display: none; } }
+@media (max-width: 1240px) and (min-width: 901px) { .topbar-in { gap: 20px; } .nav { gap: 16px; } .nav a { font-size: 13.5px; } }
 @media (max-width: 900px) {
   .topbar-in { gap: 8px 20px; padding-block: 10px; }
   .nav { order: 3; flex-basis: 100%; overflow-x: auto; flex-wrap: nowrap; gap: 18px; }
