@@ -72,7 +72,7 @@ async function render() {
   const id = ++renderId;
   const rn = route().name;
   const entering = rn !== S.lastRoute;
-  if (entering) { S.menuOpen = false; S.userMenu = false; }
+  if (entering) { S.menuOpen = false; S.userMenu = false; if (rn === 'calendar' && S.cal) S.cal.cache = {}; }
   if (entering) { window.scrollTo(0, 0); if (rn === 'study') { S.studyCache = null; S.spEditing = false; S.sp = null; } S.lastRoute = rn; }
   renderTopbar();
   const app = $('#app');
@@ -86,7 +86,7 @@ async function render() {
   if (S.user.mustChangePassword && !S.user.demo) { app.innerHTML = passwordView(); bindLogin(); return; }
   const { name, arg } = route();
   const views = {
-    student: { home: homeView, about: aboutView, quest: questView, report: reportView, coach: coachView, plan: planView, study: studyView, mentors: mentorsView },
+    student: { home: homeView, about: aboutView, quest: questView, report: reportView, coach: coachView, plan: planView, study: studyView, calendar: calendarView, mentors: mentorsView },
     parent: { parent: parentView },
     school: { school: schoolView },
   }[S.user.role] || {};
@@ -110,12 +110,14 @@ async function render() {
 }
 
 const MENU_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>';
+const CHEV_L = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>';
+const CHEV_R = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>';
 const CLOSE_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>';
 
 function renderTopbar() {
   const r = route().name;
   const links = !S.user ? [] : {
-    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Assessment'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'Career plan'], ['study', 'Study planner'], ['mentors', 'Mentors']],
+    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Assessment'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'Career plan'], ['study', 'Study planner'], ['calendar', 'Calendar'], ['mentors', 'Mentors']],
     parent: [['parent', "My child's report"]],
     school: [['school', 'Class dashboard']],
   }[S.user.role] || [];
@@ -992,7 +994,7 @@ function studyPlanHTML(p) {
       <div class="spread" style="align-items:flex-start"><div class="stack-sm"><p class="eyebrow">Study plan · ${esc(S.student.profile.name)}</p>
         <h1>${next ? `${next.daysLeft === 0 ? 'Today' : `${next.daysLeft} day${next.daysLeft === 1 ? '' : 's'} to`} ${esc(next.title)}` : 'Your study plan'}</h1>
         <p class="lead">${hoursWeek} hours a week, ${p.totals.sessions} sessions until ${fmtDay(p.end, { day: 'numeric', month: 'long', year: 'numeric' })}. ${next?.estimated ? 'The exam date is expected, not confirmed.' : ''}</p></div>
-        <div class="row"><button class="btn outline" data-act="sp-ics">Add to calendar</button><button class="btn outline" data-act="sp-edit">Edit plan</button></div></div>
+        <div class="row"><button class="btn gold" data-go="calendar">Open calendar</button><button class="btn outline" data-act="sp-edit">Edit plan</button></div></div>
     </section>
 
     <section class="grid-4">
@@ -1077,6 +1079,110 @@ function studyReportCard(st, { parent = false } = {}) {
     ${st.entrance?.length ? `<div class="row" style="gap:8px">${st.entrance.map((x) => `<span class="tag gold">${esc(x.title)}: ${x.daysLeft} days${x.estimated ? ' (expected)' : ''}</span>`).join('')}</div>` : ''}
     ${st.activities?.length ? `<p class="small"><span class="muted">Suggested activities:</span> ${st.activities.map(esc).join(' · ')}</p>` : ''}
   </section>`;
+}
+
+/* ================= Student: calendar ================= */
+const todayLocal = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+const dAdd = (s, n) => { const d = new Date(`${s}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const dow = (s) => (new Date(`${s}T00:00:00Z`).getUTCDay() + 6) % 7; // Monday = 0
+const monthFirst = (s, shift = 0) => { const [y, m] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + shift, 1)).toISOString().slice(0, 10); };
+const CAL_KIND = { learn: 'New', revise: 'Revise', test: 'Timed paper', recall: 'Recall', practice: 'Practice' };
+const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+function calRange(c) {
+  if (c.view === 'week') { const from = dAdd(c.cursor, -dow(c.cursor)); return [from, dAdd(from, 6)]; }
+  const first = monthFirst(c.cursor); const last = dAdd(monthFirst(c.cursor, 1), -1);
+  return [dAdd(first, -dow(first)), dAdd(last, 6 - dow(last))];
+}
+const calKey = (c) => calRange(c).join('_');
+const calShift = (c, n) => (c.view === 'week' ? dAdd(c.cursor, 7 * n) : monthFirst(c.cursor, n));
+function calFetch(c) {
+  const [from, to] = calRange(c);
+  return api(`/students/${S.student.id}/study/calendar?from=${from}&to=${to}`).then((d) => { S.cal.cache[calKey(c)] = d; S.cal.done = d.done; return d; });
+}
+function calPrefetch() {
+  for (const n of [-1, 1]) {
+    const c = { ...S.cal, cursor: calShift(S.cal, n) }; const k = calKey(c);
+    if (!S.cal.cache[k]) { S.cal.cache[k] = 'loading'; calFetch(c).catch(() => { delete S.cal.cache[k]; }); }
+  }
+}
+
+function calendarView() {
+  S.cal ||= { view: 'month', cursor: todayLocal(), sel: todayLocal(), cache: {}, done: {} };
+  const d = S.cal.cache[calKey(S.cal)];
+  if (d && typeof d === 'object') { setTimeout(calPrefetch, 50); return calHTML(d); }
+  return calFetch(S.cal).then((data) => { setTimeout(calPrefetch, 50); return calHTML(data); });
+}
+
+function calHTML(d) {
+  if (!d.exists) {
+    return `<section class="card navy stack" style="max-width:820px;margin:0 auto"><p class="eyebrow">Calendar</p><h1>Your calendar fills in from your study plan</h1>
+      <p class="lead">Add your exams, subjects and free time in the study planner. Every session, revision and exam then shows up here, day by day.</p>
+      <div><button class="btn gold" data-go="study">Build my study plan</button></div></section>`;
+  }
+  const c = S.cal; const today = d.today; const done = S.cal.done || d.done || {};
+  const [from, to] = calRange(c);
+  const days = []; for (let x = from; x <= to; x = dAdd(x, 1)) days.push(x);
+  const byDay = {}; d.sessions.forEach((s) => { (byDay[s.date] ||= []).push(s); });
+  const examsOn = (x) => d.examDays.filter((e) => e.date === x);
+  const examLabel = (e) => (e.subject ? `${e.subject} exam` : e.title.replace(/ begin$/, ' begin'));
+  const month = new Date(`${monthFirst(c.cursor)}T00:00:00Z`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const fmtD = (x, o) => new Date(`${x}T00:00:00Z`).toLocaleDateString('en-IN', { ...o, timeZone: 'UTC' });
+  const title = c.view === 'month' ? month : `${fmtD(from, { day: 'numeric', month: 'short' })} – ${fmtD(to, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  const curMonth = monthFirst(c.cursor).slice(0, 7);
+  const evName = (s) => `${esc(s.subject || 'Study')} · ${CAL_KIND[s.kind] || s.kind}`;
+
+  const monthGrid = `<div class="cal-grid" role="grid" aria-label="${esc(month)}">
+    ${DOW.map((w) => `<div class="cal-dow" role="columnheader">${w}</div>`).join('')}
+    ${days.map((x) => { const ss = byDay[x] || []; const ex = examsOn(x); return `<button class="cal-day ${x.slice(0, 7) !== curMonth ? 'out' : ''} ${x === today ? 'today' : ''} ${x === c.sel ? 'sel' : ''} ${x < today ? 'past' : ''}" data-act="cal-sel" data-d="${x}" aria-label="${fmtD(x, { weekday: 'long', day: 'numeric', month: 'long' })}: ${ss.length} sessions${ex.length ? ', exam' : ''}">
+      <span class="cal-n">${Number(x.slice(8))}</span>
+      ${ex.map((e) => `<span class="cal-exam">${esc(examLabel(e))}</span>`).join('')}
+      ${ss.slice(0, ex.length ? 2 : 3).map((s) => `<span class="ev k-${s.kind} ${done[s.id] ? 'is-done' : ''}" title="${evName(s)}">${esc(s.subject || 'Study')}</span>`).join('')}
+      ${ss.length > (ex.length ? 2 : 3) ? `<span class="ev-more">+${ss.length - (ex.length ? 2 : 3)} more</span>` : ''}
+    </button>`; }).join('')}
+  </div>`;
+
+  const weekGrid = `<div class="cal-week-wrap"><div class="cal-week">
+    ${days.map((x) => { const ss = byDay[x] || []; return `<div class="wk-col ${x === today ? 'today' : ''} ${x === c.sel ? 'sel' : ''}">
+      <button class="wk-head" data-act="cal-sel" data-d="${x}"><span>${DOW[dow(x)]}</span><b>${Number(x.slice(8))}</b></button>
+      ${examsOn(x).map((e) => `<div class="cal-exam">${esc(examLabel(e))}</div>`).join('')}
+      ${ss.map((s) => `<button class="wk-ev k-${s.kind} ${done[s.id] ? 'is-done' : ''}" data-act="cal-sel" data-d="${x}" style="min-height:${Math.round(s.minutes * 1.25)}px"><span class="wk-t">${s.start}</span><b>${esc(s.subject || 'Study')}</b><span>${CAL_KIND[s.kind] || ''}</span></button>`).join('')}
+      ${!ss.length && !examsOn(x).length ? '<p class="wk-free">Free</p>' : ''}
+    </div>`; }).join('')}
+  </div></div>`;
+
+  const sel = c.sel; const selSs = byDay[sel] || [];
+  const agenda = `<div class="card stack cal-agenda">
+    <div class="stack-sm"><p class="eyebrow">${sel === today ? 'Today' : sel < today ? 'Past day' : 'Coming up'}</p><h3>${fmtD(sel, { weekday: 'long', day: 'numeric', month: 'long' })}</h3></div>
+    ${examsOn(sel).map((e) => `<p class="exam-flag">Exam: ${esc(e.title)}${e.estimated ? ' (expected date)' : ''}</p>`).join('')}
+    ${selSs.length ? `<div class="agenda">${selSs.map((s) => `<label class="ag-row ${done[s.id] ? 'done' : ''}">
+        <span class="ag-time num">${s.start}<small>${s.minutes} min</small></span>
+        <span class="ag-dot k-${s.kind}"></span>
+        <span class="stack-sm" style="gap:2px"><span class="ag-title">${esc(s.title)}</span><span class="small muted">${esc(s.detail)}</span></span>
+        <input type="checkbox" data-act="cal-done" data-id="${esc(s.id)}" ${done[s.id] ? 'checked' : ''} ${s.date > today ? 'disabled' : ''} aria-label="Mark done">
+      </label>`).join('')}</div>` : `<p class="muted small">${sel < d.start || sel > d.end ? 'Outside your study plan.' : 'Nothing planned. Enjoy the break.'}</p>`}
+  </div>`;
+
+  const upcoming = d.examDays.filter((e) => e.daysLeft >= 0 && !/ ends$/.test(e.title)).slice(0, 5);
+  return `<div class="stack-lg">
+    <section class="cal-top">
+      <div class="stack-sm"><p class="eyebrow">Calendar · ${esc(d.slot)}</p><h1>${esc(title)}</h1></div>
+      <div class="cal-ctrl">
+        <div class="tabs seg" role="tablist">${['month', 'week'].map((v) => `<button role="tab" aria-selected="${c.view === v}" class="${c.view === v ? 'on' : ''}" data-act="cal-view" data-v="${v}">${v === 'month' ? 'Month' : 'Week'}</button>`).join('')}</div>
+        <div class="row" style="gap:6px"><button class="icon-btn light" data-act="cal-nav" data-n="-1" aria-label="Previous">${CHEV_L}</button><button class="btn outline small" data-act="cal-today">Today</button><button class="icon-btn light" data-act="cal-nav" data-n="1" aria-label="Next">${CHEV_R}</button></div>
+      </div>
+    </section>
+    <section class="cal-layout">
+      <div class="card cal-main">${c.view === 'month' ? monthGrid : weekGrid}
+        <div class="legend" style="margin-top:14px">${Object.entries(CAL_KIND).map(([k, l]) => `<span><i class="k-${k}"></i>${l === 'New' ? 'New chapter' : l}</span>`).join('')}<span><i style="background:var(--marigold)"></i>Exam</span></div></div>
+      <aside class="stack">
+        ${agenda}
+        <div class="card stack"><h3>Exam countdown</h3>
+          <div class="countdown">${upcoming.map((e) => `<div class="cd-row ${e.far ? 'far' : ''}"><span class="cd-days num">${e.daysLeft}<small>days</small></span><span class="stack-sm" style="gap:1px"><span>${esc(e.title)}</span><span class="small muted">${fmtD(e.date, { day: 'numeric', month: 'short', year: 'numeric' })}${e.estimated ? ' · expected' : ''}</span></span><span></span></div>`).join('') || '<p class="small muted">No upcoming exams.</p>'}</div></div>
+        <div class="card soft stack-sm"><h4>Prefer your phone's calendar?</h4><p class="small muted">Add the next 60 days to Google Calendar, Apple Calendar or Outlook.</p><div><button class="btn ghost" data-act="sp-ics">Sync to my phone calendar</button></div></div>
+      </aside>
+    </section>
+  </div>`;
 }
 
 /* ================= Coming soon: alumni, mentors, counsellors, prep materials ================= */
@@ -1392,6 +1498,23 @@ document.addEventListener('click', async (e) => {
         break;
       }
       case 'sp-day': S.studyDay = el.dataset.d; render(); break;
+      case 'cal-view': S.cal.view = el.dataset.v; render(); break;
+      case 'cal-nav': {
+        S.cal.cursor = calShift(S.cal, Number(el.dataset.n));
+        const [f, t] = calRange(S.cal); const tday = todayLocal();
+        S.cal.sel = tday >= f && tday <= t && (S.cal.view === 'week' || tday.slice(0, 7) === S.cal.cursor.slice(0, 7)) ? tday : S.cal.view === 'week' ? f : S.cal.cursor;
+        render();
+        break;
+      }
+      case 'cal-today': S.cal.cursor = todayLocal(); S.cal.sel = todayLocal(); render(); break;
+      case 'cal-sel': S.cal.sel = el.dataset.d; render(); break;
+      case 'cal-done': {
+        const out = await api(`/students/${S.student.id}/study/done`, { body: { id: el.dataset.id, done: el.checked } });
+        S.cal.done = out.done;
+        if (S.studyCache) { S.studyCache.done = out.done; S.studyCache.progress = out.progress; }
+        render();
+        break;
+      }
       case 'waitlist': {
         const out = await api(`/students/${S.student.id}/waitlist`, { body: { feature: el.dataset.feature } });
         S.student.waitlist = out.waitlist;

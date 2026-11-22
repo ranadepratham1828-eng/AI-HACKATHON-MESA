@@ -7,7 +7,7 @@ import { aiStatus } from './ai/provider.js';
 import { scoreGame, missionPicks } from './logic/scoring.js';
 import { missionFeedback, twistReaction, curiosityAnswer } from './logic/missions.js';
 import { careerReport, parentReport, campusConnect, computeResults } from './logic/report.js';
-import { cleanStudyInput, buildStudyPlan, weeksOf, progressOf, recommendActivities, studySummary, toICS, todayIST, addDays, daysBetween } from './logic/study.js';
+import { cleanStudyInput, buildStudyPlan, weeksOf, progressOf, recommendActivities, studySummary, toICS, todayIST, addDays, daysBetween, isDate, withTimes } from './logic/study.js';
 import { studyNote } from './logic/studyNote.js';
 import { scoreAssessment } from './logic/assessment.js';
 import { matchScholarships } from './logic/scholarships.js';
@@ -598,6 +598,25 @@ export function createApp(store) {
     store.saveStudent(s);
     const plan = buildStudyPlan(s.study.input, { cls: s.profile?.cls });
     res.json({ done: s.study.done, progress: progressOf(plan, s.study.done, todayIST()) });
+  }));
+
+  // Calendar tab: sessions (with clock times) and exams for a date range of up to 62 days.
+  app.get('/api/students/:id/study/calendar', wrap(async (req, res) => {
+    const s = getStudent(req);
+    if (!s.study?.input) { res.json({ exists: false }); return; }
+    const today = todayIST();
+    const from = isDate(req.query.from) ? String(req.query.from) : addDays(today, -7);
+    let to = isDate(req.query.to) ? String(req.query.to) : addDays(from, 41);
+    if (to < from || daysBetween(from, to) > 62) to = addDays(from, 62);
+    const plan = buildStudyPlan(s.study.input, { cls: s.profile?.cls });
+    const slot = content.study.slots.find((x) => x.id === s.study.input.slot) || content.study.slots[2];
+    res.json({
+      exists: true, today, from, to, start: plan.start, end: plan.end, slot: slot.label,
+      sessions: withTimes(plan.sessions, s.study.input).filter((x) => x.date >= from && x.date <= to),
+      examDays: plan.examDays.map((x) => ({ ...x, daysLeft: daysBetween(today, x.date) })),
+      done: s.study.done || {},
+      progress: progressOf(plan, s.study.done, today),
+    });
   }));
 
   app.get('/api/students/:id/study/calendar.ics', wrap(async (req, res) => {

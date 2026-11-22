@@ -25,7 +25,7 @@ const same = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLow
 const presetById = (id) => content.study.exams.find((e) => e.id === id);
 const sourceById = (id) => content.study.sources.find((s) => s.id === id);
 const clampNum = (v, lo, hi, dflt) => { const n = Number(v); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : dflt; };
-const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !Number.isNaN(toDate(v).getTime());
+export const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !Number.isNaN(toDate(v).getTime());
 
 /** Validate what the app sends. Unknown fields are dropped. */
 export function cleanStudyInput(body = {}) {
@@ -360,3 +360,18 @@ export function toICS(plan, input, { today = todayIST(), days = 60, name = 'Stud
   lines.push('END:VCALENDAR');
   return lines.join('\r\n');
 }
+
+/** Clock times for sessions: each day starts at the student's usual time, 10-minute breaks between sessions. */
+export function withTimes(sessions, input) {
+  const slot = content.study.slots.find((x) => x.id === input.slot) || content.study.slots[2];
+  const [h0, m0] = slot.start.split(':').map(Number);
+  const pad = (n) => String(n).padStart(2, '0');
+  const clock = (mins) => `${pad(Math.floor(mins / 60) % 24)}:${pad(mins % 60)}`;
+  const next = {};
+  return sessions.map((x) => {
+    const t = next[x.date] ?? h0 * 60 + m0;
+    next[x.date] = t + x.minutes + 10;
+    return { ...x, start: clock(t), end: clock(t + x.minutes) };
+  });
+}
+
