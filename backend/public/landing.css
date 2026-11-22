@@ -231,15 +231,18 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 .price { background: var(--paper); border: 1px solid var(--line); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; position: relative; transition: transform .3s var(--ease); }
 .price:hover { transform: translateY(-4px); }
 .price.dk { background: var(--night); color: var(--moon); border-color: var(--night); }
-.price .badge { position: absolute; top: 24px; right: 24px; background: var(--marigold); color: var(--night); font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 10px; }
-.price .badge.soon-b { font-family: var(--f-mono); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
-.price .plan { display: flex; flex-direction: column; gap: 6px; }
-.price .plan small { font: 500 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.price .badge { align-self: flex-start; background: var(--marigold); color: var(--night); font-size: 13px; font-weight: 600; border-radius: 999px; padding: 6px 12px; }
+.price .badge.soon-b { font-family: var(--f-mono); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: 12px; }
+.price .badge.badge-soft { background: var(--mist); color: var(--slate); }
+.price .plan { display: flex; flex-direction: column; gap: 10px; }
+.price .plan small { font: 500 13px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .price.dk .plan small, .price.dk .plan p { color: var(--haze); }
-.amt { font: 800 44px/1.05 var(--f-display); letter-spacing: -.02em; }
-.amt span { font: 500 15px var(--f-body); color: var(--muted); letter-spacing: 0; }
-.price.dk .amt span { color: var(--haze); }
-.price .plan p { font-size: 15px; color: var(--muted); }
+.price .plan .amt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 4px 0 2px; color: var(--ink); }
+.price .plan .amt .n { font: 800 clamp(56px, 5.4vw, 72px)/1 var(--f-display); letter-spacing: -.04em; color: var(--ink); background: linear-gradient(transparent 60%, #FFE3A3 60%, #FFE3A3 92%, transparent 92%); padding: 0 6px; margin-left: -6px; }
+.price.dk .plan .amt .n { color: var(--marigold); background: none; padding: 0; margin: 0; }
+.price .plan .amt .u { font: 500 16px var(--f-body); color: var(--muted); }
+.price.dk .plan .amt .u { color: var(--haze); }
+.price .plan p:not(.amt) { font-size: 15px; color: var(--muted); }
 .price ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 15px; color: var(--slate); flex: 1; }
 .price.dk ul { color: var(--haze-2); }
 .price li { display: flex; gap: 10px; }

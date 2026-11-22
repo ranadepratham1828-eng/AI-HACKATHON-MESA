@@ -72,7 +72,7 @@ async function render() {
   const id = ++renderId;
   const rn = route().name;
   const entering = rn !== S.lastRoute;
-  if (entering) { if (rn === 'study') { S.studyCache = null; S.spEditing = false; S.sp = null; } S.lastRoute = rn; }
+  if (entering) { window.scrollTo(0, 0); if (rn === 'study') { S.studyCache = null; S.spEditing = false; S.sp = null; } S.lastRoute = rn; }
   renderTopbar();
   const app = $('#app');
   if (route().name === 'admin') {
@@ -104,7 +104,7 @@ async function render() {
   } else {
     app.innerHTML = result;
   }
-  if (entering) { app.classList.remove('enter'); void app.offsetWidth; app.classList.add('enter'); clearTimeout(S.enterTimer); S.enterTimer = setTimeout(() => app.classList.remove('enter'), 1400); }
+  if (entering) { window.scrollTo(0, 0); app.classList.remove('enter'); void app.offsetWidth; app.classList.add('enter'); clearTimeout(S.enterTimer); S.enterTimer = setTimeout(() => app.classList.remove('enter'), 1400); }
   bindInputs();
 }
 
