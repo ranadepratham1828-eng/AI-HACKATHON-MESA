@@ -72,6 +72,7 @@ async function render() {
   const id = ++renderId;
   const rn = route().name;
   const entering = rn !== S.lastRoute;
+  if (entering) { S.menuOpen = false; S.userMenu = false; }
   if (entering) { window.scrollTo(0, 0); if (rn === 'study') { S.studyCache = null; S.spEditing = false; S.sp = null; } S.lastRoute = rn; }
   renderTopbar();
   const app = $('#app');
@@ -108,6 +109,9 @@ async function render() {
   bindInputs();
 }
 
+const MENU_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>';
+const CLOSE_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>';
+
 function renderTopbar() {
   const r = route().name;
   const links = !S.user ? [] : {
@@ -115,14 +119,31 @@ function renderTopbar() {
     parent: [['parent', "My child's report"]],
     school: [['school', 'Class dashboard']],
   }[S.user.role] || [];
+  const link = ([h, l]) => `<a href="#${h}" class="${r === h ? 'on' : ''}" ${r === h ? 'aria-current="page"' : ''}>${l}${h === 'mentors' ? '<span class="soon-dot" title="Coming soon"></span>' : ''}</a>`;
   const ai = S.health?.ai;
+  const status = ai ? `<span class="ai-dot" style="--ai:${ai.configured ? 'var(--aqua)' : 'var(--gold)'}">${ai.configured ? 'AI connected' : 'Demo text (AI off)'}</span>` : '';
+  const who = S.user ? `${esc(S.user.name)}` : '';
+  const sub = S.user ? ({ student: `Student${S.student?.profile?.cls ? ` · Class ${esc(S.student.profile.cls)}` : ''}`, parent: 'Parent', school: 'School counsellor' }[S.user.role] || '') : '';
   $('#topbar').innerHTML = `<div class="topbar-in">
+    ${S.user && links.length ? `<button class="icon-btn menu-btn" data-act="menu" aria-label="Open menu" aria-expanded="${S.menuOpen ? 'true' : 'false'}">${MENU_ICON}</button>` : ''}
     <a class="brand" href="/">${COMPASS()}<span>dishaa</span></a>
-    <nav class="nav" aria-label="Main">${links.map(([h, l]) => `<a href="#${h}" class="${r === h ? 'on' : ''}">${l}${h === 'mentors' ? '<span class="soon-dot" title="Coming soon"></span>' : ''}</a>`).join('')}</nav>
+    <nav class="nav" aria-label="Main">${links.map(link).join('')}</nav>
     ${S.user ? `<div class="user">
-      ${ai ? `<span class="ai-dot" style="--ai:${ai.configured ? 'var(--green)' : 'var(--gold)'}" title="${ai.configured ? 'AI connected' : 'AI not connected: demo text'}">${ai.configured ? 'AI on' : 'Demo mode'}</span>` : ''}
-      <span>${esc(S.user.name)}</span><button class="btn outline small" data-act="logout">Log out</button></div>` : ''}
-  </div>`;
+      <button class="avatar-btn" data-act="user-menu" aria-haspopup="menu" aria-expanded="${S.userMenu ? 'true' : 'false'}" aria-label="Account menu for ${who}">${esc(initials(S.user.name.replace(/\(.*?\)/g, '')))}${S.user.demo ? '<i class="demo-pip" title="Demo account"></i>' : ''}</button>
+      ${S.userMenu ? `<div class="user-menu" role="menu">
+        <div class="um-head"><b>${who}</b><span>${sub}</span>${S.user.demo ? '<span class="tag gold" style="justify-self:start;margin-top:6px">Demo account</span>' : ''}</div>
+        ${status ? `<div class="um-row">${status}</div>` : ''}
+        <button class="um-item" role="menuitem" data-act="logout">Log out</button>
+      </div>` : ''}
+    </div>` : ''}
+  </div>
+  ${S.user && links.length ? `<div class="drawer-scrim ${S.menuOpen ? 'open' : ''}" data-act="menu-close"></div>
+  <aside class="drawer ${S.menuOpen ? 'open' : ''}" aria-label="Menu" ${S.menuOpen ? '' : 'inert'}>
+    <div class="drawer-head"><a class="brand" href="/">${COMPASS()}<span>dishaa</span></a><button class="icon-btn" data-act="menu-close" aria-label="Close menu">${CLOSE_ICON}</button></div>
+    <nav class="drawer-nav" aria-label="Main">${links.map(link).join('')}</nav>
+    <div class="drawer-foot"><div class="um-head"><b>${who}</b><span>${sub}</span></div>${status}<button class="btn outline small" data-act="logout">Log out</button></div>
+  </aside>` : ''}`;
+  document.body.classList.toggle('drawer-open', Boolean(S.menuOpen));
 }
 
 /* ================= Login (no public sign-up: accounts are emailed) ================= */
@@ -1205,15 +1226,25 @@ function bindInputs() {
   }
 }
 
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || (!S.menuOpen && !S.userMenu)) return;
+  S.menuOpen = false; S.userMenu = false; renderTopbar();
+});
+
 document.addEventListener('click', async (e) => {
+  if (S.menuOpen && e.target.closest('.drawer-nav a')) { S.menuOpen = false; setTimeout(renderTopbar, 0); }
   const goEl = e.target.closest('[data-go]');
   if (goEl) { e.preventDefault(); go(goEl.dataset.go); return; }
+  if (S.userMenu && !e.target.closest('.user')) { S.userMenu = false; renderTopbar(); }
   const el = e.target.closest('[data-act]');
   if (!el) return;
   const act = el.dataset.act;
   try {
     switch (act) {
       case 'reload': render(); break;
+      case 'menu': S.menuOpen = true; S.userMenu = false; renderTopbar(); $('.drawer .icon-btn')?.focus(); break;
+      case 'menu-close': S.menuOpen = false; renderTopbar(); $('.menu-btn')?.focus(); break;
+      case 'user-menu': S.userMenu = !S.userMenu; renderTopbar(); break;
       case 'logout': signOut(); break;
       case 'admin-tab': ADMIN.tab = el.dataset.tab; render(); break;
       case 'admin-logout': ADMIN.key = ''; try { sessionStorage.removeItem('dishaa-admin'); } catch { /* */ } render(); break;

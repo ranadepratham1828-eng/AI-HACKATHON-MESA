@@ -41,6 +41,8 @@ export async function generate({ prompt, images = [], json = true, temperature =
   return json ? parseJSON(text) : text.trim();
 }
 
+let primaryDownUntil = 0;
+
 async function geminiGenerate({ prompt, images, json, temperature, timeoutMs }) {
   const { apiKey, model, fallbackModel, baseUrl } = config.ai.gemini;
   const body = {
@@ -51,15 +53,23 @@ async function geminiGenerate({ prompt, images, json, temperature, timeoutMs }) 
     generationConfig: { temperature, ...(json ? { responseMimeType: 'application/json' } : {}) },
   };
 
-  const models = [model, fallbackModel].filter((m, i, all) => m && all.indexOf(m) === i);
+  let models = [model, fallbackModel].filter((m, i, all) => m && all.indexOf(m) === i);
+  // While the main model is overloaded or rate-limited, go straight to the fallback.
+  if (models.length > 1 && primaryDownUntil > Date.now()) models = models.slice(1);
+  // Share the time budget: the main model gets part of it, so the fallback still has time to answer.
+  const budget = timeoutMs || config.ai.timeoutMs;
+  const started = Date.now();
   let lastError;
-  for (const m of models) {
+  for (const [i, m] of models.entries()) {
+    const left = budget - (Date.now() - started);
+    const slice = models.length > 1 && i === 0 ? Math.min(left * 0.45, 15000) : left;
+    if (slice < 1500) break;
     try {
       const res = await timedFetch(`${baseUrl}/models/${encodeURIComponent(m)}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
         body: JSON.stringify(body),
-      }, timeoutMs);
+      }, slice);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new AIError(data?.error?.message || `Gemini error ${res.status}`, { status: res.status, code: data?.error?.status });
@@ -71,6 +81,7 @@ async function geminiGenerate({ prompt, images, json, temperature, timeoutMs }) 
       lastError = err;
       // Try the fallback model only for rate limits, missing models or server errors.
       const retryable = err.status === 429 || err.status === 404 || err.status >= 500 || err.code === 'timeout';
+      if (retryable && m === model && fallbackModel && fallbackModel !== model) primaryDownUntil = Date.now() + 3 * 60 * 1000;
       if (!retryable) break;
     }
   }

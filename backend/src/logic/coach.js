@@ -65,6 +65,26 @@ const PREFS = [
   { key: 'd', words: /\b(d|science|health|nature|environment|research|biology)\b/i, label: 'science, health and nature', interests: ['science', 'health', 'nature'] },
 ];
 
+// Questions the rule-based coach can answer straight from our career data.
+const lc = (s) => s.charAt(0).toLowerCase() + s.slice(1);
+const INTENTS = [
+  { re: /\b(pros?|cons?|advantages?|disadvantages?|downsides?|good and bad|good things|bad things|benefits?|drawbacks?)\b/i,
+    say: (c) => `Here's ${c.name} in India, honestly. Pros: ${c.pros.map(lc).join('; ')}. Cons: ${c.cons.map(lc).join('; ')}.` },
+  { re: /\b(salary|salaries|pay|paid|earn|earning|income|money|package|lpa|ctc)\b/i,
+    say: (c) => `${c.name}: early salary is ${lc(c.salary)}. Job demand in India: ${c.demand}.` },
+  { re: /\b(exams?|entrance|jee|neet|cuet|clat|uceed|nid|nift|nata)\b/i,
+    say: (c) => `For ${c.name}, the main entrance ${c.exams.length === 1 ? `exam is ${c.exams[0]}` : `exams are ${c.exams.join(', ')}`}. Your study planner can count down to ${c.exams.length === 1 ? 'it' : 'them'}.` },
+  { re: /\b(colleges?|universit(y|ies)|institutes?|iit|nit|nid)\b/i,
+    say: (c) => { const cs = c.missionId ? content.colleges.filter((x) => x.careers.includes(c.missionId)).map((x) => x.name).slice(0, 3) : [];
+      return cs.length ? `Good colleges for ${c.name} include ${cs.join(', ')}. Your career plan shows fees, cutoffs and which fit your budget.` : `I don't have verified college data for ${c.name} yet. The degrees to look for are ${c.degrees.join('; ')}, and your career plan lists the entrance exams.`; } },
+  { re: /\b(stream|subjects?|pcm|pcb|commerce|arts|humanities|after class 10|after 10th)\b/i,
+    say: (c) => `For ${c.name}, the usual route after Class 10 is ${c.stream}. Then: ${c.degrees.join('; ')}.` },
+  { re: /\b(degree|course|study what|what to study)\b/i,
+    say: (c) => `To become a ${c.name}, the usual degrees are ${c.degrees.join('; ')}.` },
+  { re: /\b(what (do|does) (they|a|an)|day in the life|what is|tell me about|explain)\b/i,
+    say: (c) => `${c.name}: ${c.summary} Early salary is ${lc(c.salary)}, and demand in India is ${lc(c.demand)}.` },
+];
+
 /** Rule-based coach used when the AI is not connected. Never repeats itself. */
 function scriptedReply(student, coach, message) {
   const results = computeResults(student);
@@ -73,6 +93,19 @@ function scriptedReply(student, coach, message) {
   const msg = String(message || '').trim();
   const lower = msg.toLowerCase();
   const list = tops.map((c, i) => `${i + 1}) ${c.name}`).join(', ');
+
+  // A question about a career (pros, salary, exams...): answer it from our data.
+  const intent = INTENTS.find((x) => x.re.test(lower));
+  if (intent && !msg.startsWith('__repeat__')) {
+    const subj = findCareerIn(msg) || (coach.goal && careerById(coach.goal)) || careerById(tops[0]?.id);
+    if (subj) {
+      const fit = results.allCareers.find((c) => c.id === subj.id)?.fit;
+      const next = coach.goal === subj.id
+        ? (coach.readyForPlan ? ' Ask me anything else, or tap "Build my career plan".' : ' What matters most to you in a job: earning well, helping people, being creative, or stability?')
+        : ` It's a ${fit}% match for you. Want to plan for ${subj.name}? Just say "${subj.name}".`;
+      return { reply: intent.say(subj) + next, readyForPlan: Boolean(coach.readyForPlan) };
+    }
+  }
   const pickFromTops = () => {
     const n = lower.match(/^\s*([1-3])\b/);
     if (n) return tops[Number(n[1]) - 1] || null;
