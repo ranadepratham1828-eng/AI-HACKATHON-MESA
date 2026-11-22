@@ -190,7 +190,7 @@ export function createApp(store) {
     traits: content.traits,
     assessment: publicAssessment(),
     interests: content.interests,
-    careers: content.careers.map(({ id, name, category }) => ({ id, name, category })),
+    careers: content.careers.map(({ id, name, category, exams, missionId }) => ({ id, name, category, exams, missionId: missionId || null })),
     careerCategories: content.careerCategories,
     priorities: content.priorities,
     games: content.games.map(publicGame),
@@ -313,7 +313,7 @@ export function createApp(store) {
   const DEMO_EMAIL = (process.env.DEMO_EMAIL || 'ranadepratham1828@gmail.com').toLowerCase();
   const DEMO_PASSWORD = process.env.DEMO_PASSWORD || '123456';
   // Bump when the demo student's data changes, so the shared account is rebuilt with the new data.
-  const DEMO_VERSION = 3;
+  const DEMO_VERSION = 4;
   function ensureDemoAccount() {
     let user = store.getUserByEmail(DEMO_EMAIL);
     const current = user?.studentId ? store.getStudent(user.studentId) : null;
@@ -607,6 +607,19 @@ export function createApp(store) {
     res.set('Content-Type', 'text/calendar; charset=utf-8');
     res.set('Content-Disposition', 'attachment; filename="dishaa-study-plan.ics"');
     res.send(toICS(plan, s.study.input, { name: s.profile?.name || 'Student' }));
+  }));
+
+  // ---- Coming soon (after the Bengaluru pilot): alumni, mentors, counsellors, prep materials.
+  // Students can ask to be told when each one opens. ----
+  const WAITLIST = ['alumni', 'mentors', 'counsellors', 'materials'];
+  app.post('/api/students/:id/waitlist', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    const feature = String(req.body?.feature || '');
+    if (!WAITLIST.includes(feature)) throw new HttpError(400, `feature must be one of ${WAITLIST.join(', ')}`);
+    s.waitlist ||= [];
+    if (!s.waitlist.includes(feature)) s.waitlist.push(feature);
+    store.saveStudent(s);
+    res.json({ waitlist: s.waitlist });
   }));
 
   // ---- Dishaa Quest: the aptitude game every new student plays first (P0) ----

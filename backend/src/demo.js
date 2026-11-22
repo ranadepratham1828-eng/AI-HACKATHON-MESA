@@ -138,7 +138,7 @@ const FINISHED = {
 function demoStudy() {
   const today = todayIST();
   const input = cleanStudyInput({
-    exams: [{ presetId: 'cbse-10-2027' }, { name: 'School pre-board exams', date: addDays(today, 45), subjects: ['Maths', 'Science', 'Social Science', 'English'] }],
+    exams: [{ presetId: 'cbse-10-2027' }, { presetId: 'uceed-2027' }, { presetId: 'cuet-ug-2027' }, { name: 'School pre-board exams', date: addDays(today, 45), subjects: ['Maths', 'Science', 'Social Science', 'English'] }],
     subjects: [
       { name: 'Maths', confidence: 2, topics: ['Circles', 'Areas Related to Circles', 'Surface Areas and Volumes', 'Statistics', 'Probability'] },
       { name: 'Science', confidence: 3, topics: ['Light: Reflection and Refraction', 'The Human Eye and the Colourful World', 'Electricity', 'Magnetic Effects of Electric Current', 'Our Environment'] },

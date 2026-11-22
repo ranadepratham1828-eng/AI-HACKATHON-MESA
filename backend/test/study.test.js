@@ -73,3 +73,16 @@ test('progress, weeks and calendar export', () => {
   assert.match(ics, /DTSTART;VALUE=DATE:20270217/);
   assert.match(ics, /DTSTART:20261123T183000/);
 });
+
+test('entrance exams are projected to the year a younger student sits them', async () => {
+  const { resolveExams } = await import('../src/logic/study.js');
+  const [e] = resolveExams({ exams: [{ presetId: 'uceed-2027' }] }, '10');
+  assert.equal(e.name, 'UCEED 2029');
+  assert.equal(e.date, '2029-01-17');
+  assert.equal(e.estimated, true);
+  const [same] = resolveExams({ exams: [{ presetId: 'uceed-2027' }] }, '12');
+  assert.equal(same.date, '2027-01-17');
+  const p = buildStudyPlan({ ...input(), exams: [...input().exams, { presetId: 'uceed-2027' }] }, { cls: '10' });
+  assert.equal(p.end, '2027-03-09', 'a far exam only gets a countdown');
+  assert.ok(p.examDays.some((x) => x.title === 'UCEED 2029' && x.far));
+});

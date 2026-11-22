@@ -63,14 +63,22 @@ export function cleanStudyInput(body = {}) {
 }
 
 /** Exams with their dates resolved: presets from content, plus the student's own. */
-export function resolveExams(input) {
+export const shiftYears = (s, n) => (n ? `${Number(s.slice(0, 4)) + n}${s.slice(4)}` : s);
+/** Years until a student in `cls` sits an exam meant for `classes` (e.g. Class 10 → UCEED in 2 years). */
+export const yearsUntil = (preset, cls) => (preset.kind === 'entrance' && cls && Number(cls) < 12 && !preset.classes.includes(String(cls)) ? 12 - Number(cls) : 0);
+
+export function resolveExams(input, cls) {
   return input.exams.map((e) => {
     const p = e.presetId ? presetById(e.presetId) : null;
     if (p) {
+      const yrs = yearsUntil(p, cls);
+      const year = Number(p.start.slice(0, 4)) + yrs;
       return {
-        id: p.id, name: p.name, short: p.short, kind: p.kind, date: p.start, end: p.end, estimated: p.estimated,
-        subjects: p.kind === 'board' ? [] : p.subjects || [], subjectDates: p.subjectDates || {},
-        note: p.note, source: p.source, reportedBy: p.reportedBy, lastChecked: p.lastChecked,
+        id: p.id, name: yrs ? p.name.replace(/20\d\d/, String(year)) : p.name, short: yrs ? `${p.short} ${year}` : p.short,
+        kind: p.kind, date: shiftYears(p.start, yrs), end: shiftYears(p.end, yrs), estimated: p.estimated || yrs > 0, projected: yrs > 0,
+        subjects: p.kind === 'board' ? [] : p.subjects || [], subjectDates: yrs ? {} : p.subjectDates || {},
+        note: yrs ? `Expected in ${MONTHS_LONG[Number(p.start.slice(5, 7)) - 1]} ${year}, when you're in Class 12, based on this year's dates. Confirm closer to the time.` : p.note,
+        source: p.source, reportedBy: p.reportedBy, lastChecked: p.lastChecked,
       };
     }
     return { id: `custom-${e.name}-${e.date}`, name: e.name, short: e.name, kind: 'custom', date: e.date, end: e.date, estimated: false, subjects: e.subjects, subjectDates: {} };
@@ -102,7 +110,10 @@ function pickSource(input, use, exam) {
  */
 export function buildStudyPlan(input, { cls } = {}) {
   const start = input.startDate || todayIST();
-  const exams = resolveExams(input).filter((e) => e.end >= start);
+  // Exams more than MAX_DAYS away (e.g. UCEED for a Class 10 student) only get a countdown.
+  const allExams = resolveExams(input, cls).filter((e) => e.end >= start);
+  const exams = allExams.filter((e) => daysBetween(start, e.date) <= MAX_DAYS);
+  const farExams = allExams.filter((e) => daysBetween(start, e.date) > MAX_DAYS);
   const lastExam = exams.reduce((m, e) => (e.end > m ? e.end : m), start);
   const end = exams.length ? (daysBetween(start, lastExam) > MAX_DAYS ? addDays(start, MAX_DAYS) : lastExam) : addDays(start, 55);
 
@@ -133,10 +144,11 @@ export function buildStudyPlan(input, { cls } = {}) {
   const examDays = [];
   for (const e of exams) {
     const dated = Object.entries(e.subjectDates).filter(([subj, d]) => d >= start && input.subjects.some((x) => same(x.name, subj)));
-    if (dated.length) dated.forEach(([subj, d]) => examDays.push({ date: d, title: `${e.short}: ${subj}`, exam: e.name, subject: subj, estimated: e.estimated }));
-    if (!dated.length || e.kind === 'board') examDays.push({ date: e.date, title: e.kind === 'board' ? `${e.short} begin` : e.short, exam: e.name, subject: null, estimated: e.estimated, start: true });
-    if (e.end !== e.date && e.kind !== 'board') examDays.push({ date: e.end, title: `${e.short} ends`, exam: e.name, subject: null, estimated: e.estimated });
+    if (dated.length) dated.forEach(([subj, d]) => examDays.push({ date: d, title: `${e.short}: ${subj}`, exam: e.name, kind: e.kind, subject: subj, estimated: e.estimated }));
+    if (!dated.length || e.kind === 'board') examDays.push({ date: e.date, title: e.kind === 'board' ? `${e.short} begin` : e.short, exam: e.name, kind: e.kind, subject: null, estimated: e.estimated, start: true });
+    if (e.end !== e.date && e.kind !== 'board') examDays.push({ date: e.end, title: `${e.short} ends`, exam: e.name, kind: e.kind, subject: null, estimated: e.estimated });
   }
+  for (const e of farExams) examDays.push({ date: e.date, title: e.short, exam: e.name, kind: e.kind, subject: null, estimated: e.estimated, far: true });
   examDays.sort((a, b) => a.date.localeCompare(b.date));
   const uniqExamDays = examDays.filter((x, i) => examDays.findIndex((y) => y.date === x.date && y.title === x.title) === i);
 
@@ -239,9 +251,10 @@ export function buildStudyPlan(input, { cls } = {}) {
     if (late) warnings.push(`${s.name}: new chapters run until ${fmt(s.learnFinishedOn)}, leaving less than two weeks of revision before ${fmt(s.deadline)}.`);
   });
 
-  return { input, start, end, exams, examDays: uniqExamDays, subjects, sessions, warnings };
+  return { input, start, end, exams: allExams.map((e) => ({ ...e, far: farExams.includes(e) })), examDays: uniqExamDays, subjects, sessions, warnings };
 }
 
+const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const fmt = (s) => { const d = toDate(s); return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`; };
 
@@ -294,7 +307,7 @@ export function recommendActivities({ cls, interests = [], careerId }, input, pl
     .sort((x, y) => y.score - x.score || x.i - y.i)
     .slice(0, 4)
     .map(({ a }) => ({ ...a, fitsCareer: cat && a.categories.includes(cat) && a.categories.length <= 4 ? career.name : null }));
-  const big = plan.exams.filter((e) => e.kind === 'board' || e.kind === 'entrance');
+  const big = plan.exams.filter((e) => !e.far && (e.kind === 'board' || e.kind === 'entrance'));
   const pauses = big.map((e) => ({ from: addDays(e.date, -FINAL_DAYS), to: e.end, exam: e.short }));
   return { careerName: career?.name || null, recommended: scored, yours: input.activities || [], pauses };
 }
@@ -308,6 +321,8 @@ export function studySummary(student, today = todayIST()) {
   const hoursPerWeek = Math.round(((student.study.input.weekdayHours * 5 + student.study.input.weekendHours * 2)) * 10) / 10;
   return {
     nextExam: next ? { title: next.title, date: next.date, daysLeft: daysBetween(today, next.date), estimated: next.estimated } : null,
+    entrance: plan.examDays.filter((x) => x.kind === 'entrance' && x.date >= today && !/ ends$/.test(x.title)).slice(0, 3)
+      .map((x) => ({ title: x.title, date: x.date, daysLeft: daysBetween(today, x.date), estimated: x.estimated })),
     hoursPerWeek,
     week: prog.week,
     streak: prog.streak,

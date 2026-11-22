@@ -71,7 +71,8 @@ let renderId = 0;
 async function render() {
   const id = ++renderId;
   const rn = route().name;
-  if (rn !== S.lastRoute) { if (rn === 'study') { S.studyCache = null; S.spEditing = false; S.sp = null; } S.lastRoute = rn; }
+  const entering = rn !== S.lastRoute;
+  if (entering) { if (rn === 'study') { S.studyCache = null; S.spEditing = false; S.sp = null; } S.lastRoute = rn; }
   renderTopbar();
   const app = $('#app');
   if (route().name === 'admin') {
@@ -84,7 +85,7 @@ async function render() {
   if (S.user.mustChangePassword && !S.user.demo) { app.innerHTML = passwordView(); bindLogin(); return; }
   const { name, arg } = route();
   const views = {
-    student: { home: homeView, about: aboutView, quest: questView, report: reportView, coach: coachView, plan: planView, study: studyView },
+    student: { home: homeView, about: aboutView, quest: questView, report: reportView, coach: coachView, plan: planView, study: studyView, mentors: mentorsView },
     parent: { parent: parentView },
     school: { school: schoolView },
   }[S.user.role] || {};
@@ -103,20 +104,21 @@ async function render() {
   } else {
     app.innerHTML = result;
   }
+  if (entering) { app.classList.remove('enter'); void app.offsetWidth; app.classList.add('enter'); clearTimeout(S.enterTimer); S.enterTimer = setTimeout(() => app.classList.remove('enter'), 1400); }
   bindInputs();
 }
 
 function renderTopbar() {
   const r = route().name;
   const links = !S.user ? [] : {
-    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Assessment'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'Career plan'], ['study', 'Study planner']],
+    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Assessment'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'Career plan'], ['study', 'Study planner'], ['mentors', 'Mentors']],
     parent: [['parent', "My child's report"]],
     school: [['school', 'Class dashboard']],
   }[S.user.role] || [];
   const ai = S.health?.ai;
   $('#topbar').innerHTML = `<div class="topbar-in">
-    <a class="brand" href="/"><img src="/logo-mark-t.png" alt="" width="38" height="26"><span>dishaa</span></a>
-    <nav class="nav" aria-label="Main">${links.map(([h, l]) => `<a href="#${h}" class="${r === h ? 'on' : ''}">${l}</a>`).join('')}</nav>
+    <a class="brand" href="/">${COMPASS()}<span>dishaa</span></a>
+    <nav class="nav" aria-label="Main">${links.map(([h, l]) => `<a href="#${h}" class="${r === h ? 'on' : ''}">${l}${h === 'mentors' ? '<span class="soon-dot" title="Coming soon"></span>' : ''}</a>`).join('')}</nav>
     ${S.user ? `<div class="user">
       ${ai ? `<span class="ai-dot" style="--ai:${ai.configured ? 'var(--green)' : 'var(--gold)'}" title="${ai.configured ? 'AI connected' : 'AI not connected: demo text'}">${ai.configured ? 'AI on' : 'Demo mode'}</span>` : ''}
       <span>${esc(S.user.name)}</span><button class="btn outline small" data-act="logout">Log out</button></div>` : ''}
@@ -129,7 +131,7 @@ function loginView() {
     <div class="auth-brand">
       <div class="stack">
         <p class="eyebrow">Career guidance for Class 9 to 12</p>
-        <h1>Choose a stream, degree and college based on what you can actually do.</h1>
+        <h1>Choose a career based on what you can <em>actually do.</em></h1>
         <p class="lead">Dishaa measures a student's abilities and interests, matches them to careers in India, and builds a plan with colleges and scholarships.</p>
       </div>
       <ul class="points">
@@ -306,7 +308,7 @@ function homeView() {
     </section>
     <section class="steps steps-4">${steps.map(([h, n, t, sub, done, state, w]) => `
       <a class="card step ${done ? 'done' : ''} ${h === next ? 'current' : ''} ${h === 'report' && !p.reportReady ? 'locked' : ''}" href="#${h}">
-        <span class="n">Step ${n}</span><h3>${t}</h3><p class="muted small">${sub}</p>
+        <span class="n">${done ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>' : `0${n}`}</span><h3>${t}</h3><p class="muted small">${sub}</p>
         <span class="small ${done ? '' : 'muted'}" style="${done ? 'color:var(--green)' : ''}">${state}</span>
         <div class="progress"><i style="width:${w}%"></i></div>
       </a>`).join('')}</section>
@@ -314,6 +316,7 @@ function homeView() {
       <div class="stack-sm"><h3>Invite your parents</h3><p class="muted small">Share this family code. Your parent signs up with it to see your report.</p></div>
       <div class="row"><span class="code">${esc(st.familyCode)}</span><button class="btn outline small" data-act="copy" data-text="${esc(st.familyCode)}">Copy</button></div>
     </section>
+    ${soonTeaser()}
   </div>`;
 }
 
@@ -570,12 +573,12 @@ function aboutView() {
 
 /* ================= Student: report ================= */
 function abilityRows(abilities, { evidence = false } = {}) {
-  const color = (b) => (b === 'Strong' ? 'var(--purple-600)' : b === 'Solid' ? 'var(--purple-500)' : 'var(--gold-500)');
+  const color = (b) => (b === 'Strong' ? 'var(--aqua)' : b === 'Solid' ? '#9DEFDF' : 'var(--marigold)');
   return abilities.map((a) => `<div class="stack-sm">
     <div class="ability"><span><b style="font-weight:600">${esc(a.label)}</b></span>
       <div class="bar"><i style="width:${a.score ?? 0}%;--c:${color(a.band)}"></i></div>
       <span class="num" style="font-weight:600">${a.score ?? '—'}</span>
-      <span class="band">${a.band ? `<span class="tag ${a.band === 'Strong' ? 'purple' : a.band === 'Solid' ? 'grey' : 'gold'}">${a.band}</span>` : ''}</span></div>
+      <span class="band">${a.band ? `<span class="tag ${a.band === 'Strong' ? 'green' : a.band === 'Solid' ? 'grey' : 'gold'}">${a.band}</span>` : ''}</span></div>
     ${evidence && a.evidence ? `<p class="small muted">${esc(a.evidence)}</p>` : ''}</div>`).join('');
 }
 
@@ -619,7 +622,7 @@ async function reportView() {
       <div class="stack-sm">${r.statedVsMeasured.rows.filter((x) => x.measured != null).map((x) => `<div class="svm-row"><span class="small">${esc(x.label)}</span>
         <div class="svm-track">${x.stated != null ? `<span class="dot said" style="left:${((x.stated - 1) / 4) * 100}%" title="You said ${x.stated}"></span>` : ''}<span class="dot did" style="left:${((x.measured - 1) / 4) * 100}%" title="Measured ${x.measured}"></span></div>
         <span class="small num ${x.gap > 0 ? '' : 'muted'}">${x.gap == null ? '' : `${x.gap > 0 ? '+' : ''}${x.gap}`}</span></div>`).join('')}</div>
-      <div class="legend"><span><i style="background:#b9b3c9"></i>You said</span><span><i style="background:var(--purple-600)"></i>The assessment measured</span></div></section>` : ''}
+      <div class="legend"><span><i style="background:#C3CAE0"></i>You said</span><span><i style="background:var(--purple-600)"></i>The assessment measured</span></div></section>` : ''}
 
     <section class="stack" id="careers">
       <div class="spread"><div class="stack-sm"><p class="eyebrow">Career matches</p><h2>Careers that fit you</h2></div>
@@ -645,10 +648,10 @@ async function reportView() {
     ${sel.colleges.length ? `<section class="stack" id="colleges"><div class="stack-sm"><p class="eyebrow">Colleges</p><h2>Where to study</h2></div>
       <div class="grid-3">${sel.colleges.map(collegeCard).join('')}</div></section>` : ''}
 
-    ${cc.profiles.length ? `<section class="stack" id="campus"><div class="stack-sm"><p class="eyebrow">Campus Connect</p><h2>Talk to a student from these colleges</h2>
+    ${cc.profiles.length ? `<section class="stack" id="campus"><div class="stack-sm"><div class="row"><p class="eyebrow">Campus Connect</p><span class="tag soon">Coming soon</span></div><h2>Talk to a student from these colleges</h2>
       <p class="muted">Hear what it's really like: classes, culture, placements and hostel life.</p></div>
       <div class="grid-3">${cc.profiles.map(personCard).join('')}</div>
-      <p class="small muted">Sample profiles for the demo. Real students and alumni join with a verified college email.</p></section>` : ''}
+      <p class="small muted">A preview with sample profiles. We're onboarding alumni and current students now; chats open after our pilot with 5 schools in Bengaluru.</p></section>` : ''}
 
     <section class="card navy spread">
       <div class="stack-sm" style="max-width:640px"><p class="eyebrow">Dishaa Coach</p><h2>${r.hasPlan ? 'Your career plan is ready' : 'Not sure which career to aim for?'}</h2>
@@ -657,6 +660,7 @@ async function reportView() {
     </section>
 
     ${studyReportCard(r.study)}
+    ${soonTeaser()}
 
     ${r.scholarships?.length ? `<section class="stack"><div class="stack-sm"><p class="eyebrow">Scholarships</p><h2>Scholarships you may qualify for</h2>
       <p class="muted small">Based on your answers. Amounts and rules change every year: always check the official portal.</p></div>
@@ -702,7 +706,7 @@ function personCard(p) {
     <p class="small">${esc(p.about)}</p>
     <div class="chips">${p.topics.map((t) => `<span class="tag grey">${esc(t)}</span>`).join('')}</div>
     <div class="spread small"><span class="muted">${p.languages.map(esc).join(', ')}</span><b class="num">₹${p.pricePer15MinINR} / 15 min</b></div>
-    ${S.user.role === 'school' ? '' : `<button class="btn small ${sent ? 'outline' : ''}" data-act="cc-request" data-id="${p.id}" ${sent ? 'disabled' : ''}>${sent ? 'Request sent ✓' : 'Request a chat'}</button>`}
+    <span class="tag grey" style="justify-self:start">Sample profile · chats coming soon</span>
   </article>`;
 }
 
@@ -731,7 +735,7 @@ function coachHTML(typing = false) {
   const userTurns = c.messages.filter((m) => m.role === 'user').length;
   return `<div class="coach-layout">
     <section class="card coach">
-      <div class="coach-head"><img src="/logo-mark-t.png" alt="" width="32" height="22"><div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
+      <div class="coach-head">${COMPASS()}<div><h3>Dishaa Coach</h3><p class="small muted">Your AI career counsellor</p></div></div>
       <div class="msgs" id="msgs">${c.messages.map((m) => `<div class="msg ${m.role}">${esc(m.content)}</div>`).join('')}${typing ? '<div class="msg assistant typing"><span></span><span></span><span></span></div>' : ''}</div>
       ${c.suggestions?.length && !typing ? `<div class="quick">${c.suggestions.map((t) => `<button class="chip" data-act="coach-suggest" data-text="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
       <form id="coach-form" class="coach-input"><input id="coach-msg" autocomplete="off" placeholder="Type your answer…" ${typing ? 'disabled' : ''}><button class="btn" type="submit" ${typing ? 'disabled' : ''}>Send</button></form>
@@ -818,10 +822,10 @@ async function planView() {
 
 /* ================= Student: study planner ================= */
 const KIND = {
-  learn: ['New chapter', 'purple'], revise: ['Revision', 'grey'], test: ['Timed paper', 'gold'],
+  learn: ['New chapter', 'gold'], revise: ['Revision', 'green'], test: ['Timed paper', 'purple'],
   recall: ['Light recall', 'green'], practice: ['Practice', 'grey'],
 };
-const SUBJECT_COLORS = ['var(--accent)', 'var(--gold)', 'var(--green)', 'var(--accent-mid)', 'var(--ink-2)', '#c56b8a', 'var(--faint)', '#3f8fb0'];
+const SUBJECT_COLORS = ['#FFB627', '#3EE6C5', '#0A0F24', '#8EA8FF', '#F59ECF', '#0B6E5E', '#C3CAE0', '#8C5A00'];
 const fmtDay = (s, opts = { day: 'numeric', month: 'short' }) => new Date(`${s}T00:00:00`).toLocaleDateString('en-IN', opts);
 const setPath = (obj, path, v) => { const ks = path.split('.'); let o = obj; ks.slice(0, -1).forEach((k) => { o = o[k]; }); o[ks[ks.length - 1]] = v; };
 
@@ -844,8 +848,10 @@ function studyDraft() {
   const conf = (name) => ({ Maths: stated.numerical, English: stated.verbal, Science: stated.logical, Physics: stated.logical, Chemistry: stated.logical, Biology: stated.memory }[name] || 3);
   const skip = ['Art', 'Music', 'Physical Education'];
   const board = c.exams.find((e) => e.kind === 'board' && e.classes.includes(cls) && (!p.board || e.board === p.board));
+  const goal = goalCareer();
+  const goalExams = goal ? c.exams.filter((e) => e.kind === 'entrance' && (e.matches || []).some((m) => goal.exams.join(' ').includes(m))) : [];
   return {
-    exams: board ? [{ presetId: board.id }] : [],
+    exams: [...(board ? [{ presetId: board.id }] : []), ...goalExams.slice(0, 2).map((e) => ({ presetId: e.id }))],
     custom: [],
     subjects: (p.subjects || ['Maths', 'Science', 'English']).filter((s) => !skip.includes(s)).map((name) => ({
       name, confidence: conf(name), topics: (c.syllabus[cls]?.[name] || []).join('\n'),
@@ -854,6 +860,14 @@ function studyDraft() {
     sources: ['ncert'], sourcesOther: '',
     activities: [],
   };
+}
+
+// Entrance exams are shown for the year this student sits them (Class 10 now → UCEED 2029).
+function projectExam(e, cls) {
+  const yrs = e.kind === 'entrance' && Number(cls) < 12 && !e.classes.includes(String(cls)) ? 12 - Number(cls) : 0;
+  if (!yrs) return e;
+  const sh = (s) => `${Number(s.slice(0, 4)) + yrs}${s.slice(4)}`;
+  return { ...e, name: e.name.replace(/20\d\d/, String(Number(e.start.slice(0, 4)) + yrs)), start: sh(e.start), end: sh(e.end), estimated: true };
 }
 
 function studyView() {
@@ -867,7 +881,7 @@ function studySetupHTML() {
   const d = S.sp;
   const c = S.content.study;
   const cls = String(S.student.profile?.cls || '10');
-  const presets = c.exams.filter((e) => e.classes.includes(cls));
+  const presets = c.exams.filter((e) => e.kind !== 'board' || e.classes.includes(cls)).map((e) => projectExam(e, cls));
   const hours = (list, v) => list.map((h) => `<option value="${h}" ${Number(v) === h ? 'selected' : ''}>${h === 0 ? 'None' : `${h} hour${h === 1 ? '' : 's'}`}</option>`).join('');
   return `<div class="stack-lg" style="max-width:880px;margin:0 auto">
     <section class="stack-sm"><p class="eyebrow">Study planner</p><h1>Plan your study around your exams</h1>
@@ -974,8 +988,9 @@ function studyPlanHTML(p) {
         ${examOn(today).map((x) => `<p class="exam-flag">Exam today: ${esc(x.title)}</p>`).join('')}
         ${daySessions(today).length ? `<div class="sess-list">${daySessions(today).map((s) => sessionRow(s, p.done[s.id])).join('')}</div>` : '<p class="muted small">Nothing planned today. Rest well.</p>'}</div>
       <div class="card stack"><h3>Exam countdown</h3>
-        <div class="countdown">${p.examDays.filter((x) => x.daysLeft >= 0).slice(0, 8).map((x) => `<div class="cd-row"><span class="cd-days num">${x.daysLeft}<small>days</small></span>
-          <span class="stack-sm" style="gap:1px"><span>${esc(x.title)}</span><span class="small muted">${fmtDay(x.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}${x.estimated ? ' · expected date' : ''}</span></span></div>`).join('') || '<p class="small muted">No upcoming exams.</p>'}</div>
+        <div class="countdown">${p.examDays.filter((x) => x.daysLeft >= 0).slice(0, 10).map((x) => `<div class="cd-row ${x.far ? 'far' : ''}"><span class="cd-days num">${x.daysLeft}<small>days</small></span>
+          <span class="stack-sm" style="gap:1px"><span>${esc(x.title)}</span><span class="small muted">${fmtDay(x.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}${x.estimated ? ' · expected date' : ''}</span></span>
+          <span class="tag ${x.kind === 'entrance' ? 'gold' : x.kind === 'board' ? 'green' : 'grey'}">${x.kind === 'entrance' ? 'Entrance' : x.kind === 'board' ? 'Board' : 'School'}</span></div>`).join('') || '<p class="small muted">No upcoming exams. Add your boards or entrance exams in Edit plan.</p>'}</div>
         ${p.subjects.some((s) => s.dateGuessed) ? `<p class="small muted">${p.subjects.filter((s) => s.dateGuessed).map((s) => esc(s.name)).join(', ')}: paper date not listed yet, so the plan uses the first day of the exams.</p>` : ''}
         ${p.exams.filter((e) => e.source).map((e) => `<p class="small muted">${esc(e.name)}: ${esc(e.note || '')} <a href="${esc(e.source)}" target="_blank" rel="noopener">Official site</a></p>`).join('')}
       </div>
@@ -1000,7 +1015,7 @@ function studyPlanHTML(p) {
 
     <section class="stack"><div class="stack-sm"><p class="eyebrow">Beyond the classroom</p><h2>Activities that build your profile</h2>
       <p class="muted">${acts.careerName ? `Picked for your goal, ${esc(acts.careerName)}, and your interests.` : 'Picked from your interests.'} ${pauseText ? `Cut back during exam season: ${pauseText}.` : ''}</p></div>
-      <div class="grid-2">${acts.recommended.map((a) => `<div class="card tight stack-sm"><div class="spread"><h4>${esc(a.name)}</h4><span class="tag grey">${esc(a.type)}</span></div>
+      <div class="grid-2 two">${acts.recommended.map((a) => `<div class="card tight stack-sm"><div class="spread"><h4>${esc(a.name)}</h4><span class="tag grey">${esc(a.type)}</span></div>
         ${a.fitsCareer ? `<span class="tag purple" style="justify-self:start">Builds toward ${esc(a.fitsCareer)}</span>` : ''}
         <p class="small">${esc(a.why)}</p><p class="small muted">${esc(a.when)}${a.hoursPerWeek ? ` About ${a.hoursPerWeek} hour${a.hoursPerWeek === 1 ? '' : 's'} a week.` : ''}</p>
         ${a.url ? `<a class="small" href="${esc(a.url)}" target="_blank" rel="noopener">Official site</a>` : ''}</div>`).join('')}</div>
@@ -1038,8 +1053,67 @@ function studyReportCard(st, { parent = false } = {}) {
       <div class="stat"><span class="muted small">Planned study</span><b class="num">${st.hoursPerWeek}</b><span class="small muted">hours a week</span></div>
       <div class="stat"><span class="muted small">Streak</span><b class="num">${st.streak}</b><span class="small muted">day${st.streak === 1 ? '' : 's'} in a row</span></div>
     </div>
+    ${st.entrance?.length ? `<div class="row" style="gap:8px">${st.entrance.map((x) => `<span class="tag gold">${esc(x.title)}: ${x.daysLeft} days${x.estimated ? ' (expected)' : ''}</span>`).join('')}</div>` : ''}
     ${st.activities?.length ? `<p class="small"><span class="muted">Suggested activities:</span> ${st.activities.map(esc).join(' · ')}</p>` : ''}
   </section>`;
+}
+
+/* ================= Coming soon: alumni, mentors, counsellors, prep materials ================= */
+const COMPASS = (cls = '') => `<svg class="${cls}" viewBox="0 0 30 30" width="28" height="28" aria-hidden="true"><circle cx="15" cy="15" r="13" fill="none" stroke="currentColor" stroke-width="2"></circle><g class="needle"><polygon points="15,15 22,7 17,17" fill="#FFB627"></polygon><polygon points="15,15 8,23 13,13" fill="currentColor"></polygon></g></svg>`;
+const SOON_NOTE = "We're onboarding alumni, mentors and career counsellors now, and our prep materials are in preparation. These open after our pilot with 5 schools in Bengaluru.";
+const SOON_ICONS = {
+  alumni: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"></path><path d="M6 12v5c3 2 9 2 12 0v-5"></path></svg>',
+  mentors: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>',
+  counsellors: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+  materials: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path><path d="M8 7h8M8 11h6"></path></svg>',
+};
+
+function goalCareer() {
+  const st = S.student || {};
+  const id = st.plan?.goal?.id || st.coach?.goal || (st.profile?.considering || [])[0];
+  return S.content.careers.find((c) => c.id === id) || null;
+}
+
+function soonBanner() {
+  return `<div class="soon-banner"><span class="tag soon">Coming soon</span><p class="small" style="color:var(--marigold-ink)">${SOON_NOTE}</p></div>`;
+}
+
+function soonTeaser() {
+  return `<section class="card stack"><div class="spread"><div class="stack-sm"><p class="eyebrow">Coming soon</p><h3>Mentors, alumni, counsellors and prep materials</h3></div>
+    <button class="btn outline small" data-go="mentors">See what's coming</button></div>
+    <p class="small muted">${SOON_NOTE}</p></section>`;
+}
+
+async function mentorsView() {
+  const c = goalCareer();
+  const colleges = c?.missionId ? (await api(`/colleges?missionId=${encodeURIComponent(c.missionId)}`)).colleges : [];
+  const on = new Set(S.student.waitlist || []);
+  const path = c ? esc(c.name) : 'your chosen career';
+  const exams = c?.exams || [];
+  const official = S.content.study.sources.filter((x) => x.official);
+  const card = (key, title, body, status, preview) => `<article class="card soon-card">
+    <div class="spread"><span class="ico">${SOON_ICONS[key]}</span><span class="tag soon">Coming soon</span></div>
+    <h3>${title}</h3><p class="small muted">${body}</p>${preview || ''}
+    <span class="status">${status}</span>
+    <div><button class="btn ${on.has(key) ? 'outline' : 'gold'} small" data-act="waitlist" data-feature="${key}" ${on.has(key) ? 'disabled' : ''}>${on.has(key) ? "You're on the list" : 'Notify me when it opens'}</button></div>
+  </article>`;
+  return `<div class="stack-lg">
+    <section class="card navy stack"><p class="eyebrow">Your people and prep · ${c ? `for ${path}` : 'for your path'}</p>
+      <h1>Learn from people who've walked your path</h1>
+      <p class="lead">Talk to alumni and mentors ${c ? `on the ${path} path` : 'in your chosen career'}, get a second opinion from a career counsellor, and prepare with material made for your exact route.</p></section>
+    ${soonBanner()}
+    <section class="soon-grid">
+      ${card('alumni', 'Alumni and college students', `Students and recent graduates of the colleges you're considering, on classes, hostels, fees and placements as they really are.`, 'Onboarding alumni',
+        colleges.length ? `<p class="small"><span class="muted">For you, from colleges like:</span> ${colleges.slice(0, 3).map((x) => esc(x.name)).join(' · ')}</p>` : '')}
+      ${card('mentors', 'Mentors working in your career', `Professionals ${c ? `on the ${path} path` : 'in your chosen career'} who'll tell you what a normal day looks like, what they wish they'd known at your age, and how they got there.`, 'Onboarding mentors')}
+      ${card('counsellors', 'Career counsellors', 'Verified counsellors for a 15-minute second opinion, with your Dishaa report already shared so you skip the basics.', 'Onboarding counsellors')}
+      ${card('materials', `Prep materials for ${path}`, 'Material for your exact route: syllabus guides, practice sets and portfolio or interview prep, matched to your study plan.', 'Materials in preparation',
+        exams.length ? `<p class="small"><span class="muted">Planned for:</span> ${exams.map(esc).join(' · ')}</p>` : '')}
+    </section>
+    <section class="card soft stack"><div class="stack-sm"><p class="eyebrow">Available today</p><h3>Free official sources you can use now</h3></div>
+      <div class="grid-2">${official.map((x) => `<p class="small"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a><br><span class="muted">${esc(x.for)}</span></p>`).join('')}</div>
+      <div><button class="btn outline small" data-go="study">Open my study planner</button></div></section>
+  </div>`;
 }
 
 /* ================= Parent ================= */
@@ -1066,6 +1140,8 @@ async function parentView() {
       </div>
     </section>
     ${studyReportCard(report.study, { parent: true })}
+    <section class="card stack"><div class="row"><p class="eyebrow">For families</p><span class="tag soon">Coming soon</span></div><h3>Mentors, alumni and career counsellors</h3>
+      <p class="small muted">${SOON_NOTE}</p></section>
     <section class="card soft stack"><h2>Three ways to start the conversation</h2>
       ${pr.starters.map((s, i) => `<div class="row" style="align-items:flex-start"><span class="avatar-i" style="width:32px;height:32px;font-size:14px">${i + 1}</span><p style="flex:1;padding-top:4px">${esc(s)}</p></div>`).join('')}
       <div><a class="btn" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Share on WhatsApp</a></div></section>
@@ -1285,6 +1361,13 @@ document.addEventListener('click', async (e) => {
         break;
       }
       case 'sp-day': S.studyDay = el.dataset.d; render(); break;
+      case 'waitlist': {
+        const out = await api(`/students/${S.student.id}/waitlist`, { body: { feature: el.dataset.feature } });
+        S.student.waitlist = out.waitlist;
+        toast("You're on the list. We'll let you know when it opens.");
+        render();
+        break;
+      }
       case 'sp-done': {
         const sid = el.dataset.id;
         const done = el.checked;
