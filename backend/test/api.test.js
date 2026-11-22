@@ -233,3 +233,16 @@ test('study planner: build, tick a session, report summary, calendar', async () 
   assert.equal(res.status, 200);
   assert.match(await res.text(), /BEGIN:VCALENDAR/);
 });
+
+test('coach memory: notes appear, and the student can delete them', async () => {
+  const demo = await call('POST', '/auth/demo', { as: 'student-finished' });
+  const id = (await call('GET', '/auth/me', null, demo.body.token)).body.student.id;
+  const c = await call('POST', `/students/${id}/coach`, { message: "i'm worried my parents won't agree with design" }, demo.body.token);
+  assert.ok(c.body.memory.notes.length >= 1);
+  assert.ok(Array.isArray(c.body.options) && c.body.options.length > 0);
+  const del = await call('DELETE', `/students/${id}/memory/${c.body.memory.notes[0].id}`, null, demo.body.token);
+  assert.equal(del.body.notes.length, c.body.memory.notes.length - 1);
+  const parent = await call('POST', '/auth/demo', { as: 'parent' });
+  const denied = await call('GET', `/students/${id}/memory`, null, parent.body.token);
+  assert.ok(denied.status === 403 || denied.status === 404, 'parents cannot read the memory');
+});

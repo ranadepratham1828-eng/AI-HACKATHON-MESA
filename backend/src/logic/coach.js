@@ -5,9 +5,11 @@ import { content } from '../content.js';
 import { generate, aiEnabled } from '../ai/provider.js';
 import { computeResults } from './report.js';
 import { matchScholarships } from './scholarships.js';
+import { updateMemory, memoryForPrompt } from './memory.js';
 
-const VOICE = `You are Dishaa Coach, a warm, practical career counsellor for Indian students in Class 9-12 and their families.
-Use simple English a 15-year-old understands. Be honest and encouraging. Never say a student can't do something.
+const VOICE = `You are Dishaa Coach, a calm, practical career counsellor for Indian students in Class 9-12 and their families.
+Use simple English a 15-year-old understands. Be honest and kind. Never say a student can't do something.
+Tone: matter-of-fact, like a good school counsellor. No flattery or gushing (never "wonderful", "amazing", "great choice", "love that"). Don't open by praising the student or their idea. Acknowledge briefly ("Okay.", "Got it.", "That makes sense.") and get to the substance. Don't simply agree: if a choice has real downsides for this student, say so plainly.
 Never invent numbers (fees, cutoffs, ranks, salaries, scholarship amounts, dates). Use only the facts given below; if something isn't given, say they should check the official website.`;
 
 const careerById = (id) => content.careers.find((c) => c.id === id);
@@ -175,7 +177,14 @@ function scriptedReply(student, coach, message) {
   const n = lower.match(/^\s*([1-3])\b/);
   const ordinal = n ? Number(n[1]) - 1 : Object.entries(ORDINALS).find(([w]) => new RegExp(`\\b${w}\\b`).test(lower))?.[1];
   const byOrder = ordinal != null ? careerById(short[ordinal]) : null;
-  const subject = named[0] || byOrder || (coach.focus && careerById(coach.focus)) || (coach.goal && careerById(coach.goal)) || careerById(short[0]);
+  // Split into clauses so "I like design but hate physics" counts design as a plus and physics as a minus.
+  const clauses = lower.split(/\bbut\b|\bthough\b|[,.;!?\n]/).map((x) => x.trim()).filter(Boolean);
+  const NEG = /(hate|don'?t like|dont like|do not like|boring|not interested|can'?t stand|not for me|not good at|bad at|weak (in|at))/;
+  const negInts = uniq(clauses.filter((x) => NEG.test(x)).flatMap(interestsIn));
+  const posInts = uniq(clauses.filter((x) => !NEG.test(x)).flatMap(interestsIn)).filter((i) => !negInts.includes(i));
+  const negSubjects = uniq(clauses.filter((x) => NEG.test(x)).flatMap((x) => x.match(/physics|chemistry|biology|maths?|accounts?|history|english|computer/g) || []));
+  const bestFor = (ints) => { const c = results.allCareers.find((x) => careerById(x.id).interests.some((i) => ints.includes(i))); return c ? careerById(c.id) : null; };
+  const subject = named[0] || byOrder || (posInts.length && bestFor(posInts)) || (coach.focus && careerById(coach.focus)) || (coach.goal && careerById(coach.goal)) || careerById(short[0]);
   if (named[0] || byOrder) coach.focus = (named[0] || byOrder).id;
 
   // 1. Deciding: "plan for X", or "yes" to a career we were weighing
@@ -185,7 +194,7 @@ function scriptedReply(student, coach, message) {
       coach.goal = g.id; coach.suggested = null;
       coach.shortlist = uniq([g.id, ...short]).slice(0, 3);
       const k = pc(g.id);
-      return { reply: `Good choice to plan for, ${name}. ${g.name} suits you because: ${k.forYou.map(lc).join('; ')}. The things to keep an eye on: ${k.watchOut.map(lc).join('; ')}. Tap "Build my career plan" and I'll lay out the stream, exams, colleges within your budget and scholarships. You can still ask me anything first.`, readyForPlan: true };
+      return { reply: `Okay, ${g.name} it is. What works for you: ${k.forYou.map(lc).join('; ')}. What to keep an eye on: ${k.watchOut.map(lc).join('; ')}. Any other concerns before you build your plan? If not, tap "Build my career plan" for the stream, exams, colleges within your budget and scholarships.`, readyForPlan: true };
     }
   }
   // 1b. "yes" while a career is in focus: confirm what they're agreeing to
@@ -194,20 +203,43 @@ function scriptedReply(student, coach, message) {
     coach.suggested = f.id;
     return { reply: `Sounds like ${f.name} appeals to you. Shall I build your plan for ${f.name}? Say "yes" again, or tell me what's still holding you back and we'll weigh it.`, readyForPlan: false };
   }
+  // 1c. Family pressure: weigh what the family suggests against the student's own best fit
+  const FAMILY = /\b(parents?|mom|mum|mummy|dad|papa|father|mother|family|relatives?)\b/;
+  const FIELDS = [[/engineer/, (c) => c.id.endsWith('-engineer')], [/doctor|medical|mbbs|neet/, (c) => c.id === 'doctor'], [/\bca\b|chartered/, (c) => c.id === 'chartered-accountant'], [/law|lawyer/, (c) => c.id === 'lawyer'], [/\bias\b|upsc|civil service/, (c) => c.id === 'civil-services']];
+  if (FAMILY.test(lower) && !repeat) {
+    const field = FIELDS.find(([re]) => re.test(lower)) || FIELDS.find(([re]) => re.test(String(student.profile?.parentExpect || '').toLowerCase()));
+    const famId = named[0]?.id || (field && results.allCareers.find((c) => field[1](careerById(c.id)))?.id);
+    if (famId) {
+      const fam = careerById(famId);
+      const best = careerById(uniq([...short, ...results.careers.map((c) => c.id)]).find((id) => id !== famId));
+      coach.shortlist = uniq([famId, best.id, ...short]).slice(0, 3); coach.focus = famId; coach.suggested = null;
+      const needs = /PCM|Maths/.test(fam.stream) ? ['physics', 'chemistry', 'maths', 'math'] : /PCB|Biology/.test(fam.stream) ? ['physics', 'chemistry', 'biology'] : [];
+      const clash = negSubjects.filter((x) => needs.includes(x));
+      return { reply: `Okay. That's a very common situation, and it's worth weighing honestly rather than just going along with it.\n\nWhat your family suggests, ${caseText(pc(famId))}${clash.length ? `\n− You said you don't enjoy ${clash.join(' and ')}, and ${fam.name} needs ${fam.stream} in Class 11-12. That's a real concern, not a small one.` : ''}\n\nYour strongest fit, ${caseText(pc(best.id))}\n\nIt often helps to show your parents your report and talk through both options together. Do you see any other concerns, or what worries you most about that conversation?`, readyForPlan: false };
+    }
+  }
+  // 1d. A worry: answer it honestly before anything else
+  const WORRY = /(worried|worry|scared|afraid|nervous|anxious|stress|pressure|concern|fear|what if)/;
+  if (WORRY.test(lower) && !repeat && subject) {
+    coach.focus = subject.id; coach.suggested = null;
+    if (!short.includes(subject.id)) coach.shortlist = uniq([subject.id, ...short]).slice(0, 3);
+    const aboutPay = /(pay|money|salary|earn|income|afford)/.test(lower);
+    return { reply: `That's a fair thing to worry about. The honest picture for ${subject.name}: ${aboutPay ? `early salary is ${lc(subject.salary)}, and job demand in India is ${lc(subject.demand)}.` : `${lc(subject.summary)} Job demand in India is ${lc(subject.demand)}.`}\n${caseText(pc(subject.id)).split('\n').slice(1).join('\n')}\n\nIs that the main worry, or is there something else on your mind?`, readyForPlan: false };
+  }
   // 2. Comparing careers
   if (COMPARE.test(lower)) {
     coach.suggested = null;
     const pair = uniq([...named.map((c) => c.id), ...short]).slice(0, 2);
     coach.shortlist = uniq([...pair, ...short]).slice(0, 3);
-    return { reply: `Let's weigh them side by side, for you specifically:\n\n${pair.map((id) => caseText(pc(id))).join('\n\n')}\n\nWhich of these points matters most to you? That usually tells you more than the fit score.`, readyForPlan: Boolean(coach.readyForPlan) };
+    return { reply: `Here they are side by side, for you:\n\n${pair.map((id) => caseText(pc(id))).join('\n\n')}\n\nWhich of these points matters most to you? And do you see any other concerns I haven't covered?`, readyForPlan: Boolean(coach.readyForPlan) };
   }
   // 3. A question about a career (pros, salary, exams...)
   const intent = INTENTS.find((x) => x.re.test(lower));
   if (intent && subject && !repeat) {
     if (!short.includes(subject.id)) coach.shortlist = uniq([subject.id, ...short]).slice(0, 3);
     coach.suggested = null;
-    const body = intent.id === 'proscons' ? `Here's ${subject.name}, weighed for you:\n${caseText(pc(subject.id)).split('\n').slice(1).join('\n')}\n\n` : `${intent.say(subject)} `;
-    const next = coach.goal === subject.id && coach.readyForPlan ? 'Anything else you want to know before you build your plan?' : `Want to compare it with ${careerById(short.find((id) => id !== subject.id))?.name || 'another option'}, or ask something else?`;
+    const body = intent.id === 'proscons' ? `Okay, here's ${subject.name} for you:\n${caseText(pc(subject.id)).split('\n').slice(1).join('\n')}\n\n` : `${intent.say(subject)} `;
+    const next = intent.id === 'proscons' ? 'Do you see any other concerns, or anything here that worries you?' : coach.goal === subject.id && coach.readyForPlan ? 'Anything else you want to know before you build your plan?' : `Want to compare it with ${careerById(short.find((id) => id !== subject.id))?.name || 'another option'}, or ask something else?`;
     return { reply: body + next, readyForPlan: Boolean(coach.readyForPlan) };
   }
   // 4. Naming a career: weigh it against their best alternative, don't lock it in yet
@@ -216,10 +248,10 @@ function scriptedReply(student, coach, message) {
     coach.suggested = c.id;
     const alt = uniq([...short, ...results.careers.map((x) => x.id)]).find((id) => id !== c.id);
     coach.shortlist = uniq([c.id, alt, ...short]).slice(0, 3);
-    return { reply: `${c.name} is worth a proper look. Here's what it would mean for you:\n${caseText(pc(c.id)).split('\n').slice(1).join('\n')}\n\nFor comparison, ${careerById(alt).name} (${pc(alt).fit}% fit) ${pc(alt).forYou[0] ? lc(pc(alt).forYou[0]) : 'also fits you well'}. What draws you to ${c.name}? When you feel sure, say "plan for ${c.name}".`, readyForPlan: false };
+    return { reply: `Okay, here's ${c.name} for you:\n${caseText(pc(c.id)).split('\n').slice(1).join('\n')}\n\nFor comparison, ${careerById(alt).name} (${pc(alt).fit}% fit) ${pc(alt).forYou[0] ? lc(pc(alt).forYou[0]) : 'also fits you'}. Do you see any other concerns with ${c.name}, or anything you'd want to know first? When you feel sure, say "plan for ${c.name}".`, readyForPlan: false };
   }
   // 5. Describing interests: find careers that bring them together
-  const ints = interestsIn(lower);
+  const ints = posInts;
   if (ints.length) {
     // Greedy: each pick covers interests the earlier picks didn't, so a mixed answer gets a mixed shortlist.
     const pool = results.allCareers.map((c) => ({ id: c.id, fit: c.fit + (ints.includes(careerById(c.id).interests[0]) ? 25 : 0), ints: careerById(c.id).interests.filter((i) => ints.includes(i)) })).filter((x) => x.ints.length);
@@ -233,9 +265,9 @@ function scriptedReply(student, coach, message) {
       coach.shortlist = keepGoal ? uniq([coach.goal, ...pick]).slice(0, 3) : pick; coach.suggested = null;
       if (keepGoal) {
         const g = careerById(coach.goal);
-        return { reply: `Good to know: ${ints.map(interestLabel).join(', ')}. ${g.name} fits that: ${pc(g.id).forYou.map(lc).join('; ')}. If you'd like to explore alternatives, I'd also look at ${pick.filter((id) => id !== g.id).slice(0, 2).map((id) => careerById(id).name).join(' and ')}. Otherwise, tap "Build my career plan".`, readyForPlan: true };
+        return { reply: `Okay, noted: ${ints.map(interestLabel).join(', ')}. ${g.name} fits that: ${pc(g.id).forYou.map(lc).join('; ')}. If you'd like to explore alternatives, I'd also look at ${pick.filter((id) => id !== g.id).slice(0, 2).map((id) => careerById(id).name).join(' and ')}. Otherwise, tap "Build my career plan".`, readyForPlan: true };
       }
-      return { reply: `I love that mix: ${ints.map(interestLabel).join(', ')}. Here are careers that bring those together, weighed for you:\n\n${pick.map((id, i) => `${i + 1}) ${caseText(pc(id))}`).join('\n\n')}\n\nWhich of these sounds most like you, and what puts you off the others?`, readyForPlan: false };
+      return { reply: `Okay: ${ints.map(interestLabel).join(', ')}. Here are careers that combine those, with the pros and cons for you:\n\n${pick.map((id, i) => `${i + 1}) ${caseText(pc(id))}`).join('\n\n')}\n\nDo any of these feel right? And is anything about them worrying you?`, readyForPlan: false };
     }
   }
   // 6. More options
@@ -277,6 +309,7 @@ export async function coachReply(student, message) {
   coach.messages.push({ role: 'user', content: message, at: new Date().toISOString() });
   let out = null;
   let source = 'scripted';
+  let memJob = null;
   if (aiEnabled()) {
     const results = computeResults(student);
     const short = shortlistOf(student, results);
@@ -295,6 +328,8 @@ CAREERS TO DRAW ON, WITH PROS AND CONS FOR THIS STUDENT (from their measured abi
 ${cases}
 Other careers Dishaa knows: ${content.careers.map((c) => c.name).join(', ')}
 
+${memoryForPrompt(student)}
+
 CONVERSATION SO FAR
 ${transcript}
 
@@ -303,14 +338,16 @@ HOW TO COACH
 - When the student shares interests, reflect them back and suggest 2-3 careers that combine them (prefer careers that blend several of their interests), each with a short personal pros and cons from the facts above.
 - When they name a career, weigh it honestly for them (pros AND cons, using their scores, subjects and priorities) and compare it with one alternative.
 - Use the student's own data: mention their actual ability scores, subjects or priorities when relevant. Never invent numbers.
-- Ask one open question at the end to keep the conversation going.
+- After pros and cons, ask whether they see any other concerns or anything that worries them. Otherwise end with one open question.
+- Adapt to how this student writes (see memory): match their register and length, but stay clear and correct.
 - Only when the student clearly says they want to plan for one career, set goalCareer to it and readyForPlan to true. Otherwise goalCareer is null and readyForPlan is false.
 - Keep it under 160 words. You may use short lines starting with "+" for pros and "−" for cons.
 
 Reply with only JSON:
 {"reply": "your next message", "discussing": ["up to 3 career names from the list that you discussed or suggested"], "goalCareer": "career name or null", "readyForPlan": true or false}`;
+    memJob = updateMemory(student, message).catch(() => null);
     try {
-      const o = await generate({ prompt, temperature: 0.6, timeoutMs: 22000 });
+      const o = await generate({ prompt, temperature: 0.5, timeoutMs: 22000 });
       if (typeof o?.reply === 'string' && o.reply.trim()) {
         const disc = Array.isArray(o.discussing) ? o.discussing.map((x) => findCareerIn(String(x))).filter(Boolean).map((c) => c.id) : [];
         if (disc.length) coach.shortlist = uniq(disc).slice(0, 3);
@@ -325,6 +362,7 @@ Reply with only JSON:
     }
   }
   if (!out) out = scriptedReply(student, coach, message);
+  await (memJob || updateMemory(student, message).catch(() => null));
   const last = [...coach.messages].reverse().find((m) => m.role === 'assistant');
   if (last && last.content === out.reply) out = scriptedReply(student, coach, `__repeat__ ${message}`);
   coach.readyForPlan = out.readyForPlan;
@@ -377,6 +415,8 @@ export async function buildPlan(student) {
     const collegeFacts = f.colleges.map((c) => `- ${c.name} (${c.city}): ${c.course} via ${c.entrance}; fees ${c.feesNote || 'not known'}; cutoff ${c.cutoff || 'not known'}; NIRF ${c.nirfRank || 'n/a'}`).join('\n');
     const scholarshipFacts = f.scholarships.map((s) => `- ${s.name}: ${s.for}. ${s.amountNote}. ${s.status === 'likely' ? 'Likely eligible' : `Check eligibility (missing: ${s.missing.join(', ')})`}`).join('\n');
     const prompt = `${VOICE}
+
+${memoryForPrompt(student)}
 
 FACTS ABOUT THE STUDENT
 ${profileFacts(student, f.results)}

@@ -3,6 +3,7 @@
 import { content } from '../content.js';
 import { askWithFallback, str, strList } from '../ai/ask.js';
 import { daysBetween, fmt, todayIST } from './study.js';
+import { memoryForPrompt } from './memory.js';
 
 function facts(student, plan, today) {
   const next = plan.examDays.find((x) => x.date >= today);
@@ -40,6 +41,7 @@ Facts:
 - Study sources they use: ${sources.join(', ') || 'not given'}${plan.input.sourcesOther ? `, ${plan.input.sourcesOther}` : ''}.
 - The plan already uses spaced revision (1, 3, 7, 14 days), recall-first revision, timed papers in the last two weeks and mixed subjects each day.
 - Warnings: ${plan.warnings.join(' ') || 'none'}.
+${memoryForPrompt(student)}
 Return JSON: {"headline": "one sentence, max 25 words, naming the next exam and the main focus", "tips": ["three specific tips, each max 25 words, using their subjects and sources"]}`;
   return askWithFallback({
     label: 'study-note',

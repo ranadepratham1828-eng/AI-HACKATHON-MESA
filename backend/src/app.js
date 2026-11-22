@@ -12,6 +12,7 @@ import { studyNote } from './logic/studyNote.js';
 import { scoreAssessment } from './logic/assessment.js';
 import { matchScholarships } from './logic/scholarships.js';
 import { coachState, coachReply, buildPlan, coachSuggestions, coachOptions } from './logic/coach.js';
+import { memoryPublic, forgetNote, clearMemory } from './logic/memory.js';
 import { classDashboard } from './logic/school.js';
 import { ananyaData } from './demo.js';
 import { hashPassword, checkPassword, publicUser, canSeeStudent, canEditStudent, bearerToken } from './auth.js';
@@ -503,7 +504,7 @@ export function createApp(store) {
     const s = getStudent(req);
     const coach = coachState(s);
     store.saveStudent(s);
-    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan), suggestions: coachSuggestions(s), options: coachOptions(s) });
+    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan), suggestions: coachSuggestions(s), options: coachOptions(s), memory: canEditStudent(req.user, s) ? memoryPublic(s) : null });
   }));
 
   app.post('/api/students/:id/coach', wrap(async (req, res) => {
@@ -512,7 +513,25 @@ export function createApp(store) {
     if (!message) throw new HttpError(400, 'message is required');
     const coach = await coachReply(s, message);
     store.saveStudent(s);
-    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan), suggestions: coachSuggestions(s), options: coachOptions(s) });
+    res.json({ messages: coach.messages, goal: coach.goal, readyForPlan: coach.readyForPlan, hasPlan: Boolean(s.plan), suggestions: coachSuggestions(s), options: coachOptions(s), memory: canEditStudent(req.user, s) ? memoryPublic(s) : null });
+  }));
+
+  // ---- Memory: what the coach remembers. Only the student can see or change it. ----
+  app.get('/api/students/:id/memory', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    res.json(memoryPublic(s));
+  }));
+  app.delete('/api/students/:id/memory/:noteId', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    forgetNote(s, String(req.params.noteId));
+    store.saveStudent(s);
+    res.json(memoryPublic(s));
+  }));
+  app.delete('/api/students/:id/memory', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    clearMemory(s);
+    store.saveStudent(s);
+    res.json(memoryPublic(s));
   }));
 
   app.post('/api/students/:id/plan', wrap(async (req, res) => {

@@ -778,6 +778,7 @@ function coachHTML(typing = false) {
         </div>`).join('')}
         ${opts.length >= 2 ? `<button class="btn outline small" data-act="coach-suggest" data-text="${esc(`Compare ${opts[0].name} and ${opts[1].name}`)}">Compare the top two</button>` : ''}
       </div>` : ''}
+      ${memoryCard(c.memory)}
       <div class="card stack-sm"><p class="eyebrow">Your goal</p><h3>${esc(goalName || (c.goal ? c.goal : 'Still exploring'))}</h3>
         <p class="small muted">${c.readyForPlan ? 'When you feel sure, build your plan. You can rebuild it any time.' : "Take your time. Say \"plan for\" a career when you're sure."}</p>
         <button class="btn ${c.readyForPlan ? 'gold' : 'outline'}" data-act="build-plan" ${userTurns ? '' : 'disabled'}>${c.hasPlan ? 'Rebuild my plan' : 'Build my career plan'}</button>
@@ -785,6 +786,20 @@ function coachHTML(typing = false) {
     </aside>
   </div>`;
 }
+
+// What the coach remembers about this student. Only they see it, and they can delete any of it.
+function memoryCard(mem) {
+  if (!mem) return '';
+  const items = [...(mem.style ? [{ id: 'style', label: mem.kinds.style, text: mem.style.text }] : []), ...mem.notes.slice().reverse()];
+  return `<details class="card stack-sm mem" ${S.memOpen ? 'open' : ''}>
+    <summary data-act="mem-toggle"><span class="stack-sm" style="gap:2px"><span class="eyebrow">What your coach remembers</span><span class="small muted">${items.length ? `${items.length} note${items.length === 1 ? '' : 's'} from your chats` : 'Nothing yet'}</span></span><span class="mem-chev" aria-hidden="true">${CHEV_R}</span></summary>
+    <p class="small muted">Your coach keeps short notes from your chats, like what you enjoy, what worries you and how you like to talk, so its advice fits you. Only you can see these.</p>
+    ${items.length ? `<ul class="mem-list">${items.map((n) => `<li><span class="stack-sm" style="gap:1px"><span class="mem-kind">${esc(n.label)}</span><span class="small">${esc(n.text)}</span></span><button class="mem-x" data-act="mem-forget" data-id="${esc(n.id)}" aria-label="Forget this">${CLOSE_ICON}</button></li>`).join('')}</ul>
+      ${S.memConfirm ? `<div class="row"><button class="btn small" data-act="mem-clear">Yes, forget everything</button><button class="btn ghost small" data-act="mem-cancel">Cancel</button></div>` : '<div><button class="btn ghost small" data-act="mem-ask-clear">Forget everything</button></div>'}`
+      : '<p class="small">As you chat, your coach will note things like your interests, worries and family situation here.</p>'}
+  </details>`;
+}
+const redrawCoach = () => { $('#app').innerHTML = coachHTML(); bindInputs(); scrollMsgs(); };
 
 async function sendCoach(message) {
   if (!message.trim()) return;
@@ -1527,6 +1542,11 @@ document.addEventListener('click', async (e) => {
         render();
         break;
       }
+      case 'mem-toggle': e.preventDefault(); S.memOpen = !S.memOpen; redrawCoach(); break;
+      case 'mem-forget': coachCache.memory = await api(`/students/${S.student.id}/memory/${encodeURIComponent(el.dataset.id)}`, { method: 'DELETE' }); toast('Forgotten'); redrawCoach(); break;
+      case 'mem-ask-clear': S.memConfirm = true; redrawCoach(); break;
+      case 'mem-cancel': S.memConfirm = false; redrawCoach(); break;
+      case 'mem-clear': coachCache.memory = await api(`/students/${S.student.id}/memory`, { method: 'DELETE' }); S.memConfirm = false; toast('Your coach has forgotten everything'); redrawCoach(); break;
       case 'waitlist': {
         const out = await api(`/students/${S.student.id}/waitlist`, { body: { feature: el.dataset.feature } });
         S.student.waitlist = out.waitlist;

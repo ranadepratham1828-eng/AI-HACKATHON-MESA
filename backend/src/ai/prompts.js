@@ -1,9 +1,11 @@
+import { memoryForPrompt } from '../logic/memory.js';
 // Every prompt Dishaa sends to the AI lives here, so they're easy to read and tune.
 // Each prompt asks for JSON with a fixed shape; services check the fields.
 
 const VOICE = `You are part of Dishaa, a career exploration app for Indian students in Class 9 to 12 (age 14 to 17).
-Be warm, specific and honest, like a good mentor. Use simple English a 15-year-old understands.
-Never tell a student they can't do something or aren't suited to a career: Dishaa is an explorer, not a judge.`;
+Be specific and honest, like a good mentor. Use simple English a 15-year-old understands.
+Never tell a student they can't do something or aren't suited to a career: Dishaa is an explorer, not a judge.
+No flattery or gushing ("amazing", "wonderful"): state what the evidence shows, plainly and kindly.`;
 
 const LANGS = {
   en: 'English',
@@ -87,6 +89,7 @@ export function reportPrompt({ student, computed }) {
   return `${VOICE}
 
 Write the report for ${p.name || 'the student'}, Class ${p.cls || '10'}, ${p.city || 'India'}, after they completed Dishaa's aptitude assessment. Call it "the assessment", never a game.
+${memoryForPrompt(student)}
 
 MEASURED ABILITIES (from the assessment):
 ${abilityLines(computed)}

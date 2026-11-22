@@ -478,6 +478,16 @@ table.weeks td { vertical-align: middle; }
 .pc-line i { font: 700 13px var(--f-mono); font-style: normal; flex: none; }
 .pc-line.pro i { color: var(--aqua-ink); }
 .pc-line.con i { color: var(--marigold-ink); }
+.mem summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; list-style: none; cursor: pointer; }
+.mem summary::-webkit-details-marker { display: none; }
+.mem-chev { color: var(--muted); transition: transform .2s; display: grid; }
+.mem[open] .mem-chev { transform: rotate(90deg); }
+.mem-list { margin: 0; padding: 0; list-style: none; display: grid; border-top: 1px solid var(--line); }
+.mem-list li { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.mem-kind { font: 500 11px var(--f-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--aqua-ink); }
+.mem-x { width: 30px; height: 30px; border-radius: 8px; border: 1px solid transparent; background: none; color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+.mem-x:hover { border-color: var(--line); color: var(--red); }
+.mem-x svg { width: 16px; height: 16px; }
 .weigh .opt { display: grid; gap: 8px; padding: 14px; border-radius: 14px; background: var(--bg-sub); }
 .weigh .opt.goal { background: var(--marigold-soft); }
 .weigh .opt b { font: 700 16px var(--f-display); }
