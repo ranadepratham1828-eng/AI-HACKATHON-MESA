@@ -56,7 +56,7 @@ async function refreshMe() {
 function signIn({ token, user }) { S.token = token; S.user = user; store.set('disha-token', token); }
 function signOut(callApi = true) {
   if (callApi && S.token) api('/auth/logout', { method: 'POST', quiet: true }).catch(() => {});
-  Object.assign(S, { token: null, user: null, student: null, quest: null, q: null, career: null, requested: new Set() });
+  Object.assign(S, { token: null, user: null, student: null, quest: null, q: null, career: null, requested: new Set(), studyCache: null, sp: null, studyDay: null });
   store.set('disha-token', null);
   location.hash = '';
   render();
@@ -70,6 +70,8 @@ window.addEventListener('hashchange', render);
 let renderId = 0;
 async function render() {
   const id = ++renderId;
+  const rn = route().name;
+  if (rn !== S.lastRoute) { if (rn === 'study') { S.studyCache = null; S.spEditing = false; S.sp = null; } S.lastRoute = rn; }
   renderTopbar();
   const app = $('#app');
   if (route().name === 'admin') {
@@ -82,7 +84,7 @@ async function render() {
   if (S.user.mustChangePassword && !S.user.demo) { app.innerHTML = passwordView(); bindLogin(); return; }
   const { name, arg } = route();
   const views = {
-    student: { home: homeView, about: aboutView, quest: questView, report: reportView, coach: coachView, plan: planView },
+    student: { home: homeView, about: aboutView, quest: questView, report: reportView, coach: coachView, plan: planView, study: studyView },
     parent: { parent: parentView },
     school: { school: schoolView },
   }[S.user.role] || {};
@@ -107,7 +109,7 @@ async function render() {
 function renderTopbar() {
   const r = route().name;
   const links = !S.user ? [] : {
-    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Assessment'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'My plan']],
+    student: [['home', 'Overview'], ['about', 'About you'], ['quest', 'Assessment'], ['report', 'Report'], ['coach', 'Coach'], ['plan', 'Career plan'], ['study', 'Study planner']],
     parent: [['parent', "My child's report"]],
     school: [['school', 'Class dashboard']],
   }[S.user.role] || [];
@@ -293,15 +295,16 @@ function homeView() {
     ['about', 1, 'About you', 'Your class, subjects, marks, interests and budget.', p.questionnaireDone, p.questionnaireDone ? 'Completed' : 'About 3 minutes', p.questionnaireDone ? 100 : 0],
     ['quest', 2, 'Aptitude assessment', '27 questions across 9 abilities, about 15 minutes.', p.questDone, p.questDone ? 'Completed' : p.questAnswered ? `${p.questAnswered} of ${p.questTotal} questions done` : 'About 15 minutes', pct(p.questAnswered, p.questTotal)],
     ['report', 3, 'Careers and your plan', 'Your strengths, career matches, a chat with your coach and a full career plan.', Boolean(st.plan), st.plan ? 'Plan ready' : p.reportReady ? 'Report ready' : 'Unlocks after the assessment', st.plan ? 100 : p.reportReady ? 60 : 0],
+    ['study', 4, 'Study planner', 'A day-by-day plan to your exams, plus activities that build your profile.', Boolean(st.study), st.study ? 'Plan ready' : 'About 5 minutes to set up', st.study ? 100 : 0],
   ];
   const cta = next === 'about' ? 'Tell us about you' : next === 'quest' ? (p.questAnswered ? 'Continue the assessment' : 'Start the assessment') : 'View my report';
   return `<div class="stack-lg">
     <section class="spread">
       <div class="stack-sm"><p class="eyebrow">Class ${esc(st.profile.cls || '10')}${st.profile.city ? ` · ${esc(st.profile.city)}` : ''}</p><h1>Hi ${esc(st.profile.name || 'there')}, let's find your direction.</h1>
-        <p class="lead">Three steps. Your plan gets better with each one.</p></div>
+        <p class="lead">Four steps. Your plan gets better with each one.</p></div>
       <button class="btn gold" data-go="${next}">${cta}</button>
     </section>
-    <section class="steps">${steps.map(([h, n, t, sub, done, state, w]) => `
+    <section class="steps steps-4">${steps.map(([h, n, t, sub, done, state, w]) => `
       <a class="card step ${done ? 'done' : ''} ${h === next ? 'current' : ''} ${h === 'report' && !p.reportReady ? 'locked' : ''}" href="#${h}">
         <span class="n">Step ${n}</span><h3>${t}</h3><p class="muted small">${sub}</p>
         <span class="small ${done ? '' : 'muted'}" style="${done ? 'color:var(--green)' : ''}">${state}</span>
@@ -653,6 +656,8 @@ async function reportView() {
       <div class="row">${r.hasPlan ? '<button class="btn gold" data-go="plan">View my plan</button><button class="btn outline" data-go="coach">Talk to coach</button>' : '<button class="btn gold" data-go="coach">Talk to my coach</button>'}</div>
     </section>
 
+    ${studyReportCard(r.study)}
+
     ${r.scholarships?.length ? `<section class="stack"><div class="stack-sm"><p class="eyebrow">Scholarships</p><h2>Scholarships you may qualify for</h2>
       <p class="muted small">Based on your answers. Amounts and rules change every year: always check the official portal.</p></div>
       <div class="grid-3">${r.scholarships.map(scholarshipCard).join('')}</div></section>` : ''}
@@ -811,6 +816,232 @@ async function planView() {
   </div>`;
 }
 
+/* ================= Student: study planner ================= */
+const KIND = {
+  learn: ['New chapter', 'purple'], revise: ['Revision', 'grey'], test: ['Timed paper', 'gold'],
+  recall: ['Light recall', 'green'], practice: ['Practice', 'grey'],
+};
+const SUBJECT_COLORS = ['var(--accent)', 'var(--gold)', 'var(--green)', 'var(--accent-mid)', 'var(--ink-2)', '#c56b8a', 'var(--faint)', '#3f8fb0'];
+const fmtDay = (s, opts = { day: 'numeric', month: 'short' }) => new Date(`${s}T00:00:00`).toLocaleDateString('en-IN', opts);
+const setPath = (obj, path, v) => { const ks = path.split('.'); let o = obj; ks.slice(0, -1).forEach((k) => { o = o[k]; }); o[ks[ks.length - 1]] = v; };
+
+function studyDraft() {
+  const p = S.student.profile || {};
+  const c = S.content.study;
+  const cls = String(p.cls || '10');
+  const existing = S.studyCache?.exists ? S.studyCache.input : null;
+  if (existing) {
+    return {
+      exams: existing.exams.filter((e) => e.presetId),
+      custom: existing.exams.filter((e) => !e.presetId).map((e) => ({ name: e.name, date: e.date, subjects: (e.subjects || []).join(', ') })),
+      subjects: existing.subjects.map((s) => ({ name: s.name, confidence: s.confidence, topics: s.topics.join('\n') })),
+      weekdayHours: existing.weekdayHours, weekendHours: existing.weekendHours, slot: existing.slot,
+      sources: [...existing.sources], sourcesOther: existing.sourcesOther || '',
+      activities: existing.activities.map((a) => ({ ...a })),
+    };
+  }
+  const stated = p.stated || {};
+  const conf = (name) => ({ Maths: stated.numerical, English: stated.verbal, Science: stated.logical, Physics: stated.logical, Chemistry: stated.logical, Biology: stated.memory }[name] || 3);
+  const skip = ['Art', 'Music', 'Physical Education'];
+  const board = c.exams.find((e) => e.kind === 'board' && e.classes.includes(cls) && (!p.board || e.board === p.board));
+  return {
+    exams: board ? [{ presetId: board.id }] : [],
+    custom: [],
+    subjects: (p.subjects || ['Maths', 'Science', 'English']).filter((s) => !skip.includes(s)).map((name) => ({
+      name, confidence: conf(name), topics: (c.syllabus[cls]?.[name] || []).join('\n'),
+    })),
+    weekdayHours: 2, weekendHours: 4, slot: 'evening',
+    sources: ['ncert'], sourcesOther: '',
+    activities: [],
+  };
+}
+
+function studyView() {
+  const html = () => (!S.studyCache.exists || S.spEditing ? studySetupHTML() : studyPlanHTML(S.studyCache));
+  if (S.studyCache) return html();
+  return api(`/students/${S.student.id}/study`).then((d) => { S.studyCache = d; return html(); });
+}
+
+function studySetupHTML() {
+  S.sp ||= studyDraft();
+  const d = S.sp;
+  const c = S.content.study;
+  const cls = String(S.student.profile?.cls || '10');
+  const presets = c.exams.filter((e) => e.classes.includes(cls));
+  const hours = (list, v) => list.map((h) => `<option value="${h}" ${Number(v) === h ? 'selected' : ''}>${h === 0 ? 'None' : `${h} hour${h === 1 ? '' : 's'}`}</option>`).join('');
+  return `<div class="stack-lg" style="max-width:880px;margin:0 auto">
+    <section class="stack-sm"><p class="eyebrow">Study planner</p><h1>Plan your study around your exams</h1>
+      <p class="lead">Add your exams, subjects and free time. Dishaa builds a day-by-day plan with spaced revision and timed papers, and suggests activities that build your profile.</p></section>
+
+    <section class="card stack"><div class="stack-sm"><h3>Your exams</h3><p class="small muted">Dates as reported in November 2026. Always confirm on the official website.</p></div>
+      ${presets.length ? `<div class="stack-sm">${presets.map((e) => `<label class="check"><input type="checkbox" data-act="sp-exam" data-id="${e.id}" ${d.exams.some((x) => x.presetId === e.id) ? 'checked' : ''}>
+        <span>${esc(e.name)} <span class="small muted">· ${fmtDay(e.start)}${e.end !== e.start ? ` to ${fmtDay(e.end)}` : ''}</span> ${e.estimated ? '<span class="tag gold">Expected date</span>' : ''}</span></label>`).join('')}</div>`
+        : '<p class="small muted">No board or entrance exams are listed for your class yet. Add your school exams below.</p>'}
+      <div class="stack-sm"><h4>School exams and tests</h4>
+        ${d.custom.map((x, i) => `<div class="sp-row">
+          <input id="sp-cname-${i}" data-sp="custom.${i}.name" value="${esc(x.name)}" placeholder="e.g. Pre-board exams" aria-label="Exam name">
+          <input id="sp-cdate-${i}" type="date" data-sp="custom.${i}.date" value="${esc(x.date)}" aria-label="Date">
+          <input id="sp-csub-${i}" data-sp="custom.${i}.subjects" value="${esc(x.subjects)}" placeholder="Subjects, separated by commas" aria-label="Subjects">
+          <button class="btn outline small" data-act="sp-del" data-list="custom" data-i="${i}">Remove</button></div>`).join('')}
+        <div><button class="btn outline small" data-act="sp-add" data-list="custom">Add an exam</button></div></div>
+    </section>
+
+    <section class="card stack"><div class="stack-sm"><h3>Your subjects</h3>
+      <p class="small muted">Rate how confident you feel, and keep only the chapters you still need to study. Chapters you remove still get regular revision.</p></div>
+      <div class="sp-subjects">${d.subjects.map((s, i) => `<div class="sp-subject">
+        <div class="spread"><b style="font-weight:500">${esc(s.name)}</b>
+          <div class="row" style="gap:10px"><span class="small muted">Confidence</span>
+            <div class="scale" role="group" aria-label="${esc(s.name)} confidence">${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="${Number(s.confidence) === n ? 'on' : ''}" data-act="sp-conf" data-i="${i}" data-n="${n}" aria-label="${n} of 5">${n}</button>`).join('')}</div>
+            <button class="btn ghost small" data-act="sp-del" data-list="subjects" data-i="${i}">Remove</button></div></div>
+        <details><summary class="small">Chapters still to study (${s.topics.split('\n').filter((t) => t.trim()).length})</summary>
+          <textarea id="sp-topics-${i}" data-sp="subjects.${i}.topics" rows="7" placeholder="One chapter per line. Leave empty if you only need to revise.">${esc(s.topics)}</textarea></details>
+      </div>`).join('')}</div>
+      <div class="row"><input id="sp-newsub" placeholder="Add a subject, e.g. Hindi" style="max-width:280px" aria-label="New subject"><button class="btn outline small" data-act="sp-add-subject">Add subject</button></div>
+    </section>
+
+    <section class="card stack"><h3>Your time</h3>
+      <div class="grid-3" style="gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))">
+        <label>Study time on school days<select id="sp-wd" data-sp="weekdayHours">${hours([0.5, 1, 1.5, 2, 2.5, 3, 4, 5], d.weekdayHours)}</select></label>
+        <label>Study time on weekends<select id="sp-we" data-sp="weekendHours">${hours([0, 1, 2, 3, 4, 5, 6, 8], d.weekendHours)}</select></label>
+        <label>When you usually study<select id="sp-slot" data-sp="slot">${c.slots.map((x) => `<option value="${x.id}" ${d.slot === x.id ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label>
+      </div>
+      <p class="small muted">Sessions are 45 minutes with a short break in between.</p>
+    </section>
+
+    <section class="card stack"><div class="stack-sm"><h3>What you study from</h3><p class="small muted">Pick everything you use. The plan points each session to the right source.</p></div>
+      <div class="chips">${c.sources.map((x) => `<button type="button" class="chip ${d.sources.includes(x.id) ? 'on' : ''}" data-act="sp-source" data-id="${x.id}">${esc(x.name)}</button>`).join('')}</div>
+      <label><span>Anything else <span class="muted small">(optional)</span></span><input id="sp-other" data-sp="sourcesOther" value="${esc(d.sourcesOther)}" placeholder="e.g. a coaching app, a tutor"></label>
+    </section>
+
+    <section class="card stack"><div class="stack-sm"><h3>Activities you do now</h3><p class="small muted">Sports, music, clubs or classes. They stay in your week, and we suggest when to cut back before exams.</p></div>
+      ${d.activities.map((a, i) => `<div class="sp-row sp-row-2">
+        <input id="sp-aname-${i}" data-sp="activities.${i}.name" value="${esc(a.name)}" placeholder="e.g. Football" aria-label="Activity">
+        <label class="row" style="gap:8px;font-weight:400"><input id="sp-ahours-${i}" type="number" min="0" max="20" step="0.5" data-sp="activities.${i}.hours" value="${esc(a.hours)}" style="width:90px" aria-label="Hours a week"> hours a week</label>
+        <button class="btn outline small" data-act="sp-del" data-list="activities" data-i="${i}">Remove</button></div>`).join('')}
+      <div><button class="btn outline small" data-act="sp-add" data-list="activities">Add an activity</button></div>
+    </section>
+
+    <div class="spread"><span class="small muted">You can change any of this later.</span>
+      <div class="row">${S.studyCache?.exists ? '<button class="btn outline" data-act="sp-cancel">Cancel</button>' : ''}<button class="btn gold" data-act="sp-build">Build my study plan</button></div></div>
+  </div>`;
+}
+
+function sessionRow(s, done, { canTick = true } = {}) {
+  const [label, tag] = KIND[s.kind] || [s.kind, 'grey'];
+  return `<label class="sess ${done ? 'done' : ''}">
+    <input type="checkbox" data-act="sp-done" data-id="${esc(s.id)}" ${done ? 'checked' : ''} ${canTick ? '' : 'disabled'} aria-label="Mark done">
+    <span class="stack-sm" style="gap:3px"><span class="row" style="gap:8px"><span class="tag ${tag}">${label}</span><span class="small muted num">${s.minutes} min</span></span>
+      <span class="sess-title">${esc(s.title)}</span><span class="small muted">${esc(s.detail)}</span></span></label>`;
+}
+
+function studyPlanHTML(p) {
+  const today = p.today;
+  const next = p.examDays.find((x) => x.daysLeft >= 0);
+  const sel = S.studyDay || today;
+  const daySessions = (d) => p.sessions.filter((s) => s.date === d);
+  const examOn = (d) => p.examDays.filter((x) => x.date === d);
+  const days = Array.from({ length: 14 }, (_, i) => { const dt = new Date(`${today}T00:00:00Z`); dt.setUTCDate(dt.getUTCDate() + i); return dt.toISOString().slice(0, 10); });
+  const colors = Object.fromEntries(p.subjects.map((s, i) => [s.name, SUBJECT_COLORS[i % SUBJECT_COLORS.length]]));
+  const hoursWeek = Math.round((p.input.weekdayHours * 5 + p.input.weekendHours * 2) * 10) / 10;
+  const chaptersLeft = p.subjects.reduce((a, s) => a + (s.toLearnCount || 0), 0);
+  const pr = p.progress;
+  const acts = p.activities;
+  const pauseText = acts.pauses.length ? acts.pauses.map((x) => `${fmtDay(x.from)} to ${fmtDay(x.to)} (${esc(x.exam)})`).join('; ') : '';
+  const used = p.input.sources.map((id) => S.content.study.sources.find((x) => x.id === id)).filter(Boolean);
+  const missing = S.content.study.sources.filter((x) => x.official && !p.input.sources.includes(x.id));
+  const maxWeek = Math.max(1, ...p.weeks.map((w) => w.minutes));
+  const selSessions = daySessions(sel);
+
+  return `<div class="stack-lg">
+    <section class="card navy stack">
+      <div class="spread" style="align-items:flex-start"><div class="stack-sm"><p class="eyebrow">Study plan · ${esc(S.student.profile.name)}</p>
+        <h1>${next ? `${next.daysLeft === 0 ? 'Today' : `${next.daysLeft} day${next.daysLeft === 1 ? '' : 's'} to`} ${esc(next.title)}` : 'Your study plan'}</h1>
+        <p class="lead">${hoursWeek} hours a week, ${p.totals.sessions} sessions until ${fmtDay(p.end, { day: 'numeric', month: 'long', year: 'numeric' })}. ${next?.estimated ? 'The exam date is expected, not confirmed.' : ''}</p></div>
+        <div class="row"><button class="btn outline" data-act="sp-ics">Add to calendar</button><button class="btn outline" data-act="sp-edit">Edit plan</button></div></div>
+    </section>
+
+    <section class="grid-4">
+      <div class="card stat"><span class="muted small">This week</span><b class="num">${pr.week.done}<span class="stat-of"> / ${pr.week.planned}</span></b><span class="small muted">sessions done</span></div>
+      <div class="card stat"><span class="muted small">So far</span><b class="num">${pr.percent == null ? '—' : `${pr.percent}%`}</b><span class="small muted">${pr.done} of ${pr.planned} past sessions</span></div>
+      <div class="card stat"><span class="muted small">Streak</span><b class="num">${pr.streak}</b><span class="small muted">day${pr.streak === 1 ? '' : 's'} in a row</span></div>
+      <div class="card stat"><span class="muted small">Chapters to learn</span><b class="num">${chaptersLeft}</b><span class="small muted">across ${p.subjects.length} subjects</span></div>
+    </section>
+
+    ${p.warnings.length ? `<section class="card gold stack-sm"><p class="eyebrow" style="color:var(--gold-ink)">Check your plan</p>${p.warnings.map((w) => `<p class="small">${esc(w)}</p>`).join('')}</section>` : ''}
+
+    <section class="grid-2">
+      <div class="card stack"><div class="spread"><h3>Today</h3><span class="small muted">${fmtDay(today, { weekday: 'long', day: 'numeric', month: 'long' })}</span></div>
+        ${examOn(today).map((x) => `<p class="exam-flag">Exam today: ${esc(x.title)}</p>`).join('')}
+        ${daySessions(today).length ? `<div class="sess-list">${daySessions(today).map((s) => sessionRow(s, p.done[s.id])).join('')}</div>` : '<p class="muted small">Nothing planned today. Rest well.</p>'}</div>
+      <div class="card stack"><h3>Exam countdown</h3>
+        <div class="countdown">${p.examDays.filter((x) => x.daysLeft >= 0).slice(0, 8).map((x) => `<div class="cd-row"><span class="cd-days num">${x.daysLeft}<small>days</small></span>
+          <span class="stack-sm" style="gap:1px"><span>${esc(x.title)}</span><span class="small muted">${fmtDay(x.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}${x.estimated ? ' · expected date' : ''}</span></span></div>`).join('') || '<p class="small muted">No upcoming exams.</p>'}</div>
+        ${p.subjects.some((s) => s.dateGuessed) ? `<p class="small muted">${p.subjects.filter((s) => s.dateGuessed).map((s) => esc(s.name)).join(', ')}: paper date not listed yet, so the plan uses the first day of the exams.</p>` : ''}
+        ${p.exams.filter((e) => e.source).map((e) => `<p class="small muted">${esc(e.name)}: ${esc(e.note || '')} <a href="${esc(e.source)}" target="_blank" rel="noopener">Official site</a></p>`).join('')}
+      </div>
+    </section>
+
+    <section class="card stack"><div class="spread"><h3>Next two weeks</h3><div class="legend">${Object.entries(KIND).map(([k, [l]]) => `<span><i class="k-${k}"></i>${l}</span>`).join('')}</div></div>
+      <div class="days">${days.map((d) => { const ss = daySessions(d); const ex = examOn(d); return `<button class="day ${d === sel ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="sp-day" data-d="${d}">
+        <span class="day-w">${fmtDay(d, { weekday: 'short' })}</span><span class="day-n num">${fmtDay(d, { day: 'numeric' })}</span>
+        <span class="day-dots">${ss.map((s) => `<i class="k-${s.kind} ${p.done[s.id] ? 'is-done' : ''}"></i>`).join('')}</span>${ex.length ? '<span class="day-exam">Exam</span>' : ''}</button>`; }).join('')}</div>
+      ${sel === today ? '<p class="small muted">Pick a day to see its sessions. Today\'s are listed above.</p>' : `<div class="stack-sm"><h4>${fmtDay(sel, { weekday: 'long', day: 'numeric', month: 'long' })}</h4>
+        ${examOn(sel).map((x) => `<p class="exam-flag">Exam: ${esc(x.title)}</p>`).join('')}
+        ${selSessions.length ? `<div class="sess-list">${selSessions.map((s) => sessionRow(s, p.done[s.id], { canTick: s.date <= today })).join('')}</div>` : '<p class="small muted">Nothing planned.</p>'}</div>`}
+    </section>
+
+    <section class="card stack"><div class="stack-sm"><h3>Week by week</h3><p class="small muted">Hours planned each week, by subject.</p></div>
+      <div class="legend">${p.subjects.map((s) => `<span><i style="background:${colors[s.name]}"></i>${esc(s.name)}</span>`).join('')}</div>
+      <div class="table-scroll"><table class="weeks"><thead><tr><th>Week</th><th>Focus</th><th style="width:40%">Hours</th><th>Exams</th></tr></thead><tbody>
+        ${p.weeks.map((w) => `<tr class="${w.start <= today && today <= w.end ? 'live' : ''}"><td class="small num" style="white-space:nowrap">${fmtDay(w.start)} – ${fmtDay(w.end)}</td><td class="small">${esc(w.phase)}</td>
+          <td><div class="row" style="gap:10px;flex-wrap:nowrap"><div class="stackbar" style="width:${Math.round((w.minutes / maxWeek) * 100)}%">${Object.entries(w.bySubject).map(([sub, m]) => `<i style="flex:${m};background:${colors[sub] || 'var(--faint)'}" title="${esc(sub)}: ${Math.round(m / 6) / 10} h"></i>`).join('')}</div><span class="small num muted">${Math.round(w.minutes / 6) / 10}</span></div></td>
+          <td class="small">${w.exams.map(esc).join(', ')}</td></tr>`).join('')}</tbody></table></div>
+    </section>
+
+    <section class="stack"><div class="stack-sm"><p class="eyebrow">Beyond the classroom</p><h2>Activities that build your profile</h2>
+      <p class="muted">${acts.careerName ? `Picked for your goal, ${esc(acts.careerName)}, and your interests.` : 'Picked from your interests.'} ${pauseText ? `Cut back during exam season: ${pauseText}.` : ''}</p></div>
+      <div class="grid-2">${acts.recommended.map((a) => `<div class="card tight stack-sm"><div class="spread"><h4>${esc(a.name)}</h4><span class="tag grey">${esc(a.type)}</span></div>
+        ${a.fitsCareer ? `<span class="tag purple" style="justify-self:start">Builds toward ${esc(a.fitsCareer)}</span>` : ''}
+        <p class="small">${esc(a.why)}</p><p class="small muted">${esc(a.when)}${a.hoursPerWeek ? ` About ${a.hoursPerWeek} hour${a.hoursPerWeek === 1 ? '' : 's'} a week.` : ''}</p>
+        ${a.url ? `<a class="small" href="${esc(a.url)}" target="_blank" rel="noopener">Official site</a>` : ''}</div>`).join('')}</div>
+      ${acts.yours.length ? `<div class="card tight stack-sm"><h4>Your activities</h4>${acts.yours.map((a) => `<div class="spread small"><span>${esc(a.name)}</span><span class="muted num">${a.hours} h a week</span></div>`).join('')}
+        <p class="small muted">Keep them going. Shorter sessions in exam season help you rest, so don't drop exercise entirely.</p></div>` : ''}
+    </section>
+
+    <section class="grid-2">
+      <div class="card stack"><h3>Your study sources</h3>
+        ${used.length ? `<ul class="clean small">${used.map((x) => `<li><b style="font-weight:500">${esc(x.name)}</b>: ${esc(x.for)}</li>`).join('')}${p.input.sourcesOther ? `<li>${esc(p.input.sourcesOther)}</li>` : ''}</ul>` : '<p class="small muted">None added.</p>'}
+        ${missing.length ? `<div class="stack-sm"><h4>Free official sources to add</h4>${missing.map((x) => `<p class="small"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a> · ${esc(x.for)}</p>`).join('')}</div>` : ''}</div>
+      <div class="card stack"><div class="spread"><h3>From your study coach</h3><span class="tag ${p.note?.source === 'ai' ? 'gold' : 'grey'}">${p.note?.source === 'ai' ? 'Written by AI' : 'Standard tips'}</span></div>
+        ${p.note?.headline ? `<p>${esc(p.note.headline)}</p>` : ''}
+        <ul class="clean small">${(p.note?.tips || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    </section>
+
+    <section class="card soft stack"><div class="stack-sm"><p class="eyebrow">The research behind this plan</p><h3>Why it's built this way</h3></div>
+      <div class="grid-2">${S.content.study.techniques.map((t) => `<div class="stack-sm"><h4>${esc(t.name)}</h4><p class="small">${esc(t.how)}</p><p class="small muted">${esc(t.evidence)} <a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.cite)}</a></p></div>`).join('')}</div>
+    </section>
+  </div>`;
+}
+
+function studyReportCard(st, { parent = false } = {}) {
+  if (!st) {
+    return parent ? '' : `<section class="card soft spread"><div class="stack-sm" style="max-width:640px"><h3>Plan your study around your exams</h3>
+      <p class="small muted">Add your exam dates, subjects and free time. Dishaa builds a day-by-day plan with revision, timed papers and activities that build your profile.</p></div>
+      <button class="btn" data-go="study">Build my study plan</button></section>`;
+  }
+  const n = st.nextExam;
+  return `<section class="card stack"><div class="spread"><div class="stack-sm"><p class="eyebrow">Study plan</p>
+      <h2>${n ? `${n.daysLeft} day${n.daysLeft === 1 ? '' : 's'} to ${esc(n.title)}` : 'Study plan'}</h2></div>
+      ${parent ? '' : '<button class="btn outline" data-go="study">Open study planner</button>'}</div>
+    <div class="grid-3">
+      <div class="stat"><span class="muted small">This week</span><b class="num">${st.week.done}<span class="stat-of"> / ${st.week.planned}</span></b><span class="small muted">sessions done</span></div>
+      <div class="stat"><span class="muted small">Planned study</span><b class="num">${st.hoursPerWeek}</b><span class="small muted">hours a week</span></div>
+      <div class="stat"><span class="muted small">Streak</span><b class="num">${st.streak}</b><span class="small muted">day${st.streak === 1 ? '' : 's'} in a row</span></div>
+    </div>
+    ${st.activities?.length ? `<p class="small"><span class="muted">Suggested activities:</span> ${st.activities.map(esc).join(' · ')}</p>` : ''}
+  </section>`;
+}
+
 /* ================= Parent ================= */
 async function parentView() {
   const sid = S.student?.id;
@@ -834,6 +1065,7 @@ async function parentView() {
         <div class="card stack-sm"><p class="eyebrow">Top career matches</p>${pr.topCareers.map((c) => `<div class="spread"><span>${esc(c.name)}</span><b class="num">${c.fit}%</b></div>`).join('')}</div>
       </div>
     </section>
+    ${studyReportCard(report.study, { parent: true })}
     <section class="card soft stack"><h2>Three ways to start the conversation</h2>
       ${pr.starters.map((s, i) => `<div class="row" style="align-items:flex-start"><span class="avatar-i" style="width:32px;height:32px;font-size:14px">${i + 1}</span><p style="flex:1;padding-top:4px">${esc(s)}</p></div>`).join('')}
       <div><a class="btn" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Share on WhatsApp</a></div></section>
@@ -871,6 +1103,11 @@ function bindInputs() {
       if (S.q && (el.type !== 'radio' || el.checked)) S.q.data[el.dataset.q] = el.value;
       if (el.dataset.rerender) render();
     });
+  });
+  $$('[data-sp]').forEach((el) => {
+    const set = () => { if (S.sp) setPath(S.sp, el.dataset.sp, el.value); };
+    el.addEventListener('input', set);
+    el.addEventListener('change', set);
   });
   $$('[data-mark]').forEach((el) => el.addEventListener('input', () => { if (S.q) S.q.data.marks[el.dataset.mark] = el.value; }));
   $$('[data-qbool]').forEach((el) => el.addEventListener('change', () => { if (S.q) S.q.data[el.dataset.qbool] = el.checked; }));
@@ -913,7 +1150,7 @@ document.addEventListener('click', async (e) => {
         el.disabled = true;
         signIn(await api('/auth/demo', { body: { as: el.dataset.as } }));
         await refreshMe();
-        S.quest = null; S.q = null; S.career = null;
+        S.quest = null; S.q = null; S.career = null; S.studyCache = null; S.sp = null; S.studyDay = null;
         go(el.dataset.as === 'student' ? 'about' : el.dataset.as === 'student-finished' ? 'report' : '');
         break;
       }
@@ -997,6 +1234,77 @@ document.addEventListener('click', async (e) => {
         toast('Chat request sent (demo profile)');
         break;
       case 'lang': S.parentLang = el.dataset.lang; render(); break;
+
+      // Study planner
+      case 'sp-exam': {
+        const ex = S.sp.exams;
+        S.sp.exams = ex.some((x) => x.presetId === el.dataset.id) ? ex.filter((x) => x.presetId !== el.dataset.id) : [...ex, { presetId: el.dataset.id }];
+        render();
+        break;
+      }
+      case 'sp-add': S.sp[el.dataset.list].push(el.dataset.list === 'custom' ? { name: '', date: '', subjects: '' } : { name: '', hours: 2 }); render(); break;
+      case 'sp-del': S.sp[el.dataset.list].splice(Number(el.dataset.i), 1); render(); break;
+      case 'sp-conf': S.sp.subjects[Number(el.dataset.i)].confidence = Number(el.dataset.n); render(); break;
+      case 'sp-add-subject': {
+        const name = $('#sp-newsub')?.value.trim();
+        if (!name) { toast('Type a subject name first.'); break; }
+        if (S.sp.subjects.some((x) => x.name.toLowerCase() === name.toLowerCase())) { toast(`${name} is already in your list.`); break; }
+        const cls = String(S.student.profile?.cls || '10');
+        S.sp.subjects.push({ name, confidence: 3, topics: (S.content.study.syllabus[cls]?.[name] || []).join('\n') });
+        render();
+        break;
+      }
+      case 'sp-source': {
+        const v = el.dataset.id;
+        S.sp.sources = S.sp.sources.includes(v) ? S.sp.sources.filter((x) => x !== v) : [...S.sp.sources, v];
+        render();
+        break;
+      }
+      case 'sp-edit': S.spEditing = true; S.sp = null; render(); window.scrollTo(0, 0); break;
+      case 'sp-cancel': S.spEditing = false; S.sp = null; render(); window.scrollTo(0, 0); break;
+      case 'sp-build': {
+        const d = S.sp;
+        if (!d.subjects.length) { toast('Add at least one subject.'); break; }
+        const custom = d.custom.filter((x) => x.name.trim() || x.date);
+        if (custom.some((x) => !x.name.trim() || !x.date)) { toast('Give each school exam a name and a date.'); break; }
+        el.disabled = true;
+        el.textContent = 'Building your plan…';
+        try {
+          S.studyCache = await api(`/students/${S.student.id}/study`, { body: {
+            exams: [...d.exams, ...custom.map((x) => ({ name: x.name, date: x.date, subjects: x.subjects }))],
+            subjects: d.subjects.map((x) => ({ name: x.name, confidence: x.confidence, topics: x.topics })),
+            weekdayHours: Number(d.weekdayHours), weekendHours: Number(d.weekendHours), slot: d.slot,
+            sources: d.sources, sourcesOther: d.sourcesOther,
+            activities: d.activities.filter((a) => a.name.trim()).map((a) => ({ name: a.name, hours: Number(a.hours) || 0 })),
+          } });
+          S.student.study = true; S.sp = null; S.spEditing = false; S.studyDay = null;
+          render();
+          window.scrollTo(0, 0);
+          toast('Your study plan is ready');
+        } catch (err) { toast(err.message); el.disabled = false; el.textContent = 'Build my study plan'; }
+        break;
+      }
+      case 'sp-day': S.studyDay = el.dataset.d; render(); break;
+      case 'sp-done': {
+        const sid = el.dataset.id;
+        const done = el.checked;
+        const out = await api(`/students/${S.student.id}/study/done`, { body: { id: sid, done } });
+        S.studyCache.done = out.done;
+        S.studyCache.progress = out.progress;
+        render();
+        break;
+      }
+      case 'sp-ics': {
+        const res = await fetch(`/api/students/${S.student.id}/study/calendar.ics`, { headers: { Authorization: `Bearer ${S.token}` } });
+        if (!res.ok) throw new Error("The calendar file couldn't be created. Please try again.");
+        const url = URL.createObjectURL(await res.blob());
+        const a = document.createElement('a');
+        a.href = url; a.download = 'dishaa-study-plan.ics';
+        document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        toast('Calendar file downloaded. Open it to add your plan to Google Calendar or your phone.');
+        break;
+      }
       default: break;
     }
   } catch (err) {

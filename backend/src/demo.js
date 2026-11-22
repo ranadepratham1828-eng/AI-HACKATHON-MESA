@@ -3,6 +3,8 @@
 //  - "finished": games and all 3 missions done, so every screen has data instantly
 import { content, gameById } from './content.js';
 import { scoreGame } from './logic/scoring.js';
+import { buildStudyPlan, cleanStudyInput, recommendActivities, todayIST, addDays } from './logic/study.js';
+import { scriptedStudyNote } from './logic/studyNote.js';
 
 export const ANANYA_PROFILE = {
   name: 'Ananya',
@@ -132,6 +134,31 @@ const FINISHED = {
   },
 };
 
+// Ananya's study planner: CBSE Class 10 boards, built 3 days ago with most sessions ticked.
+function demoStudy() {
+  const today = todayIST();
+  const input = cleanStudyInput({
+    exams: [{ presetId: 'cbse-10-2027' }, { name: 'School pre-board exams', date: addDays(today, 45), subjects: ['Maths', 'Science', 'Social Science', 'English'] }],
+    subjects: [
+      { name: 'Maths', confidence: 2, topics: ['Circles', 'Areas Related to Circles', 'Surface Areas and Volumes', 'Statistics', 'Probability'] },
+      { name: 'Science', confidence: 3, topics: ['Light: Reflection and Refraction', 'The Human Eye and the Colourful World', 'Electricity', 'Magnetic Effects of Electric Current', 'Our Environment'] },
+      { name: 'Social Science', confidence: 3, topics: ['Manufacturing Industries', 'Lifelines of National Economy', 'Outcomes of Democracy', 'Globalisation and the Indian Economy'] },
+      { name: 'English', confidence: 4, topics: ['Footprints without Feet: remaining stories', 'Writing: letters and analytical paragraphs'] },
+      { name: 'Kannada', confidence: 3, topics: ['Remaining lessons'] },
+    ],
+    weekdayHours: 2, weekendHours: 4, slot: 'evening',
+    sources: ['ncert', 'school-notes', 'youtube', 'diksha'],
+    activities: [{ name: 'Sketching', hours: 3 }, { name: 'Badminton', hours: 2 }],
+  });
+  input.startDate = addDays(today, -3);
+  const student = { profile: ANANYA_PROFILE };
+  const plan = buildStudyPlan(input, { cls: '10' });
+  const done = {};
+  plan.sessions.filter((x) => x.date < today).forEach((x, i) => { if (i !== 1) done[x.id] = true; });
+  const acts = recommendActivities({ cls: '10', interests: ANANYA_PROFILE.interests, careerId: 'psychologist' }, input, plan);
+  return { input, done, createdAt: new Date().toISOString(), note: { ...scriptedStudyNote(student, plan, today), source: 'scripted' }, activities: acts.recommended.map((a) => a.name) };
+}
+
 export function ananyaData(stage = 'finished') {
   const base = { profile: structuredClone(ANANYA_PROFILE), demo: true };
   if (stage === 'new') {
@@ -146,5 +173,6 @@ export function ananyaData(stage = 'finished') {
     Object.entries(data.games.results).map(([id, r]) => [id, scoreGame(gameById(id), r)]),
   );
   for (const m of Object.values(data.missions)) m.completedAt = new Date().toISOString();
+  data.study = demoStudy();
   return { ...base, ...data, step: content.missions.length ? 'report' : 'missions' };
 }

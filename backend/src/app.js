@@ -6,7 +6,9 @@ import { content, missionById, gameById, publicMission, publicGame, publicAssess
 import { aiStatus } from './ai/provider.js';
 import { scoreGame, missionPicks } from './logic/scoring.js';
 import { missionFeedback, twistReaction, curiosityAnswer } from './logic/missions.js';
-import { careerReport, parentReport, campusConnect } from './logic/report.js';
+import { careerReport, parentReport, campusConnect, computeResults } from './logic/report.js';
+import { cleanStudyInput, buildStudyPlan, weeksOf, progressOf, recommendActivities, studySummary, toICS, todayIST, addDays, daysBetween } from './logic/study.js';
+import { studyNote } from './logic/studyNote.js';
 import { scoreAssessment } from './logic/assessment.js';
 import { matchScholarships } from './logic/scholarships.js';
 import { coachState, coachReply, buildPlan, coachSuggestions } from './logic/coach.js';
@@ -193,6 +195,7 @@ export function createApp(store) {
     priorities: content.priorities,
     games: content.games.map(publicGame),
     missions: content.missions.map(publicMission),
+    study: { exams: content.study.exams, slots: content.study.slots, syllabus: content.study.syllabus, sources: content.study.sources, techniques: content.study.techniques },
   }));
 
   // ---- Accounts (P0) ----
@@ -310,7 +313,7 @@ export function createApp(store) {
   const DEMO_EMAIL = (process.env.DEMO_EMAIL || 'ranadepratham1828@gmail.com').toLowerCase();
   const DEMO_PASSWORD = process.env.DEMO_PASSWORD || '123456';
   // Bump when the demo student's data changes, so the shared account is rebuilt with the new data.
-  const DEMO_VERSION = 2;
+  const DEMO_VERSION = 3;
   function ensureDemoAccount() {
     let user = store.getUserByEmail(DEMO_EMAIL);
     const current = user?.studentId ? store.getStudent(user.studentId) : null;
@@ -490,6 +493,7 @@ export function createApp(store) {
     const { cacheEntry, ...out } = report;
     out.scholarships = matchScholarships(s, report.careers.slice(0, 3).map((c) => c.id));
     out.hasPlan = Boolean(s.plan);
+    out.study = studySummary(s);
     if (cacheEntry) { s.cache.report = cacheEntry; store.saveStudent(s); }
     res.json(out);
   }));
@@ -528,6 +532,81 @@ export function createApp(store) {
     const s = getStudent(req);
     if (!s.plan) throw new HttpError(404, 'No career plan yet');
     res.json(s.plan);
+  }));
+
+  // ---- Study planner: exams, subjects and free time become a day-by-day plan ----
+  const goalCareerId = (s) => s.plan?.goal?.id || s.coach?.goal || computeResults(s).careers[0]?.id || null;
+  function studyPayload(s) {
+    const today = todayIST();
+    const plan = buildStudyPlan(s.study.input, { cls: s.profile?.cls });
+    const from = addDays(today, -6);
+    const to = addDays(today, 27);
+    return {
+      exists: true,
+      today,
+      input: s.study.input,
+      createdAt: s.study.createdAt,
+      start: plan.start,
+      end: plan.end,
+      exams: plan.exams.map(({ subjectDates, ...e }) => ({ ...e, daysLeft: daysBetween(today, e.date) })),
+      examDays: plan.examDays.map((x) => ({ ...x, daysLeft: daysBetween(today, x.date) })),
+      subjects: plan.subjects.map(({ topics, exam, idx, weight, ...x }) => ({
+        ...x, exam: exam?.short || null, daysLeft: daysBetween(today, x.deadline),
+        minutes: plan.sessions.filter((ss) => ss.subject === x.name).reduce((a, ss) => a + ss.minutes, 0),
+      })),
+      sessions: plan.sessions.filter((x) => x.date >= from && x.date <= to),
+      weeks: weeksOf(plan),
+      warnings: plan.warnings,
+      progress: progressOf(plan, s.study.done, today),
+      done: s.study.done || {},
+      activities: recommendActivities({ cls: s.profile?.cls, interests: s.profile?.interests, careerId: goalCareerId(s) }, s.study.input, plan),
+      note: s.study.note,
+      totals: { sessions: plan.sessions.length, hours: Math.round(plan.sessions.reduce((a, x) => a + x.minutes, 0) / 60) },
+    };
+  }
+
+  app.get('/api/students/:id/study', wrap(async (req, res) => {
+    const s = getStudent(req);
+    if (!s.study?.input) { res.json({ exists: false }); return; }
+    const out = studyPayload(s);
+    const names = out.activities.recommended.map((a) => a.name);
+    if (JSON.stringify(names) !== JSON.stringify(s.study.activities)) { s.study.activities = names; store.saveStudent(s); }
+    res.json(out);
+  }));
+
+  app.post('/api/students/:id/study', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    const input = cleanStudyInput(req.body || {});
+    if (!input.subjects.length) throw new HttpError(400, 'Add at least one subject');
+    if (input.weekdayHours + input.weekendHours === 0) throw new HttpError(400, 'Add some study time on school days or weekends');
+    input.startDate = todayIST();
+    const plan = buildStudyPlan(input, { cls: s.profile?.cls });
+    const { source, aiError, ...note } = await studyNote(s, plan);
+    const acts = recommendActivities({ cls: s.profile?.cls, interests: s.profile?.interests, careerId: goalCareerId(s) }, input, plan);
+    s.study = { input, done: {}, createdAt: new Date().toISOString(), note: { ...note, source }, activities: acts.recommended.map((a) => a.name) };
+    store.saveStudent(s);
+    res.json(studyPayload(s));
+  }));
+
+  app.post('/api/students/:id/study/done', wrap(async (req, res) => {
+    const s = getStudent(req, { edit: true });
+    if (!s.study) throw new HttpError(404, 'No study plan yet');
+    const id = text(req.body?.id, 40);
+    if (!/^\d{4}-\d{2}-\d{2}#\d{1,2}$/.test(id)) throw new HttpError(400, 'Unknown session');
+    s.study.done ||= {};
+    if (req.body?.done === false) delete s.study.done[id]; else s.study.done[id] = true;
+    store.saveStudent(s);
+    const plan = buildStudyPlan(s.study.input, { cls: s.profile?.cls });
+    res.json({ done: s.study.done, progress: progressOf(plan, s.study.done, todayIST()) });
+  }));
+
+  app.get('/api/students/:id/study/calendar.ics', wrap(async (req, res) => {
+    const s = getStudent(req);
+    if (!s.study) throw new HttpError(404, 'No study plan yet');
+    const plan = buildStudyPlan(s.study.input, { cls: s.profile?.cls });
+    res.set('Content-Type', 'text/calendar; charset=utf-8');
+    res.set('Content-Disposition', 'attachment; filename="dishaa-study-plan.ics"');
+    res.send(toICS(plan, s.study.input, { name: s.profile?.name || 'Student' }));
   }));
 
   // ---- Dishaa Quest: the aptitude game every new student plays first (P0) ----

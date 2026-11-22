@@ -208,3 +208,28 @@ test('demo accounts', async () => {
   assert.equal((await call('POST', `/students/${me.body.student.id}/missions/ux-designer/submit`, { answer: 'hi' }, t)).status, 400);
   assert.equal((await call('POST', `/students/${me.body.student.id}/missions/ux-designer/submit`, { answer: 'a long enough answer', image: 'data:text/plain;base64,aGk=' }, t)).status, 400);
 });
+
+test('study planner: build, tick a session, report summary, calendar', async () => {
+  const demo = await call('POST', '/auth/demo', { as: 'student-finished' });
+  const me = await call('GET', '/auth/me', null, demo.body.token);
+  const id = me.body.student.id;
+  const existing = await call('GET', `/students/${id}/study`, null, demo.body.token);
+  assert.equal(existing.body.exists, true, 'demo student has a study plan');
+  const bad = await call('POST', `/students/${id}/study`, { subjects: [] }, demo.body.token);
+  assert.equal(bad.status, 400);
+  const built = await call('POST', `/students/${id}/study`, {
+    exams: [{ presetId: 'cbse-10-2027' }], subjects: [{ name: 'Maths', confidence: 2, topics: ['Circles'] }], weekdayHours: 1, weekendHours: 2, sources: ['ncert'],
+  }, demo.body.token);
+  assert.equal(built.status, 200);
+  assert.equal(built.body.note.source, 'scripted');
+  assert.ok(built.body.sessions.length > 0);
+  assert.ok(built.body.activities.recommended.length > 0);
+  const sid = built.body.sessions.find((s) => s.date === built.body.today)?.id || built.body.sessions[0].id;
+  const tick = await call('POST', `/students/${id}/study/done`, { id: sid }, demo.body.token);
+  assert.equal(tick.body.done[sid], true);
+  const report = await call('GET', `/students/${id}/report`, null, demo.body.token);
+  assert.ok(report.body.study.hoursPerWeek > 0);
+  const res = await fetch(`${base}/students/${id}/study/calendar.ics`, { headers: { Authorization: `Bearer ${demo.body.token}` } });
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /BEGIN:VCALENDAR/);
+});

@@ -16,6 +16,7 @@ const { profiles: campusProfiles } = read('campus-connect.json');
 const assessment = read('assessment.json');
 const { careers, interests, priorities, categories: careerCategories } = read('careers.json');
 const { scholarships } = read('scholarships.json');
+const study = read('study.json');
 
 // Flat list of Dishaa Quest items, each tagged with its zone and ability.
 const assessmentItems = assessment.zones.flatMap((z) => z.items.map((it) => ({ ...it, zoneId: z.id, ability: z.ability })));
@@ -24,7 +25,7 @@ questionnaire.interests = interests;
 
 export const content = {
   missions, games, traits, newCareersByTrait, pathways, questionnaire, colleges, campusProfiles,
-  assessment, assessmentItems, careers, interests, scholarships, priorities, careerCategories,
+  assessment, assessmentItems, careers, interests, scholarships, priorities, careerCategories, study,
 };
 
 export const TRAIT_IDS = traits.map((t) => t.id);

@@ -1,0 +1,767 @@
+{
+  "_note": "Study planner content. Exam dates are as reported on the dates in lastChecked; estimated=true means the official date isn't out yet. Always confirm on the official site.",
+  "exams": [
+    {
+      "id": "cbse-10-2027",
+      "name": "CBSE Class 10 board exams 2027",
+      "short": "CBSE Class 10 boards",
+      "kind": "board",
+      "board": "CBSE",
+      "classes": [
+        "10"
+      ],
+      "start": "2027-02-16",
+      "end": "2027-03-09",
+      "subjectDates": {
+        "Maths": "2027-02-17",
+        "Science": "2027-02-22",
+        "English": "2027-02-26",
+        "Hindi": "2027-03-03",
+        "Social Science": "2027-03-08"
+      },
+      "estimated": false,
+      "note": "Main exams 16 February to 9 March 2027, as reported after the date sheet release. Check your exact subject dates on the official timetable.",
+      "source": "https://www.cbse.gov.in/",
+      "reportedBy": "https://school.careers360.com/articles/cbse-board-exam-2027-date-sheet-class-10-12",
+      "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "cbse-12-2027",
+      "name": "CBSE Class 12 board exams 2027",
+      "short": "CBSE Class 12 boards",
+      "kind": "board",
+      "board": "CBSE",
+      "classes": [
+        "12"
+      ],
+      "start": "2027-02-16",
+      "end": "2027-04-09",
+      "subjectDates": {
+        "Physics": "2027-02-16",
+        "Business Studies": "2027-04-01"
+      },
+      "estimated": false,
+      "note": "Main exams 16 February to 9 April 2027, as reported. Add your other subject dates from the official timetable.",
+      "source": "https://www.cbse.gov.in/",
+      "reportedBy": "https://school.careers360.com/articles/cbse-board-exam-2027-date-sheet-class-10-12",
+      "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "jee-main-2027-s1",
+      "name": "JEE Main 2027 Session 1",
+      "short": "JEE Main (Jan)",
+      "kind": "entrance",
+      "classes": [
+        "12"
+      ],
+      "start": "2027-01-20",
+      "end": "2027-01-28",
+      "subjects": [
+        "Physics",
+        "Chemistry",
+        "Maths"
+      ],
+      "matches": [
+        "JEE Main"
+      ],
+      "estimated": false,
+      "note": "20 to 28 January 2027 per NTA's public notice as reported; your exact date and shift are on the admit card.",
+      "source": "https://jeemain.nta.nic.in/",
+      "reportedBy": "https://www.shiksha.com/engineering/articles/jee-main-2027-exam-date-blogId-239245",
+      "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "jee-main-2027-s2",
+      "name": "JEE Main 2027 Session 2",
+      "short": "JEE Main (Apr)",
+      "kind": "entrance",
+      "classes": [
+        "12"
+      ],
+      "start": "2027-04-02",
+      "end": "2027-04-07",
+      "subjects": [
+        "Physics",
+        "Chemistry",
+        "Maths"
+      ],
+      "matches": [
+        "JEE Main"
+      ],
+      "estimated": false,
+      "note": "2 to 7 April 2027, as reported.",
+      "source": "https://jeemain.nta.nic.in/",
+      "reportedBy": "https://www.vedantu.com/jee-main/exam-dates",
+      "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "neet-ug-2027",
+      "name": "NEET-UG 2027",
+      "short": "NEET-UG",
+      "kind": "entrance",
+      "classes": [
+        "12"
+      ],
+      "start": "2027-05-02",
+      "end": "2027-05-02",
+      "subjects": [
+        "Physics",
+        "Chemistry",
+        "Biology"
+      ],
+      "matches": [
+        "NEET"
+      ],
+      "estimated": true,
+      "note": "Not announced yet. NEET-UG is usually held on the first Sunday of May, so this plan uses 2 May 2027.",
+      "source": "https://neet.nta.nic.in/",
+      "reportedBy": "https://www.shiksha.com/medicine-health-sciences/articles/neet-ug-2027-blogId-232179",
+      "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "cuet-ug-2027",
+      "name": "CUET-UG 2027",
+      "short": "CUET-UG",
+      "kind": "entrance",
+      "classes": [
+        "12"
+      ],
+      "start": "2027-05-15",
+      "end": "2027-06-03",
+      "subjects": [
+        "English",
+        "General Test"
+      ],
+      "matches": [
+        "CUET"
+      ],
+      "estimated": true,
+      "note": "Not announced yet. Recent CUET-UG sessions ran from mid-May, so this plan uses 15 May 2027. Add your domain subjects.",
+      "source": "https://cuet.nta.nic.in/",
+      "reportedBy": "https://www.shiksha.com/news/science-when-will-nta-conduct-cuet-ug-2027-here-s-what-previous-year-pattern-suggests-blogId-245537",
+      "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "clat-2027",
+      "name": "CLAT 2027",
+      "short": "CLAT",
+      "kind": "entrance",
+      "classes": [
+        "12"
+      ],
+      "start": "2026-12-06",
+      "end": "2026-12-06",
+      "subjects": [
+        "English",
+        "Current Affairs",
+        "Legal Reasoning",
+        "Logical Reasoning",
+        "Quantitative Techniques"
+      ],
+      "matches": [
+        "CLAT"
+      ],
+      "estimated": false,
+      "note": "Sunday 6 December 2026, 2 to 4 PM, as reported. Registration closed on 31 October 2026.",
+      "source": "https://consortiumofnlus.ac.in/",
+      "reportedBy": "https://news.careers360.com/clat-2027-exam-date-out-december-6-application-starts-august-3-deadline-october-31-consortiumofnlus-ac-in-nlus-law-admission",
+      "lastChecked": "2026-11-21"
+    },
+    {
+      "id": "uceed-2027",
+      "name": "UCEED 2027",
+      "short": "UCEED",
+      "kind": "entrance",
+      "classes": [
+        "12"
+      ],
+      "start": "2027-01-17",
+      "end": "2027-01-17",
+      "subjects": [
+        "Visualisation and Drawing",
+        "Design Aptitude",
+        "Logical Reasoning"
+      ],
+      "matches": [
+        "UCEED"
+      ],
+      "estimated": false,
+      "note": "17 January 2027, as reported. Registration ran October to November 2026.",
+      "source": "https://www.uceed.iitb.ac.in/",
+      "reportedBy": null,
+      "lastChecked": "2026-11-21"
+    }
+  ],
+  "slots": [
+    {
+      "id": "morning",
+      "label": "Early morning (from 6:00)",
+      "start": "06:00"
+    },
+    {
+      "id": "afternoon",
+      "label": "After school (from 16:30)",
+      "start": "16:30"
+    },
+    {
+      "id": "evening",
+      "label": "Evening (from 18:30)",
+      "start": "18:30"
+    }
+  ],
+  "syllabus": {
+    "_note": "NCERT chapter lists (rationalised textbooks). Schools sometimes drop or add chapters; check the CBSE curriculum for the year.",
+    "10": {
+      "Maths": [
+        "Real Numbers",
+        "Polynomials",
+        "Pair of Linear Equations in Two Variables",
+        "Quadratic Equations",
+        "Arithmetic Progressions",
+        "Triangles",
+        "Coordinate Geometry",
+        "Introduction to Trigonometry",
+        "Some Applications of Trigonometry",
+        "Circles",
+        "Areas Related to Circles",
+        "Surface Areas and Volumes",
+        "Statistics",
+        "Probability"
+      ],
+      "Science": [
+        "Chemical Reactions and Equations",
+        "Acids, Bases and Salts",
+        "Metals and Non-metals",
+        "Carbon and its Compounds",
+        "Life Processes",
+        "Control and Coordination",
+        "How do Organisms Reproduce?",
+        "Heredity",
+        "Light: Reflection and Refraction",
+        "The Human Eye and the Colourful World",
+        "Electricity",
+        "Magnetic Effects of Electric Current",
+        "Our Environment"
+      ],
+      "Social Science": [
+        "The Rise of Nationalism in Europe",
+        "Nationalism in India",
+        "The Making of a Global World",
+        "The Age of Industrialisation",
+        "Print Culture and the Modern World",
+        "Resources and Development",
+        "Forest and Wildlife Resources",
+        "Water Resources",
+        "Agriculture",
+        "Minerals and Energy Resources",
+        "Manufacturing Industries",
+        "Lifelines of National Economy",
+        "Power Sharing",
+        "Federalism",
+        "Gender, Religion and Caste",
+        "Political Parties",
+        "Outcomes of Democracy",
+        "Development",
+        "Sectors of the Indian Economy",
+        "Money and Credit",
+        "Globalisation and the Indian Economy"
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "ncert",
+      "name": "NCERT textbooks",
+      "use": "learn",
+      "free": true,
+      "official": true,
+      "url": "https://ncert.nic.in/textbook.php",
+      "for": "Every school subject. Board papers are set from these books."
+    },
+    {
+      "id": "exemplar",
+      "name": "NCERT Exemplar",
+      "use": "practice",
+      "free": true,
+      "official": true,
+      "url": "https://ncert.nic.in/",
+      "for": "Harder practice questions for Maths and Science."
+    },
+    {
+      "id": "cbse-sqp",
+      "name": "CBSE sample papers and marking schemes",
+      "use": "test",
+      "free": true,
+      "official": true,
+      "url": "https://cbseacademic.nic.in/",
+      "for": "The board's own practice papers. Use them as timed mock exams."
+    },
+    {
+      "id": "pyq",
+      "name": "Previous years' question papers",
+      "use": "test",
+      "free": true,
+      "official": false,
+      "url": null,
+      "for": "Timed practice in the final weeks."
+    },
+    {
+      "id": "diksha",
+      "name": "DIKSHA",
+      "use": "learn",
+      "free": true,
+      "official": true,
+      "url": "https://diksha.gov.in/",
+      "for": "Government videos, question banks and the QR codes printed in NCERT books."
+    },
+    {
+      "id": "pm-evidya",
+      "name": "PM eVidya and SWAYAM Prabha",
+      "use": "learn",
+      "free": true,
+      "official": true,
+      "url": "https://pmevidya.education.gov.in/",
+      "for": "Free lessons by class, on TV and online."
+    },
+    {
+      "id": "nta-abhyas",
+      "name": "NTA mock tests (National Test Abhyas)",
+      "use": "test",
+      "free": true,
+      "official": true,
+      "url": "https://nta.ac.in/",
+      "for": "Free mock tests for JEE, NEET and other NTA exams."
+    },
+    {
+      "id": "khan",
+      "name": "Khan Academy",
+      "use": "learn",
+      "free": true,
+      "official": false,
+      "url": "https://www.khanacademy.org/",
+      "for": "Free maths and science lessons with practice."
+    },
+    {
+      "id": "school-notes",
+      "name": "School notes and worksheets",
+      "use": "revise",
+      "free": true,
+      "official": false,
+      "url": null,
+      "for": "What your teachers stress most."
+    },
+    {
+      "id": "coaching",
+      "name": "Coaching modules",
+      "use": "practice",
+      "free": false,
+      "official": false,
+      "url": null,
+      "for": "Extra problems, especially for entrance exams."
+    },
+    {
+      "id": "reference",
+      "name": "Reference books (for example RD Sharma, HC Verma)",
+      "use": "practice",
+      "free": false,
+      "official": false,
+      "url": null,
+      "for": "More solved and unsolved problems."
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube lessons",
+      "use": "learn",
+      "free": true,
+      "official": false,
+      "url": null,
+      "for": "A second explanation when a chapter doesn't click."
+    }
+  ],
+  "techniques": [
+    {
+      "id": "spacing",
+      "name": "Spaced revision",
+      "how": "Each chapter comes back for quick revision 1, 3, 7 and 14 days after you first study it, instead of being crammed once.",
+      "evidence": "Rated one of only two 'high utility' study techniques in a review of 10 techniques. The best gap between revisions grows the further away the exam is.",
+      "cite": "Dunlosky et al., 2013; Cepeda et al., 2008",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26173288/"
+    },
+    {
+      "id": "retrieval",
+      "name": "Recall before you reread",
+      "how": "Revision sessions start with the book closed: write down what you remember, then check and fix the gaps.",
+      "evidence": "Students who tested themselves remembered 61% of a passage a week later, against 40% for students who only reread it.",
+      "cite": "Roediger & Karpicke, 2006",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/16507066/"
+    },
+    {
+      "id": "mocks",
+      "name": "Timed papers in the last two weeks",
+      "how": "Before each exam, the plan swaps new chapters for full timed papers from the board or the exam body, marked with the official scheme.",
+      "evidence": "Practice testing is the other 'high utility' technique. Rereading and highlighting were rated low utility.",
+      "cite": "Dunlosky et al., 2013",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26173288/"
+    },
+    {
+      "id": "interleave",
+      "name": "Mixed subjects each day",
+      "how": "Back-to-back sessions switch subjects, so each day mixes, for example, Maths, Science and Social Science.",
+      "evidence": "Rated 'moderate utility', with the strongest results for maths problem practice.",
+      "cite": "Dunlosky et al., 2013; Rohrer & Taylor, 2007",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26173288/"
+    }
+  ],
+  "activities": [
+    {
+      "id": "olympiad-science",
+      "name": "Science olympiads (NSEJS, NSEP, NSEC, NSEB, NSEA)",
+      "type": "Competition",
+      "categories": [
+        "Science & Research",
+        "Medicine & Health",
+        "Engineering & Technology"
+      ],
+      "interests": [
+        "science",
+        "health",
+        "tech"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "Enrol through your school around August to September; the first round is in late November.",
+      "url": "https://iapt.org.in/",
+      "why": "The first step to the national olympiads, and good practice for JEE and NEET style thinking."
+    },
+    {
+      "id": "olympiad-maths",
+      "name": "Maths olympiad (IOQM)",
+      "type": "Competition",
+      "categories": [
+        "Engineering & Technology",
+        "Science & Research",
+        "Business & Finance"
+      ],
+      "interests": [
+        "tech",
+        "science",
+        "business"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "Registration usually opens mid-year; the exam is in September.",
+      "url": "https://olympiads.hbcse.tifr.res.in/",
+      "why": "Builds problem solving that data, engineering and finance careers value."
+    },
+    {
+      "id": "inspire-manak",
+      "name": "INSPIRE-MANAK idea competition",
+      "type": "Project",
+      "categories": [
+        "Engineering & Technology",
+        "Science & Research",
+        "Design & Creative"
+      ],
+      "interests": [
+        "tech",
+        "science",
+        "design"
+      ],
+      "classes": [
+        "9",
+        "10"
+      ],
+      "hoursPerWeek": 1,
+      "when": "Schools nominate ideas each year, usually June to September.",
+      "url": "https://www.inspireawards-dst.gov.in/",
+      "why": "A national government programme for student ideas that solve everyday problems."
+    },
+    {
+      "id": "tinkering",
+      "name": "Robotics or tinkering club",
+      "type": "Club",
+      "categories": [
+        "Engineering & Technology"
+      ],
+      "interests": [
+        "tech",
+        "building"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "Weekly, all year. Many schools have an Atal Tinkering Lab.",
+      "url": "https://aim.gov.in/",
+      "why": "Hands-on building is what engineering degrees and interviews look for."
+    },
+    {
+      "id": "coding-project",
+      "name": "Build one small app or website",
+      "type": "Project",
+      "categories": [
+        "Engineering & Technology",
+        "Business & Finance",
+        "Design & Creative"
+      ],
+      "interests": [
+        "tech",
+        "design"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "Any time; aim to finish one project each term.",
+      "url": null,
+      "why": "A finished project shows more than a certificate."
+    },
+    {
+      "id": "design-portfolio",
+      "name": "Design portfolio: a sketch a day and one redesign a month",
+      "type": "Portfolio",
+      "categories": [
+        "Design & Creative"
+      ],
+      "interests": [
+        "design"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "All year; design entrances (UCEED, NID DAT, NIFT) reward drawing practice.",
+      "url": null,
+      "why": "Design colleges judge sketching and observation, which only improve with regular practice."
+    },
+    {
+      "id": "debate-mun",
+      "name": "Debate, elocution or Model UN",
+      "type": "Club",
+      "categories": [
+        "Law & Government",
+        "Business & Finance",
+        "Education & Media"
+      ],
+      "interests": [
+        "writing",
+        "business",
+        "law"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "Inter-school events run mostly from July to December.",
+      "url": null,
+      "why": "Law, civil services and business all depend on arguing a case clearly."
+    },
+    {
+      "id": "writing",
+      "name": "Write for the school magazine or a blog",
+      "type": "Portfolio",
+      "categories": [
+        "Education & Media",
+        "Law & Government"
+      ],
+      "interests": [
+        "writing"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 1,
+      "when": "One piece a month.",
+      "url": null,
+      "why": "A body of published writing is the portfolio for journalism and media."
+    },
+    {
+      "id": "ncc",
+      "name": "NCC (National Cadet Corps)",
+      "type": "Service",
+      "categories": [
+        "Law & Government"
+      ],
+      "interests": [
+        "law",
+        "business"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 3,
+      "when": "Join through your school's NCC unit at the start of the year.",
+      "url": "https://indiancc.mygov.in/",
+      "why": "Builds discipline and leadership, and NCC certificates carry weight for defence careers."
+    },
+    {
+      "id": "first-aid",
+      "name": "First aid course and health volunteering",
+      "type": "Course",
+      "categories": [
+        "Medicine & Health"
+      ],
+      "interests": [
+        "health",
+        "helping"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 1,
+      "when": "Short courses run through the year.",
+      "url": "https://www.indianredcross.org/",
+      "why": "A real taste of care work before committing to medicine or nursing."
+    },
+    {
+      "id": "teach-volunteer",
+      "name": "Teach or mentor younger students",
+      "type": "Service",
+      "categories": [
+        "Education & Media",
+        "Medicine & Health"
+      ],
+      "interests": [
+        "helping",
+        "law"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 1,
+      "when": "Weekly, all year, through school or a local NGO.",
+      "url": null,
+      "why": "Shows whether you enjoy explaining and supporting people, which teaching and psychology need."
+    },
+    {
+      "id": "venture",
+      "name": "Run a small venture (a school fest stall or an online shop)",
+      "type": "Project",
+      "categories": [
+        "Business & Finance"
+      ],
+      "interests": [
+        "business"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "Plan it around a school fest or the summer break.",
+      "url": null,
+      "why": "Selling something real teaches pricing, money and people faster than any book."
+    },
+    {
+      "id": "research-reading",
+      "name": "Read one popular science or psychology book a month",
+      "type": "Reading",
+      "categories": [
+        "Science & Research",
+        "Medicine & Health",
+        "Education & Media"
+      ],
+      "interests": [
+        "science",
+        "health",
+        "writing"
+      ],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 1,
+      "when": "All year.",
+      "url": null,
+      "why": "Builds the background that makes interviews and college essays easier."
+    },
+    {
+      "id": "job-shadow",
+      "name": "Shadow a professional for a day",
+      "type": "Experience",
+      "categories": [
+        "Engineering & Technology",
+        "Medicine & Health",
+        "Business & Finance",
+        "Law & Government",
+        "Design & Creative",
+        "Science & Research",
+        "Education & Media"
+      ],
+      "interests": [],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 0,
+      "when": "Once, during a school break.",
+      "url": null,
+      "why": "One day watching someone at work tells you more than any list of pros and cons."
+    },
+    {
+      "id": "sport",
+      "name": "Keep one sport or regular exercise",
+      "type": "Wellbeing",
+      "categories": [
+        "Engineering & Technology",
+        "Medicine & Health",
+        "Business & Finance",
+        "Law & Government",
+        "Design & Creative",
+        "Science & Research",
+        "Education & Media"
+      ],
+      "interests": [],
+      "classes": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "hoursPerWeek": 2,
+      "when": "All year, including exam months (shorter sessions).",
+      "url": null,
+      "why": "A regular break from desk work makes long study months easier to sustain."
+    }
+  ]
+}

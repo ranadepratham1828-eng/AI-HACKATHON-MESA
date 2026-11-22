@@ -2,10 +2,10 @@
 // Every result says where it came from: source "ai" or "scripted".
 import { generate, aiEnabled } from './provider.js';
 
-export async function askWithFallback({ prompt, images, validate, fallback, label }) {
+export async function askWithFallback({ prompt, images, validate, fallback, label, timeoutMs }) {
   if (!aiEnabled()) return { ...fallback(), source: 'scripted' };
   try {
-    const out = await generate({ prompt, images });
+    const out = await generate({ prompt, images, timeoutMs });
     const clean = validate(out);
     if (!clean) throw new Error('AI answer was missing fields');
     return { ...clean, source: 'ai' };

@@ -31,6 +31,7 @@ On the login page, the demo buttons need no account:
 3. **Report:** ability scores with evidence, strengths and growth areas, self-rating vs measured, top career matches from 36 careers, career path, colleges and scholarships.
 4. **Dishaa Coach:** an AI chat that helps the student settle on one goal.
 5. **Career plan:** timeline to the first job, exam preparation, colleges (dream / target / safe) within budget and location, scholarships, budget advice and next 30 days.
+6. **Study planner:** the student adds exams (CBSE boards, JEE Main, NEET, CUET, CLAT, UCEED presets with 2027 dates, or their own school exams), subjects with confidence and chapters left, free time, study sources and current activities. Dishaa builds a day-by-day plan (`backend/src/logic/study.js`, no AI) using spaced revision (1, 3, 7, 14 days), recall-first revision, timed papers in the last 14 days before each paper and mixed subjects each day. It shows today's sessions with check-offs, a streak, an exam countdown, a week-by-week chart, activities matched to the career goal, free official study sources, and exports to a calendar file. A summary appears on the report and the parent view. Dates and sources live in `backend/content/study.json`.
 
 Without an AI key everything still works on standard text; the top bar shows **Demo mode**. With a key it shows **AI on**.
 
